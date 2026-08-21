@@ -1,0 +1,132 @@
+---
+import SectionIntro from './SectionIntro.astro';
+import TestimonialStage, { type Testimonial } from './TestimonialStage.astro';
+import { PRIVATE_BETA_REFERRAL_COUNT } from '../lib/content';
+import { SectionId } from '../lib/constants';
+
+interface Props {
+	readonly batches: readonly (readonly Testimonial[])[];
+}
+
+const { batches } = Astro.props;
+---
+
+<section class="section beta-proof stories" id={SectionId.Stories} aria-labelledby="stories-title">
+	<div class="shell">
+		<SectionIntro
+			eyebrow="From the private beta"
+			title="What people told us."
+			copy="Feedback from seekers and referrers who used RightRefer during the beta."
+			headingId="stories-title"
+			align="center"
+			class="reveal"
+		/>
+
+		<div class="beta-proof-layout">
+			<aside class="beta-proof-stat reveal" aria-label="Private beta referral result">
+				<div class="beta-proof-rings" aria-hidden="true"></div>
+				<p class="beta-proof-label">Private beta snapshot</p>
+				<p class="beta-proof-count">{PRIVATE_BETA_REFERRAL_COUNT}+</p>
+				<p class="beta-proof-caption">people successfully referred during the beta</p>
+			</aside>
+
+			<div class="beta-proof-testimonials reveal" aria-label="Private beta testimonials">
+				<TestimonialStage batches={batches} />
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.beta-proof {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.beta-proof-layout {
+		display: grid;
+		grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
+		gap: clamp(2rem, 5vw, 5rem);
+		align-items: center;
+		margin-top: clamp(2.5rem, 5vw, 3.5rem);
+	}
+
+	.beta-proof-stat {
+		position: relative;
+		isolation: isolate;
+		display: flex;
+		min-height: 19rem;
+		flex-direction: column;
+		justify-content: center;
+		overflow: hidden;
+		padding: clamp(1.5rem, 3vw, 2rem);
+		border: 1px solid rgb(var(--color-brand-panel-ink) / 18%);
+		border-radius: var(--radius-xxl);
+		background: rgb(var(--color-brand-panel));
+		box-shadow: var(--shadow-panel);
+		color: rgb(var(--color-brand-panel-ink));
+	}
+
+	.beta-proof-rings {
+		position: absolute;
+		z-index: -1;
+		top: 50%;
+		left: 58%;
+		width: 30rem;
+		aspect-ratio: 1;
+		border: 1px solid rgb(var(--color-primary-strong) / 20%);
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 4.5rem rgb(var(--color-primary-strong) / 7%),
+			0 0 0 9rem rgb(var(--color-primary-strong) / 6%),
+			0 0 0 13.5rem rgb(var(--color-primary-strong) / 5%);
+		transform: translate(-50%, -50%);
+	}
+
+	.beta-proof-label {
+		margin: 0;
+		color: rgb(var(--color-brand-panel-ink));
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.beta-proof-count {
+		margin: 0.625rem 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(5rem, 10vw, 7rem);
+		font-weight: 400;
+		letter-spacing: -0.06em;
+		line-height: 0.85;
+	}
+
+	.beta-proof-caption {
+		max-width: 12rem;
+		margin: 1.25rem 0 0;
+		color: rgb(var(--color-brand-panel-ink) / 74%);
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+
+	.beta-proof-testimonials {
+		min-width: 0;
+	}
+
+	@media (max-width: 63.999rem) {
+		.beta-proof-layout {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+
+		.beta-proof-stat {
+			min-height: 15rem;
+			max-width: 32rem;
+			margin-inline: auto;
+		}
+
+		.beta-proof-count {
+			font-size: clamp(4.5rem, 18vw, 6rem);
+		}
+	}
+</style>

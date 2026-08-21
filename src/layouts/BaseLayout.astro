@@ -53,7 +53,9 @@ const themePrepaint = `(function(){try{
 
 		<link rel="canonical" href={canonicalUrl} />
 		<link rel="icon" type="image/png" href="/favicon.png" />
-		<link rel="preload" as="image" href="/hero-hands-poster.webp" type="image/webp" fetchpriority="high" />
+		{/* No preload for the hero artwork: it ships as an inline base64 mask
+		    inside Hero.astro's own <style>, so it arrives with the HTML/CSS
+		    payload itself rather than as a separate fetch. */}
 		<link rel="preload" href="/Louize.woff2" as="font" type="font/woff2" crossorigin />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -395,6 +395,20 @@ strong {
 	border: 1px solid rgb(var(--color-border));
 	border-radius: var(--radius-xxl);
 	background: rgb(var(--color-elevated));
+	/*
+	 * `--color-border` alone is a near-miss against the cream canvas in light
+	 * mode (216 225 234 on 251 248 242 is barely a 1.2:1 edge), so the frame
+	 * read as borderless. A second, tighter ring drawn from the ink token at
+	 * low alpha gives the edge real definition without introducing a new
+	 * colour — it is invisible in dark mode, where the border token already
+	 * has enough contrast against the near-black canvas.
+	 */
+	box-shadow:
+		0 0 0 1px rgb(var(--color-ink) / 6%),
+		var(--shadow-panel);
+}
+
+[data-theme='dark'] .media-frame {
 	box-shadow: var(--shadow-panel);
 }
 

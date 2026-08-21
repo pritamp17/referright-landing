@@ -1,21 +1,21 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Appreciation from '../components/Appreciation.astro';
+import BetaProof from '../components/BetaProof.astro';
 import ClosingSection from '../components/ClosingSection.astro';
 import CompanyField from '../components/CompanyField.astro';
 import Hero from '../components/Hero.astro';
 import Lifecycle from '../components/Lifecycle.astro';
 import Offerings from '../components/Offerings.astro';
 import PeerSignalSection from '../components/PeerSignalSection.astro';
-import SectionIntro from '../components/SectionIntro.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import TestimonialStage, { type Testimonial } from '../components/TestimonialStage.astro';
+import { type Testimonial } from '../components/TestimonialStage.astro';
 import TrustSection from '../components/TrustSection.astro';
-import { Accent, SectionId } from '../lib/constants';
+import { Accent } from '../lib/constants';
 
-const pageTitle = 'RightRefer — Get referred by someone who actually works there';
+const pageTitle = 'RightRefer: Find your way in at the right time';
 const pageDescription =
-	'Ask for a referral at your target company. A LinkedIn-verified employee takes it on and submits it with proof, so you always know exactly where your request stands.';
+	'Ask for a referral, give one when you can, or hear about openings before they go public through a trusted network of verified employees and peers.';
 
 const testimonialBatches: readonly (readonly Testimonial[])[] = [
 	[
@@ -81,26 +81,11 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 		</section>
 
 		<Offerings />
+		<BetaProof batches={testimonialBatches} />
 		<PeerSignalSection />
 		<Lifecycle />
 		<TrustSection />
 		<Appreciation />
-
-		<section class="section stories" id={SectionId.Stories} aria-labelledby="stories-title">
-			<div class="shell">
-				<SectionIntro
-					eyebrow="From the private beta"
-					title="What people told us."
-					copy="Feedback from seekers and referrers who used RightRefer during the beta."
-					headingId="stories-title"
-					align="center"
-					class="reveal"
-				/>
-			</div>
-			<div class="stories-stage reveal">
-				<TestimonialStage batches={testimonialBatches} />
-			</div>
-		</section>
 
 		<ClosingSection />
 	</main>
@@ -146,11 +131,4 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 		text-align: center;
 	}
 
-	.stories {
-		border-top: 1px solid rgb(var(--color-border));
-	}
-
-	.stories-stage {
-		margin-top: clamp(2rem, 4vw, 3rem);
-	}
 </style>

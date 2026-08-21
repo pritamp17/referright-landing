@@ -50,18 +50,36 @@ const navItems: readonly NavItem[] = [
 		position: sticky;
 		z-index: 100;
 		top: 0;
+		/* Let the hero background continue behind the navigation. */
+		margin-bottom: -4.5rem;
 		border-bottom: 1px solid transparent;
-		background: rgb(var(--color-canvas) / 0%);
+		background: transparent;
 		transition:
 			background-color var(--dur-mid) ease,
 			border-color var(--dur-mid) ease,
 			backdrop-filter var(--dur-mid) ease;
 	}
 
+	.site-header::after {
+		position: absolute;
+		z-index: -1;
+		inset: 0 0 -1.5rem;
+		background: linear-gradient(
+			to bottom,
+			rgb(var(--color-canvas) / 12%),
+			transparent 90%
+		);
+		backdrop-filter: blur(8px);
+		content: '';
+		mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+		-webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+		pointer-events: none;
+	}
+
 	.site-header.is-condensed {
-		border-bottom-color: rgb(var(--color-border));
-		background: rgb(var(--color-canvas) / 82%);
-		backdrop-filter: blur(16px) saturate(1.4);
+		border-bottom-color: transparent;
+		background: transparent;
+		backdrop-filter: none;
 	}
 
 	.header-inner {
@@ -83,8 +101,9 @@ const navItems: readonly NavItem[] = [
 		min-height: 2.75rem;
 		align-items: center;
 		color: rgb(var(--color-muted));
-		font-size: 0.875rem;
-		font-weight: 500;
+		font-size: 1rem;
+		font-weight: 650;
+		letter-spacing: -0.015em;
 		transition: color var(--dur-fast) ease;
 	}
 

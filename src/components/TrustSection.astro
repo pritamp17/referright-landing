@@ -40,16 +40,17 @@ import { TRUST_PILLARS } from '../lib/content';
 
 <style>
 	/*
-	 * A mechanism-and-evidence section reads better on a light field than on a
-	 * wall of dark blue — dark inverted panels read as marketing theatre, and
-	 * this section's whole point is that it is not one. `--color-primary-soft`
-	 * already carries the locked LinkedIn blue at low saturation in both
-	 * themes, so this stays on-palette without inventing a new colour.
+	 * Keep this mechanism-and-evidence section on the same canvas as the rest of
+	 * the page. A restrained primary wash adds depth without turning the section
+	 * into a separate colored panel.
 	 */
 	.trust {
 		position: relative;
 		overflow: hidden;
-		background: rgb(var(--color-primary-soft));
+		border-top: 1px solid rgb(var(--color-border));
+		background:
+			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
+			rgb(var(--color-canvas));
 		isolation: isolate;
 	}
 
@@ -99,15 +100,26 @@ import { TRUST_PILLARS } from '../lib/content';
 
 	/* ---- Pillars ---- */
 
+	/*
+	 * The dividers between cards used to be drawn in the brand blue at 14–16%
+	 * alpha, showing through the 1px grid gap. On this section's own pale-blue
+	 * background that is one light blue sitting on another: the outer edge
+	 * just barely read against the page, and the INTERNAL dividers, pinched
+	 * between two near-white card fills, all but vanished — the four pillars
+	 * looked like one card. The ink token reads as a true neutral line against
+	 * both the pale-blue backdrop and the near-white cards, so it is what
+	 * actually separates them; the brand blue stays on the small corner rule
+	 * inside each card instead.
+	 */
 	.trust-grid {
 		display: grid;
 		gap: 1px;
 		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
 		padding: 0;
 		overflow: hidden;
-		border: 1px solid rgb(var(--color-primary) / 16%);
+		border: 1px solid rgb(var(--color-ink) / 14%);
 		border-radius: var(--radius-xxl);
-		background: rgb(var(--color-primary) / 14%);
+		background: rgb(var(--color-ink) / 12%);
 		list-style: none;
 	}
 

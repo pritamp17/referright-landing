@@ -43,11 +43,9 @@ import { LIFECYCLE } from '../lib/content';
 <style>
 	.lifecycle {
 		border-top: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-elevated) / 45%);
-	}
-
-	:global([data-theme='dark']) .lifecycle {
-		background: rgb(var(--color-surface) / 40%);
+		background:
+			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
+			rgb(var(--color-canvas));
 	}
 
 	.rail {

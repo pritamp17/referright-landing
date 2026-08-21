@@ -1,26 +1,46 @@
 ---
-import { OUTCOME_DISCLAIMER, POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
+import { POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
 import { TRUST_STRIP, signUpWith } from '../lib/content';
+import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 ---
 
+{/*
+ * The hero makes one argument, visually: everybody is knocking on the same
+ * closed doors, and this is the one that opens from the inside.
+ *
+ * The drawing is not decoration bolted onto a layout — it IS the layout. The
+ * copy occupies the quiet left third of the wall; the open door falls on the
+ * right, where the eye lands after reading. Nothing overlaps the headline, so
+ * there is no text-shadow anywhere in this file.
+ */}
 <section class="hero" id={SectionId.Top} aria-labelledby="hero-title">
-	<div class="hero-aurora" aria-hidden="true">
-		<span class="aurora-blob aurora-1"></span>
-		<span class="aurora-blob aurora-2"></span>
-		<span class="aurora-blob aurora-3"></span>
+	<div class="hero-wash" aria-hidden="true"></div>
+	<div class="grid-texture hero-grid" aria-hidden="true"></div>
+
+	{/*
+	 * The artwork is a single alpha mask painted with theme tokens, never a
+	 * flat picture: `.ink-base` takes the ink colour, `.ink-accent` re-paints
+	 * only the strokes near the open door in the brand blue. One asset, both
+	 * themes, no second dark-mode export.
+	 */}
+	<div class="hero-art" aria-hidden="true">
+		<div class="hero-art-inner">
+			<div class="ink-stage">
+				<span class="hero-glow"></span>
+				<span class="ink ink-base"></span>
+				<span class="ink ink-accent"></span>
+			</div>
+		</div>
 	</div>
-	<div class="grid-texture" aria-hidden="true"></div>
 
 	<div class="shell hero-inner">
 		<div class="hero-copy">
-			<p class="badge hero-badge">
-				<span class="badge-dot" aria-hidden="true"></span>
-				LinkedIn-verified employees
-			</p>
-
 			<h1 class="display-1" id="hero-title">
-				Get referred by someone who actually works there.
+				Find your way in at the <em>right time</em>.
 			</h1>
+			<p class="lede hero-lede">
+				Ask for a referral, give one when you can, or hear about openings before they go public.
+			</p>
 
 			<div class="hero-actions">
 				<a
@@ -42,54 +62,35 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 				</a>
 			</div>
 
-			<p class="fine-print hero-disclaimer">{OUTCOME_DISCLAIMER}</p>
 		</div>
 
-		<div class="hero-media">
-			<div class="hero-frame">
-				<video
-					class="hero-video"
-					data-hero-video
-					muted
-					playsinline
-					loop
-					preload="none"
-					poster="/hero-hands-poster.webp"
-					aria-hidden="true"
-				>
-					<source src="/hero-hands.mp4" type="video/mp4" />
-				</video>
+		{/* The drawing earns attention; this rotating pair earns belief. Two cards
+		    stay visible while the third quietly pops in to replace one of them. */}
+		<div class="hero-proof-stack" aria-label="Recent referral examples">
+			<article class="hero-proof-card" data-proof-slot="0" data-proof-index="0">
+				<div class="hero-proof-head">
+					<span class="hero-proof-status">Referral submitted</span>
+					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
+				</div>
+				<p class="hero-proof-role">Product Manager</p>
+				<p class="hero-proof-meta">Verified employee · screenshot attached</p>
+				<span class="hero-proof-bar" aria-hidden="true"><i style="--proof-progress: 78%"></i></span>
+			</article>
 
-				<span class="hero-frame-scrim" aria-hidden="true"></span>
-
-				<span class="hero-chip hero-chip-verify">
-					<svg viewBox="0 0 16 16" aria-hidden="true">
-						<path d="M8 1.6 2.9 3.8v3.5c0 3.2 2.1 6 5.1 7 3-1 5.1-3.8 5.1-7V3.8Z"></path>
-						<path d="m5.9 8 1.5 1.5 2.9-3"></path>
-					</svg>
-					LinkedIn verified
-				</span>
-
-				<span class="hero-chip hero-chip-claim">
-					<span class="hero-chip-pulse" aria-hidden="true"></span>
-					Claimed in 2h
-				</span>
-
-				<figure class="hero-proof">
-					<figcaption class="hero-proof-head">
-						<span class="hero-proof-status">Referral submitted</span>
-						<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
-					</figcaption>
-					<p class="hero-proof-role">Senior Software Engineer</p>
-					<p class="hero-proof-meta">
-						Referred by a verified employee · screenshot attached
-					</p>
-					<span class="hero-proof-bar" aria-hidden="true"><i></i></span>
-				</figure>
-			</div>
+			<article class="hero-proof-card" data-proof-slot="1" data-proof-index="1">
+				<div class="hero-proof-head">
+					<span class="hero-proof-status">Referral received</span>
+					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
+				</div>
+				<p class="hero-proof-role">Software Engineering Intern</p>
+				<p class="hero-proof-meta">Employee referral · role match confirmed</p>
+				<span class="hero-proof-bar" aria-hidden="true"><i style="--proof-progress: 56%"></i></span>
+			</article>
 		</div>
 	</div>
 
+	{/* Four signals, set as one quiet line rather than four boxes. Boxes here
+	    read as a second content block; a rule reads as a footnote. */}
 	<div class="shell">
 		<ul class="hero-strip">
 			{
@@ -104,317 +105,249 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 	</div>
 </section>
 
-<script>
-	/*
-	 * The hero film is decorative. It is never allowed to cost a visitor
-	 * bandwidth before it can be seen, and it never plays for someone who has
-	 * asked for reduced motion — in that case the poster frame stands in.
-	 */
-	const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-
-	if (video) {
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		if (!prefersReducedMotion) {
-			video.playbackRate = 0.6;
-
-			const observer = new IntersectionObserver(
-				(entries) => {
-					for (const entry of entries) {
-						if (entry.isIntersecting) {
-							if (video.preload !== 'auto') video.preload = 'auto';
-							void video.play().catch(() => undefined);
-						} else {
-							video.pause();
-						}
-					}
-				},
-				{ threshold: 0.2 },
-			);
-
-			observer.observe(video);
-		}
-	}
-</script>
+{/*
+ * The mask itself is set as a real `:root`-level custom property, written
+ * once via `set:html`, rather than through Astro's `define:vars`.
+ * `define:vars` looked like the natural fit but actually inlines the value as
+ * a `style` attribute on every element the component renders — for a ~270KB
+ * base64 string that meant 40+ copies of it in the page (measured: 42 copies,
+ * an 11MB document). A single `:root` declaration is one copy, inherited by
+ * the two rules that use it below like any other custom property.
+ */}
+<style is:global set:html={`:root { --ink-doors-mask: ${INK_DOORS_MASK}; }`} />
 
 <style>
 	.hero {
 		position: relative;
 		overflow: hidden;
-		padding-top: clamp(2.5rem, 5vw, 4.5rem);
-		padding-bottom: clamp(3rem, 5vw, 4.5rem);
+		/* The header overlays this section, so keep hero content below it. */
+		padding-top: calc(4.5rem + clamp(2rem, 4vw, 3.25rem));
+		padding-bottom: clamp(2.5rem, 4vw, 3.5rem);
 		isolation: isolate;
 	}
 
+	/* ---- Canvas ---- */
+
 	/*
-	 * Aurora field.
-	 *
-	 * Three large, heavily blurred radial blobs drifting on long, offset cycles.
-	 * Animating only `transform` keeps this entirely on the compositor — no
-	 * layout, no paint, no canvas, no JavaScript. The blur is what stops it
-	 * reading as three circles.
+	 * Two soft washes, not three drifting blobs. The drawing is the subject
+	 * now, and an animated aurora behind line art just makes the lines look
+	 * like they are floating on someone else's background.
 	 */
-	.hero-aurora {
+	.hero-wash {
 		position: absolute;
 		z-index: 0;
 		inset: 0;
-		overflow: hidden;
+		background:
+			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 10%), transparent 68%),
+			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 7%), transparent 70%);
 		pointer-events: none;
-		/* Fade the field out toward the bottom so it never fights the content
-		   that follows the hero. */
-		mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
 	}
 
-	.aurora-blob {
+	:global([data-theme='dark']) .hero-wash {
+		background:
+			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 26%), transparent 68%),
+			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 12%), transparent 70%);
+	}
+
+	.hero-grid {
+		z-index: 0;
+		background-size: 3.25rem 3.25rem;
+		mask-image: radial-gradient(ellipse 78% 70% at 42% 42%, #000, transparent 76%);
+	}
+
+	/* ---- The drawing ---- */
+
+	/*
+	 * Three nested masks, each doing exactly one job, because a single element
+	 * can only carry one mask reliably across engines:
+	 *   .hero-art        — fades the drawing out before it reaches the copy
+	 *   .hero-art-inner  — fades it out at the top and bottom edges
+	 *   .ink             — the drawing itself
+	 */
+	.hero-art {
 		position: absolute;
-		border-radius: 50%;
-		filter: blur(80px);
+		z-index: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		pointer-events: none;
+		mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
+		-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
+	}
+
+	.hero-art-inner {
+		position: absolute;
+		inset: 0;
+		/*
+		 * A soft defocus on the drawing only. The headline sits on the flat
+		 * canvas, never on top of the art, so this never softens type — it only
+		 * pushes the wall of doors slightly out of focus, the way a shallow
+		 * depth of field keeps a background present without letting it compete
+		 * for the eye. The proof card and every other UI element sit outside
+		 * this element and stay perfectly sharp.
+		 */
+		filter: blur(1.25px) saturate(0.94);
+		mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
+		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
+	}
+
+	@media (min-width: 90rem) {
+		.hero-art-inner {
+			filter: blur(1.5px) saturate(0.94);
+		}
+	}
+
+	/*
+	 * The stage is the drawing's own coordinate space, sized by width and held
+	 * at its native ratio. Everything below can then be positioned in fractions
+	 * of the picture — "38% across, 50% down" is the open door at every
+	 * viewport size — instead of in fractions of the section, which drift as
+	 * the window changes shape.
+	 */
+	.ink-stage {
+		position: absolute;
+		top: 50%;
+		right: 0;
+		width: 62%;
+		aspect-ratio: 1280 / 1636;
+		transform: translateY(-50%);
+	}
+
+	.ink {
+		position: absolute;
+		inset: 0;
+		/* --ink-doors-mask is set once, above, from ink-doors-asset.ts — see
+		   that file for why this is an inline data URI rather than a /public
+		   file reference. */
+		mask-image: var(--ink-doors-mask);
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+		-webkit-mask-image: var(--ink-doors-mask);
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+	}
+
+	.ink-base {
+		background: rgb(var(--color-ink));
 		opacity: 0.5;
-		will-change: transform;
 	}
 
-	.aurora-1 {
-		top: -20%;
-		right: -8%;
-		width: 40rem;
-		height: 40rem;
-		background: radial-gradient(circle, rgb(var(--color-primary) / 34%), transparent 66%);
-		animation: aurora-drift-a 26s ease-in-out infinite;
+	:global([data-theme='dark']) .ink-base {
+		opacity: 0.42;
 	}
 
-	.aurora-2 {
-		top: 18%;
-		left: -14%;
-		width: 32rem;
-		height: 32rem;
-		background: radial-gradient(circle, rgb(var(--color-reward) / 22%), transparent 66%);
-		animation: aurora-drift-b 32s ease-in-out infinite;
+	/*
+	 * Only the strokes inside this radius turn blue. The circle is centred on
+	 * the open door, so the door, the hand and the light rays pick up the brand
+	 * colour and the other two hundred doors stay in ink.
+	 */
+	.ink-accent {
+		background: radial-gradient(
+			17% 13% at 38% 50%,
+			rgb(var(--color-primary)) 0%,
+			rgb(var(--color-primary) / 92%) 52%,
+			transparent 100%
+		);
 	}
 
-	.aurora-3 {
-		right: 22%;
-		bottom: -18%;
-		width: 30rem;
-		height: 30rem;
-		background: radial-gradient(circle, rgb(var(--color-trust) / 18%), transparent 66%);
-		animation: aurora-drift-c 38s ease-in-out infinite;
+	:global([data-theme='dark']) .ink-accent {
+		background: radial-gradient(
+			17% 13% at 38% 50%,
+			rgb(var(--color-primary-strong)) 0%,
+			rgb(var(--color-primary-strong) / 90%) 52%,
+			transparent 100%
+		);
 	}
 
-	:global([data-theme='dark']) .aurora-blob {
-		opacity: 0.62;
+	/* Light actually spilling out of the doorway, behind the linework. */
+	.hero-glow {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			26% 20% at 38% 50%,
+			rgb(var(--color-primary) / 16%),
+			transparent 62%
+		);
 	}
 
-	:global([data-theme='dark']) .aurora-1 {
-		background: radial-gradient(circle, rgb(var(--color-primary) / 55%), transparent 66%);
+	:global([data-theme='dark']) .hero-glow {
+		background: radial-gradient(
+			30% 24% at 38% 50%,
+			rgb(var(--color-primary) / 34%),
+			transparent 64%
+		);
 	}
 
-	:global([data-theme='dark']) .aurora-2 {
-		background: radial-gradient(circle, rgb(var(--color-reward) / 34%), transparent 66%);
-	}
-
-	@keyframes aurora-drift-a {
-		0%,
-		100% {
-			transform: translate3d(0, 0, 0) scale(1);
-		}
-		50% {
-			transform: translate3d(-4rem, 3rem, 0) scale(1.12);
-		}
-	}
-
-	@keyframes aurora-drift-b {
-		0%,
-		100% {
-			transform: translate3d(0, 0, 0) scale(1.08);
-		}
-		50% {
-			transform: translate3d(3.5rem, -2.5rem, 0) scale(1);
-		}
-	}
-
-	@keyframes aurora-drift-c {
-		0%,
-		100% {
-			transform: translate3d(0, 0, 0) scale(1);
-		}
-		50% {
-			transform: translate3d(-2.5rem, -3rem, 0) scale(1.15);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.aurora-blob {
-			animation: none;
-		}
-	}
+	/* ---- Copy ---- */
 
 	.hero-inner {
 		position: relative;
 		z-index: 1;
 		display: grid;
-		align-items: center;
-		gap: clamp(2.5rem, 5vw, 4rem);
+		gap: clamp(2rem, 4vw, 3rem);
 	}
-
-	/* ---- Copy column ---- */
 
 	.hero-copy {
-		max-width: 34rem;
+		max-width: 32rem;
 	}
 
-	.hero-badge {
-		margin: 0 0 1.5rem;
+	.hero-lede {
+		max-width: 29rem;
 	}
 
 	/*
-	 * No text-shadow anywhere in this hero. The copy sits on the page canvas,
-	 * not on top of the film, so legibility is structural rather than patched.
-	 *
-	 * The hero carries one headline, one primary action and one line of fine
-	 * print. There is deliberately no supporting paragraph — the film and the
-	 * proof card do that work visually.
+	 * The emphasis is the whole argument of the sentence, so it gets the brand
+	 * colour rather than an italic. Louize's italic is decorative; colour is
+	 * structural.
 	 */
+	.display-1 :global(em) {
+		color: rgb(var(--color-primary));
+		font-style: normal;
+	}
+
+	:global([data-theme='dark']) .display-1 :global(em) {
+		color: rgb(var(--color-primary-strong));
+	}
+
 	.hero-actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.75rem;
-		margin-top: 2rem;
+		margin-top: clamp(1.75rem, 3vw, 2.25rem);
 	}
 
-	.hero-disclaimer {
-		margin-top: 1.25rem;
-	}
+	/* ---- Proof card ---- */
 
-	/* ---- Media column ---- */
-
-	.hero-media {
-		position: relative;
-	}
-
-	.hero-frame {
-		position: relative;
-		overflow: hidden;
-		aspect-ratio: 4 / 3;
-		border: 1px solid rgb(var(--color-border));
-		border-radius: var(--radius-xxl);
-		background: rgb(var(--color-elevated));
-		box-shadow: var(--shadow-media);
-	}
-
-	.hero-video {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: center;
-		filter: saturate(0.92) contrast(1.02);
-	}
-
-	.hero-frame-scrim {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			200deg,
-			rgb(var(--color-brand-panel) / 6%) 0%,
-			transparent 38%,
-			rgb(var(--color-brand-panel) / 52%) 100%
-		);
+	.hero-proof-stack {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+		width: min(42rem, 100%);
+		margin: 0;
 		pointer-events: none;
 	}
 
-	.hero-chip {
-		position: absolute;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4375rem;
-		padding: 0.4375rem 0.75rem;
-		border: 1px solid rgb(255 255 255 / 26%);
-		border-radius: var(--radius-pill);
-		background: rgb(0 0 0 / 42%);
-		color: #fff;
-		font-size: 0.75rem;
-		font-weight: 600;
-		backdrop-filter: blur(10px);
-	}
-
-	.hero-chip svg {
-		width: 0.875rem;
-		height: 0.875rem;
-		fill: none;
-		stroke: currentcolor;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-		stroke-width: 1.5;
-	}
-
-	.hero-chip-verify {
-		top: 1rem;
-		left: 1rem;
-		animation: chip-in 700ms 400ms var(--ease-out) both;
-	}
-
-	.hero-chip-claim {
-		top: 1rem;
-		right: 1rem;
-		animation: chip-in 700ms 900ms var(--ease-out) both;
-	}
-
-	/* A slow live pulse. It signals activity without a spinner or a fake
-	   counter. */
-	.hero-chip-pulse {
-		position: relative;
-		width: 0.4375rem;
-		height: 0.4375rem;
-		border-radius: 50%;
-		background: rgb(var(--color-success));
-	}
-
-	.hero-chip-pulse::after {
-		position: absolute;
-		inset: 0;
-		border-radius: 50%;
-		background: rgb(var(--color-success));
-		content: '';
-		animation: chip-pulse 2.4s ease-out infinite;
-	}
-
-	@keyframes chip-in {
-		from {
-			opacity: 0;
-			transform: translateY(-0.5rem);
-		}
-		to {
-			opacity: 1;
-			transform: none;
-		}
-	}
-
-	@keyframes chip-pulse {
-		0% {
-			opacity: 0.7;
-			transform: scale(1);
-		}
-		100% {
-			opacity: 0;
-			transform: scale(3.4);
-		}
-	}
-
-	/* The proof card is the hero's trust payload: it shows the mechanism
-	   (proof + a window to disagree) rather than asserting trustworthiness. */
-	.hero-proof {
-		position: absolute;
-		right: 1rem;
-		bottom: 1rem;
-		left: 1rem;
+	.hero-proof-card {
 		display: grid;
 		gap: 0.3125rem;
 		margin: 0;
-		padding: 0.9375rem 1.0625rem 1.0625rem;
+		min-width: 0;
+		opacity: 0;
+		transform: translateY(-0.5rem) scale(0.985);
+		filter: blur(6px);
+		padding: 1rem 1.0625rem 1.0625rem;
 		border: 1px solid rgb(var(--color-border));
 		border-radius: var(--radius-2xl);
-		background: rgb(var(--color-surface) / 94%);
+		background: rgb(var(--color-surface) / 88%);
 		box-shadow: var(--shadow-panel);
 		backdrop-filter: blur(18px) saturate(1.3);
+		pointer-events: auto;
+		transition:
+			opacity 1000ms var(--ease-out),
+			transform 1000ms var(--ease-out),
+			filter 1000ms var(--ease-out);
+		visibility: hidden;
 	}
 
 	.hero-proof-head {
@@ -452,8 +385,8 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 
 	.hero-proof-role {
 		margin: 0.1875rem 0 0;
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: 1.0625rem;
+		font-weight: 650;
 		letter-spacing: -0.015em;
 	}
 
@@ -475,38 +408,36 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 
 	.hero-proof-bar i {
 		display: block;
-		width: 72%;
+		width: var(--proof-progress, 72%);
 		height: 100%;
 		border-radius: inherit;
 		background: rgb(var(--color-success));
 	}
 
-	/* ---- Trust strip ---- */
+	/* ---- Trust line ---- */
 
 	.hero-strip {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1px;
-		margin: clamp(3rem, 6vw, 4.5rem) 0 0;
-		padding: 0;
-		overflow: hidden;
-		border: 1px solid rgb(var(--color-border));
-		border-radius: var(--radius-2xl);
-		background: rgb(var(--color-border));
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 2.25rem;
+		margin: clamp(2rem, 3.5vw, 2.75rem) 0 0;
+		padding: 1.25rem 0 0;
+		border-top: 1px solid rgb(var(--color-border));
 		list-style: none;
 	}
 
 	.hero-strip li {
-		display: grid;
-		gap: 0.1875rem;
-		padding: 1.125rem 1.25rem;
-		background: rgb(var(--color-surface));
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
 	}
 
 	.hero-strip strong {
-		font-size: 1rem;
+		font-size: 0.875rem;
 		font-weight: 600;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.01em;
 	}
 
 	.hero-strip span {
@@ -514,58 +445,259 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 		font-size: 0.8125rem;
 	}
 
+	/* ---- Entrance ---- */
+
+	@media (prefers-reduced-motion: no-preference) {
+		/* The drawing wipes on left to right, so the wall of closed doors is
+		   established before the open one arrives. */
+		.hero-art {
+			animation: ink-wipe 1500ms var(--ease-out) 120ms both;
+		}
+
+		.ink-accent,
+		.hero-glow {
+			animation: light-on 900ms ease-out 1150ms both;
+		}
+
+		.hero-proof-stack.is-ready .hero-proof-card {
+			opacity: 1;
+			transform: none;
+			filter: blur(0);
+			visibility: visible;
+		}
+
+		@keyframes ink-wipe {
+			from {
+				clip-path: inset(0 100% 0 0);
+			}
+			to {
+				clip-path: inset(0 0 0 0);
+			}
+		}
+
+		@keyframes light-on {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+
+	}
+
 	/* ---- Responsive ---- */
 
-	@media (min-width: 48rem) {
-		.hero-strip {
-			grid-template-columns: repeat(4, 1fr);
+	/*
+	 * Phones and small tablets: the drawing cannot compete with the copy at
+	 * this width, so it becomes atmosphere behind it rather than a subject
+	 * beside it, and the proof card sits under the buttons as a normal block.
+	 */
+	@media (max-width: 63.999rem) {
+		.hero-art {
+			left: 12%;
+			mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
+			-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
+			opacity: 0.7;
+		}
+
+		.ink-stage {
+			top: 44%;
+			right: -22%;
+			width: 108%;
+		}
+
+		.hero-copy {
+			max-width: 30rem;
+		}
+
+		.hero-proof-stack {
+			margin-top: 0.5rem;
 		}
 	}
 
 	@media (min-width: 64rem) {
 		.hero {
 			/*
-			 * Everything the media panel has to share the first screen with:
-			 * the 4.5rem sticky header, this section's top padding, and a little
-			 * air beneath the frame so it does not sit flush on the fold line.
+			 * Everything the hero shares the first screen with: the 4.5rem
+			 * sticky header, this section's own padding, the trust line, and
+			 * air beneath it. The drawing is sized against what is left.
 			 */
-			--hero-fold-reserve: 13rem;
+			--hero-fold-reserve: 17.5rem;
 
+			min-block-size: calc(100vh - 4.5rem);
+			min-block-size: calc(100svh - 4.5rem);
 			padding-top: clamp(3rem, 5vw, 4.5rem);
 		}
 
 		.hero-inner {
-			grid-template-columns: 1.02fr 0.98fr;
+			min-block-size: calc(100svh - var(--hero-fold-reserve));
+			align-content: center;
 		}
 
-		.hero-frame {
-			/*
-			 * The proof card is absolutely positioned against the bottom of this
-			 * frame, so the frame's bottom edge IS the hero's trust payload.
-			 *
-			 * A 5/6 ratio alone is not safe: at 1440px the media column is about
-			 * 660px wide, which the ratio turns into roughly 790px of height —
-			 * taller than the space left under the header, so the card fell below
-			 * the fold. Capping the height against the viewport keeps the card on
-			 * screen at every desktop height; `object-fit: cover` on the film
-			 * absorbs the changed ratio without distorting anyone's hands.
-			 */
-			aspect-ratio: 5 / 6;
-			min-block-size: 22rem;
-			max-block-size: calc(100vh - var(--hero-fold-reserve));
-			max-block-size: calc(100svh - var(--hero-fold-reserve));
+		.hero-copy {
+			max-width: 34rem;
 		}
 
-		.hero-proof {
-			right: 1.25rem;
-			bottom: 1.25rem;
-			left: 1.25rem;
+		/* The two cards occupy quiet pockets around the drawing, never the door. */
+		.hero-proof-stack {
+			position: absolute;
+			inset: 0;
+			display: block;
+			width: auto;
+	}
+
+		.hero-proof-card {
+			position: absolute;
+			width: min(23rem, 100%);
+		}
+
+		/* The upper card sits in the quiet top-right area of the wall. */
+		.hero-proof-card[data-proof-slot='0'] {
+			top: clamp(0.75rem, 4%, 2.5rem);
+			right: 0;
+		}
+
+		/* The lower card sits in the highlighted bottom-right pocket. */
+		.hero-proof-card[data-proof-slot='1'] {
+			right: 0;
+			bottom: clamp(1rem, 4vh, 3rem);
 		}
 	}
 
-	@media (max-width: 30rem) {
-		.hero-frame {
-			aspect-ratio: 3 / 4;
+	@media (min-width: 90rem) {
+		.hero-proof-card[data-proof-slot='0'] {
+			right: 4%;
+		}
+
+		.hero-proof-card[data-proof-slot='1'] {
+			right: -2%;
+		}
+	}
+
+	@media (max-width: 47.999rem) {
+		.hero-proof-stack {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.hero-proof-stack.is-ready .hero-proof-card.is-exiting {
+			opacity: 0;
+			transform: translateY(0.5rem) scale(0.985);
+			filter: blur(6px);
+		}
+
+		.hero-proof-stack.is-ready .hero-proof-card.is-entering {
+			opacity: 0;
+			transform: translateY(-0.5rem) scale(0.985);
+			filter: blur(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-proof-stack.is-ready .hero-proof-card {
+			opacity: 1;
+			transform: none;
+			filter: none;
+			transition: none;
+			visibility: visible;
 		}
 	}
 </style>
+
+<script>
+	interface ProofCard {
+		role: string;
+		meta: string;
+		progress: string;
+	}
+
+	const proofCards: readonly ProofCard[] = [
+		{
+			role: 'Product Manager',
+			meta: 'Verified employee · screenshot attached',
+			progress: '78%',
+		},
+		{
+			role: 'Software Engineering Intern',
+			meta: 'Employee referral · role match confirmed',
+			progress: '56%',
+		},
+		{
+			role: 'UI/UX Designer',
+			meta: 'Verified employee · portfolio reviewed',
+			progress: '88%',
+		},
+	];
+
+	const proofStack = document.querySelector<HTMLElement>('.hero-proof-stack');
+	const proofArt = document.querySelector<HTMLElement>('.hero-art');
+	const proofSlots = Array.from(document.querySelectorAll<HTMLElement>('[data-proof-slot]'));
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (proofStack && proofSlots.length === 2) {
+		let nextSlotIndex = 0;
+		let rotationStarted = false;
+
+		const scheduleNext = (): void => {
+			window.setTimeout(() => {
+				const visibleIndexes = new Set(
+					proofSlots.map((slot) => Number(slot.dataset.proofIndex)),
+				);
+				const nextIndex = proofCards.findIndex((_, index) => !visibleIndexes.has(index));
+				const slot = proofSlots[nextSlotIndex];
+				const nextCard = proofCards[nextIndex];
+
+				if (!slot || !nextCard) return;
+
+				nextSlotIndex = (nextSlotIndex + 1) % 2;
+				slot.classList.remove('is-entering');
+				slot.classList.add('is-exiting');
+
+				window.setTimeout(() => {
+					slot.classList.remove('is-exiting');
+					slot.dataset.proofIndex = String(nextIndex);
+					const role = slot.querySelector<HTMLElement>('.hero-proof-role');
+					const meta = slot.querySelector<HTMLElement>('.hero-proof-meta');
+					const progress = slot.querySelector<HTMLElement>('.hero-proof-bar i');
+					if (role) role.textContent = nextCard.role;
+					if (meta) meta.textContent = nextCard.meta;
+					progress?.style.setProperty('--proof-progress', nextCard.progress);
+
+					slot.classList.add('is-entering');
+					window.requestAnimationFrame(() => {
+						window.requestAnimationFrame(() => slot.classList.remove('is-entering'));
+					});
+				}, 1000);
+
+				// Start each new transition on a four-second rhythm.
+				scheduleNext();
+			}, 4000);
+		};
+
+		const revealCards = (): void => {
+			window.setTimeout(() => {
+				if (rotationStarted) return;
+				rotationStarted = true;
+				proofStack.classList.add('is-ready');
+				if (!reducedMotion) scheduleNext();
+			}, 1000);
+		};
+
+		if (reducedMotion || !proofArt) {
+			revealCards();
+		} else {
+			const fallback = window.setTimeout(revealCards, 1800);
+			proofArt.addEventListener(
+				'animationend',
+				(event) => {
+					if (event.animationName !== 'ink-wipe') return;
+					window.clearTimeout(fallback);
+					revealCards();
+				},
+				{ once: true },
+			);
+		}
+	}
+</script>
