@@ -1,39 +1,94 @@
 ---
+import { SectionId } from '../lib/constants';
+
 interface Props {
 	href?: string;
 	class?: string;
 	label?: string;
-	inverse?: boolean;
-	split?: boolean;
+	/** Render for placement on a saturated brand surface, where the default
+	 *  deep-blue wordmark would be invisible. */
+	onBrandSurface?: boolean;
+	size?: 'sm' | 'md';
 }
 
 const {
-	href = '#top',
+	href = `#${SectionId.Top}`,
 	class: className = '',
 	label = 'RightRefer home',
-	inverse = false,
-	split = false,
+	onBrandSurface = false,
+	size = 'md',
 } = Astro.props;
 ---
 
-{
-	split ? (
-		<span class:list={['brand', inverse && 'brand-inverse', className]}>
-			<span class="brand-logo-home" data-brand-logo-home>
-				<a class="brand-mark" href={href} aria-label={`${label} logo`} data-brand-logo>
-					<img src="/rightrefer-logo.webp" alt="" width="256" height="248" />
-				</a>
-			</span>
-			<a class="brand-wordmark" href={href} aria-label={label}>
-				<span class="brand-right">Right</span><span class="brand-refer">Refer</span>
-			</a>
-		</span>
-	) : (
-		<a class:list={['brand', inverse && 'brand-inverse', className]} href={href} aria-label={label}>
-			<span class="brand-mark" aria-hidden="true">
-				<img src="/rightrefer-logo.webp" alt="" width="256" height="248" loading="lazy" />
-			</span>
-			<span class="brand-wordmark"><span class="brand-right">Right</span><span class="brand-refer">Refer</span></span>
-		</a>
-	)
-}
+<a
+	class:list={['brand', `brand-${size}`, onBrandSurface && 'brand-on-surface', className]}
+	href={href}
+	aria-label={label}
+>
+	<span class="brand-mark" aria-hidden="true">
+		<img src="/rightrefer-logo.webp" alt="" width="256" height="248" loading="lazy" decoding="async" />
+	</span>
+	<span class="brand-wordmark">Right<span class="brand-accent">Refer</span></span>
+</a>
+
+<style>
+	.brand {
+		display: inline-flex;
+		/* The brand is a link, so it must satisfy the 44px touch minimum even
+		   though its glyphs are shorter than that. */
+		min-height: 2.75rem;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1;
+		color: rgb(var(--color-ink));
+	}
+
+	.brand-sm {
+		font-size: 1rem;
+	}
+
+	.brand-md {
+		font-size: 1.125rem;
+	}
+
+	.brand-mark {
+		display: grid;
+		overflow: hidden;
+		border-radius: var(--radius-sm);
+		place-items: center;
+	}
+
+	.brand-sm .brand-mark {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.brand-md .brand-mark {
+		width: 1.75rem;
+		height: 1.75rem;
+	}
+
+	.brand-mark img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+
+	.brand-accent {
+		color: rgb(var(--color-primary));
+	}
+
+	:global([data-theme='dark']) .brand-accent {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	/* On a saturated blue panel both halves must read as white. */
+	.brand-on-surface,
+	.brand-on-surface .brand-accent,
+	:global([data-theme='dark']) .brand-on-surface .brand-accent {
+		color: rgb(var(--color-brand-panel-ink));
+	}
+</style>

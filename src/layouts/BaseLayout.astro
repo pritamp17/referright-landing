@@ -1,5 +1,7 @@
 ---
 import Analytics from '@vercel/analytics/astro';
+import { THEME_STORAGE_KEY, ThemeMode } from '../lib/constants';
+import '../styles/tokens.css';
 import '../styles/global.css';
 
 interface Props {
@@ -10,22 +12,56 @@ interface Props {
 const { title, description } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 const socialImage = new URL('/og-image.png', canonicalUrl);
+
+/*
+ * Prepaint theme resolution.
+ *
+ * This must run before first paint, synchronously, in <head> — otherwise a
+ * returning dark-mode visitor gets a full-brightness flash of the light canvas
+ * before hydration corrects it. Astro's `is:inline` keeps it out of the bundle
+ * graph so it is not deferred.
+ *
+ * Light is the product's default and the only first-visit theme. The OS
+ * `prefers-color-scheme` signal is deliberately NOT consulted here: this page is
+ * a first impression, and it should be the same first impression for everyone.
+ * Dark is opt-in via the toggle, and remembered from then on.
+ *
+ * The enum values are interpolated from `constants.ts` rather than hardcoded, so
+ * the inline script cannot drift from the typed source.
+ */
+const themePrepaint = `(function(){try{
+	var stored = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
+	var theme = (stored === ${JSON.stringify(ThemeMode.Dark)} || stored === ${JSON.stringify(ThemeMode.Light)})
+		? stored
+		: ${JSON.stringify(ThemeMode.Light)};
+	document.documentElement.dataset.theme = theme;
+	var meta = document.querySelector('meta[name="theme-color"]');
+	if (meta) meta.setAttribute('content', theme === ${JSON.stringify(ThemeMode.Dark)} ? '#050505' : '#FBF8F2');
+}catch(e){document.documentElement.dataset.theme = ${JSON.stringify(ThemeMode.Light)};}})();`;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={ThemeMode.Light}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
-		<meta name="theme-color" content="#0b2638" />
-		<meta name="color-scheme" content="light" />
+		<meta name="theme-color" content="#FBF8F2" />
+
+		<script is:inline set:html={themePrepaint} />
 
 		<link rel="canonical" href={canonicalUrl} />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<link rel="preload" as="image" href="/hero-hands-poster.webp" type="image/webp" fetchpriority="high" />
 		<link rel="preload" href="/Louize.woff2" as="font" type="font/woff2" crossorigin />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+		/>
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="RightRefer" />

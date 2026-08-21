@@ -1,0 +1,571 @@
+---
+import { OUTCOME_DISCLAIMER, POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
+import { TRUST_STRIP, signUpWith } from '../lib/content';
+---
+
+<section class="hero" id={SectionId.Top} aria-labelledby="hero-title">
+	<div class="hero-aurora" aria-hidden="true">
+		<span class="aurora-blob aurora-1"></span>
+		<span class="aurora-blob aurora-2"></span>
+		<span class="aurora-blob aurora-3"></span>
+	</div>
+	<div class="grid-texture" aria-hidden="true"></div>
+
+	<div class="shell hero-inner">
+		<div class="hero-copy">
+			<p class="badge hero-badge">
+				<span class="badge-dot" aria-hidden="true"></span>
+				LinkedIn-verified employees
+			</p>
+
+			<h1 class="display-1" id="hero-title">
+				Get referred by someone who actually works there.
+			</h1>
+
+			<div class="hero-actions">
+				<a
+					class="button button-primary button-lg"
+					href={signUpWith(SignUpIntent.Seeker)}
+					data-track={TrackEvent.HeroPrimary}
+				>
+					<span>Ask for a referral</span>
+					<svg viewBox="0 0 16 16" aria-hidden="true">
+						<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
+					</svg>
+				</a>
+				<a
+					class="button button-ghost button-lg"
+					href={signUpWith(SignUpIntent.Giver)}
+					data-track={TrackEvent.HeroSecondary}
+				>
+					I can refer someone
+				</a>
+			</div>
+
+			<p class="fine-print hero-disclaimer">{OUTCOME_DISCLAIMER}</p>
+		</div>
+
+		<div class="hero-media">
+			<div class="hero-frame">
+				<video
+					class="hero-video"
+					data-hero-video
+					muted
+					playsinline
+					loop
+					preload="none"
+					poster="/hero-hands-poster.webp"
+					aria-hidden="true"
+				>
+					<source src="/hero-hands.mp4" type="video/mp4" />
+				</video>
+
+				<span class="hero-frame-scrim" aria-hidden="true"></span>
+
+				<span class="hero-chip hero-chip-verify">
+					<svg viewBox="0 0 16 16" aria-hidden="true">
+						<path d="M8 1.6 2.9 3.8v3.5c0 3.2 2.1 6 5.1 7 3-1 5.1-3.8 5.1-7V3.8Z"></path>
+						<path d="m5.9 8 1.5 1.5 2.9-3"></path>
+					</svg>
+					LinkedIn verified
+				</span>
+
+				<span class="hero-chip hero-chip-claim">
+					<span class="hero-chip-pulse" aria-hidden="true"></span>
+					Claimed in 2h
+				</span>
+
+				<figure class="hero-proof">
+					<figcaption class="hero-proof-head">
+						<span class="hero-proof-status">Referral submitted</span>
+						<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
+					</figcaption>
+					<p class="hero-proof-role">Senior Software Engineer</p>
+					<p class="hero-proof-meta">
+						Referred by a verified employee · screenshot attached
+					</p>
+					<span class="hero-proof-bar" aria-hidden="true"><i></i></span>
+				</figure>
+			</div>
+		</div>
+	</div>
+
+	<div class="shell">
+		<ul class="hero-strip">
+			{
+				TRUST_STRIP.map((item) => (
+					<li>
+						<strong>{item.value}</strong>
+						<span>{item.label}</span>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
+
+<script>
+	/*
+	 * The hero film is decorative. It is never allowed to cost a visitor
+	 * bandwidth before it can be seen, and it never plays for someone who has
+	 * asked for reduced motion — in that case the poster frame stands in.
+	 */
+	const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+
+	if (video) {
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (!prefersReducedMotion) {
+			video.playbackRate = 0.6;
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						if (entry.isIntersecting) {
+							if (video.preload !== 'auto') video.preload = 'auto';
+							void video.play().catch(() => undefined);
+						} else {
+							video.pause();
+						}
+					}
+				},
+				{ threshold: 0.2 },
+			);
+
+			observer.observe(video);
+		}
+	}
+</script>
+
+<style>
+	.hero {
+		position: relative;
+		overflow: hidden;
+		padding-top: clamp(2.5rem, 5vw, 4.5rem);
+		padding-bottom: clamp(3rem, 5vw, 4.5rem);
+		isolation: isolate;
+	}
+
+	/*
+	 * Aurora field.
+	 *
+	 * Three large, heavily blurred radial blobs drifting on long, offset cycles.
+	 * Animating only `transform` keeps this entirely on the compositor — no
+	 * layout, no paint, no canvas, no JavaScript. The blur is what stops it
+	 * reading as three circles.
+	 */
+	.hero-aurora {
+		position: absolute;
+		z-index: 0;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+		/* Fade the field out toward the bottom so it never fights the content
+		   that follows the hero. */
+		mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+	}
+
+	.aurora-blob {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		opacity: 0.5;
+		will-change: transform;
+	}
+
+	.aurora-1 {
+		top: -20%;
+		right: -8%;
+		width: 40rem;
+		height: 40rem;
+		background: radial-gradient(circle, rgb(var(--color-primary) / 34%), transparent 66%);
+		animation: aurora-drift-a 26s ease-in-out infinite;
+	}
+
+	.aurora-2 {
+		top: 18%;
+		left: -14%;
+		width: 32rem;
+		height: 32rem;
+		background: radial-gradient(circle, rgb(var(--color-reward) / 22%), transparent 66%);
+		animation: aurora-drift-b 32s ease-in-out infinite;
+	}
+
+	.aurora-3 {
+		right: 22%;
+		bottom: -18%;
+		width: 30rem;
+		height: 30rem;
+		background: radial-gradient(circle, rgb(var(--color-trust) / 18%), transparent 66%);
+		animation: aurora-drift-c 38s ease-in-out infinite;
+	}
+
+	:global([data-theme='dark']) .aurora-blob {
+		opacity: 0.62;
+	}
+
+	:global([data-theme='dark']) .aurora-1 {
+		background: radial-gradient(circle, rgb(var(--color-primary) / 55%), transparent 66%);
+	}
+
+	:global([data-theme='dark']) .aurora-2 {
+		background: radial-gradient(circle, rgb(var(--color-reward) / 34%), transparent 66%);
+	}
+
+	@keyframes aurora-drift-a {
+		0%,
+		100% {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+		50% {
+			transform: translate3d(-4rem, 3rem, 0) scale(1.12);
+		}
+	}
+
+	@keyframes aurora-drift-b {
+		0%,
+		100% {
+			transform: translate3d(0, 0, 0) scale(1.08);
+		}
+		50% {
+			transform: translate3d(3.5rem, -2.5rem, 0) scale(1);
+		}
+	}
+
+	@keyframes aurora-drift-c {
+		0%,
+		100% {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+		50% {
+			transform: translate3d(-2.5rem, -3rem, 0) scale(1.15);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.aurora-blob {
+			animation: none;
+		}
+	}
+
+	.hero-inner {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		align-items: center;
+		gap: clamp(2.5rem, 5vw, 4rem);
+	}
+
+	/* ---- Copy column ---- */
+
+	.hero-copy {
+		max-width: 34rem;
+	}
+
+	.hero-badge {
+		margin: 0 0 1.5rem;
+	}
+
+	/*
+	 * No text-shadow anywhere in this hero. The copy sits on the page canvas,
+	 * not on top of the film, so legibility is structural rather than patched.
+	 *
+	 * The hero carries one headline, one primary action and one line of fine
+	 * print. There is deliberately no supporting paragraph — the film and the
+	 * proof card do that work visually.
+	 */
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 2rem;
+	}
+
+	.hero-disclaimer {
+		margin-top: 1.25rem;
+	}
+
+	/* ---- Media column ---- */
+
+	.hero-media {
+		position: relative;
+	}
+
+	.hero-frame {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-xxl);
+		background: rgb(var(--color-elevated));
+		box-shadow: var(--shadow-media);
+	}
+
+	.hero-video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		filter: saturate(0.92) contrast(1.02);
+	}
+
+	.hero-frame-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			200deg,
+			rgb(var(--color-brand-panel) / 6%) 0%,
+			transparent 38%,
+			rgb(var(--color-brand-panel) / 52%) 100%
+		);
+		pointer-events: none;
+	}
+
+	.hero-chip {
+		position: absolute;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4375rem;
+		padding: 0.4375rem 0.75rem;
+		border: 1px solid rgb(255 255 255 / 26%);
+		border-radius: var(--radius-pill);
+		background: rgb(0 0 0 / 42%);
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 600;
+		backdrop-filter: blur(10px);
+	}
+
+	.hero-chip svg {
+		width: 0.875rem;
+		height: 0.875rem;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+	}
+
+	.hero-chip-verify {
+		top: 1rem;
+		left: 1rem;
+		animation: chip-in 700ms 400ms var(--ease-out) both;
+	}
+
+	.hero-chip-claim {
+		top: 1rem;
+		right: 1rem;
+		animation: chip-in 700ms 900ms var(--ease-out) both;
+	}
+
+	/* A slow live pulse. It signals activity without a spinner or a fake
+	   counter. */
+	.hero-chip-pulse {
+		position: relative;
+		width: 0.4375rem;
+		height: 0.4375rem;
+		border-radius: 50%;
+		background: rgb(var(--color-success));
+	}
+
+	.hero-chip-pulse::after {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		background: rgb(var(--color-success));
+		content: '';
+		animation: chip-pulse 2.4s ease-out infinite;
+	}
+
+	@keyframes chip-in {
+		from {
+			opacity: 0;
+			transform: translateY(-0.5rem);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@keyframes chip-pulse {
+		0% {
+			opacity: 0.7;
+			transform: scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: scale(3.4);
+		}
+	}
+
+	/* The proof card is the hero's trust payload: it shows the mechanism
+	   (proof + a window to disagree) rather than asserting trustworthiness. */
+	.hero-proof {
+		position: absolute;
+		right: 1rem;
+		bottom: 1rem;
+		left: 1rem;
+		display: grid;
+		gap: 0.3125rem;
+		margin: 0;
+		padding: 0.9375rem 1.0625rem 1.0625rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-2xl);
+		background: rgb(var(--color-surface) / 94%);
+		box-shadow: var(--shadow-panel);
+		backdrop-filter: blur(18px) saturate(1.3);
+	}
+
+	.hero-proof-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.hero-proof-status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4375rem;
+		color: rgb(var(--color-success-ink));
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	.hero-proof-status::before {
+		width: 0.4375rem;
+		height: 0.4375rem;
+		border-radius: 50%;
+		background: rgb(var(--color-success));
+		box-shadow: 0 0 0 0.25rem rgb(var(--color-success) / 16%);
+		content: '';
+	}
+
+	:global([data-theme='dark']) .hero-proof-status {
+		color: rgb(var(--color-success));
+	}
+
+	.hero-proof-time {
+		color: rgb(var(--color-muted));
+	}
+
+	.hero-proof-role {
+		margin: 0.1875rem 0 0;
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+	}
+
+	.hero-proof-meta {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+		line-height: 1.45;
+	}
+
+	.hero-proof-bar {
+		display: block;
+		overflow: hidden;
+		height: 0.1875rem;
+		margin-top: 0.5rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-border));
+	}
+
+	.hero-proof-bar i {
+		display: block;
+		width: 72%;
+		height: 100%;
+		border-radius: inherit;
+		background: rgb(var(--color-success));
+	}
+
+	/* ---- Trust strip ---- */
+
+	.hero-strip {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1px;
+		margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+		padding: 0;
+		overflow: hidden;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-2xl);
+		background: rgb(var(--color-border));
+		list-style: none;
+	}
+
+	.hero-strip li {
+		display: grid;
+		gap: 0.1875rem;
+		padding: 1.125rem 1.25rem;
+		background: rgb(var(--color-surface));
+	}
+
+	.hero-strip strong {
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+	}
+
+	.hero-strip span {
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+	}
+
+	/* ---- Responsive ---- */
+
+	@media (min-width: 48rem) {
+		.hero-strip {
+			grid-template-columns: repeat(4, 1fr);
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.hero {
+			/*
+			 * Everything the media panel has to share the first screen with:
+			 * the 4.5rem sticky header, this section's top padding, and a little
+			 * air beneath the frame so it does not sit flush on the fold line.
+			 */
+			--hero-fold-reserve: 13rem;
+
+			padding-top: clamp(3rem, 5vw, 4.5rem);
+		}
+
+		.hero-inner {
+			grid-template-columns: 1.02fr 0.98fr;
+		}
+
+		.hero-frame {
+			/*
+			 * The proof card is absolutely positioned against the bottom of this
+			 * frame, so the frame's bottom edge IS the hero's trust payload.
+			 *
+			 * A 5/6 ratio alone is not safe: at 1440px the media column is about
+			 * 660px wide, which the ratio turns into roughly 790px of height —
+			 * taller than the space left under the header, so the card fell below
+			 * the fold. Capping the height against the viewport keeps the card on
+			 * screen at every desktop height; `object-fit: cover` on the film
+			 * absorbs the changed ratio without distorting anyone's hands.
+			 */
+			aspect-ratio: 5 / 6;
+			min-block-size: 22rem;
+			max-block-size: calc(100vh - var(--hero-fold-reserve));
+			max-block-size: calc(100svh - var(--hero-fold-reserve));
+		}
+
+		.hero-proof {
+			right: 1.25rem;
+			bottom: 1.25rem;
+			left: 1.25rem;
+		}
+	}
+
+	@media (max-width: 30rem) {
+		.hero-frame {
+			aspect-ratio: 3 / 4;
+		}
+	}
+</style>

@@ -1,25 +1,47 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 
+/*
+ * Scene palette.
+ *
+ * Every value references a design token rather than a literal colour. The
+ * Remotion player renders as real DOM inside the page (not a canvas), so these
+ * custom properties inherit from `:root` and re-resolve automatically when the
+ * theme is switched — the films retheme themselves with no re-render and no
+ * theme prop threaded through the scene tree.
+ *
+ * The token names are the same ones the product application uses.
+ */
+const token = (name: string): string => `rgb(var(${name}))`;
+
 const colors = {
-	orange: '#c43a00',
-	orangeSoft: '#fce7db',
-	blue950: '#0b2638',
-	blue900: '#12384f',
-	blue700: '#2b6381',
-	blue200: '#cddfe7',
-	blue100: '#e7f0f4',
-	blue50: '#f2f7f9',
-	cream: '#fff7ed',
-	surface: '#fffdf9',
-	ink: '#201812',
-	muted: '#6b6155',
-	border: '#e7dccd',
-	success: '#2f7a4d',
+	/* Accent — was burnt orange, now the locked LinkedIn blue. */
+	orange: token('--color-primary'),
+	orangeSoft: token('--color-primary-soft'),
+	/* Deep brand panels. */
+	blue950: token('--color-brand-panel'),
+	blue900: token('--color-brand-panel'),
+	blue700: token('--color-primary'),
+	/* Neutral scale. */
+	blue200: token('--color-border'),
+	blue100: token('--color-elevated'),
+	blue50: token('--color-canvas'),
+	cream: token('--color-canvas'),
+	surface: token('--color-surface'),
+	ink: token('--color-ink'),
+	muted: token('--color-muted'),
+	border: token('--color-border'),
+	success: token('--color-success'),
+	successSoft: token('--color-success-soft'),
+	/* Chrome inside the mocked product screens. */
+	subtle: token('--color-elevated'),
+	/* Foreground for text sitting on a filled accent. Constant across themes,
+	   because the accent it sits on is constant across themes. */
+	onAccent: token('--color-primary-ink'),
 };
 
-const font = "'Louize', Georgia, serif";
-const display = "'Louize', Georgia, serif";
+const font = "'Inter', ui-sans-serif, system-ui, sans-serif";
+const display = "'Inter', ui-sans-serif, system-ui, sans-serif";
 const clamp = {
 	extrapolateLeft: 'clamp' as const,
 	extrapolateRight: 'clamp' as const,
@@ -72,9 +94,9 @@ const Pill = ({
 }) => {
 	const tones = {
 		blue: { background: colors.blue100, color: colors.blue700, border: colors.blue200 },
-		orange: { background: colors.orangeSoft, color: colors.orange, border: '#efc6b3' },
-		green: { background: '#e4f0e7', color: colors.success, border: '#c6dfcd' },
-		neutral: { background: '#f4f1ec', color: colors.muted, border: colors.border },
+		orange: { background: colors.orangeSoft, color: colors.orange, border: colors.orange },
+		green: { background: colors.successSoft, color: colors.success, border: colors.success },
+		neutral: { background: colors.subtle, color: colors.muted, border: colors.border },
 	};
 	const selected = tones[tone];
 
@@ -126,7 +148,7 @@ const Avatar = ({
 			placeItems: 'center',
 			borderRadius: '50%',
 			background: color,
-			color: '#fff',
+			color: colors.onAccent,
 			fontSize: size * 0.28,
 			fontWeight: 800,
 		}}
@@ -144,14 +166,14 @@ const MailTopbar = ({ compact = false }: { compact?: boolean }) => (
 			alignItems: 'center',
 			gap: compact ? 11 : 17,
 			padding: compact ? '0 15px' : '0 21px',
-			borderBottom: '1px solid #e5e8ea',
-			background: '#f8fafb',
+			borderBottom: `1px solid ${colors.border}`,
+			background: colors.subtle,
 		}}
 	>
 		<div style={{ display: 'grid', gap: 4 }}>
-			<span style={{ width: 20, height: 2, background: '#6f777c' }} />
-			<span style={{ width: 20, height: 2, background: '#6f777c' }} />
-			<span style={{ width: 20, height: 2, background: '#6f777c' }} />
+			<span style={{ width: 20, height: 2, background: colors.muted }} />
+			<span style={{ width: 20, height: 2, background: colors.muted }} />
+			<span style={{ width: 20, height: 2, background: colors.muted }} />
 		</div>
 		<div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: compact ? 17 : 20 }}>
 			<GmailLogo size={compact ? 27 : 31} />
@@ -164,8 +186,8 @@ const MailTopbar = ({ compact = false }: { compact?: boolean }) => (
 				alignItems: 'center',
 				padding: compact ? '0 13px' : '0 17px',
 				borderRadius: 999,
-				background: '#edf2f4',
-				color: '#4f585d',
+				background: colors.subtle,
+				color: colors.muted,
 				fontSize: compact ? 13 : 15,
 				fontWeight: 600,
 			}}
@@ -183,7 +205,7 @@ export const GmailReferralSequence = () => {
 
 	return (
 		<AbsoluteFill style={{ padding: 28, background: colors.blue100, fontFamily: font, color: colors.ink }}>
-			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#fff' }}>
+			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: colors.surface }}>
 				<MailTopbar />
 				<div style={{ display: 'grid', height: 'calc(100% - 66px)', gridTemplateColumns: '62px 330px 1fr' }}>
 					<div
@@ -193,8 +215,8 @@ export const GmailReferralSequence = () => {
 							alignItems: 'center',
 							gap: 22,
 							paddingTop: 21,
-							borderRight: '1px solid #e7eaec',
-							background: '#f8fafb',
+							borderRight: `1px solid ${colors.border}`,
+							background: colors.subtle,
 						}}
 					>
 						<div
@@ -217,7 +239,7 @@ export const GmailReferralSequence = () => {
 								style={{
 									width: 19,
 									height: 14,
-									border: `2px solid ${item === 0 ? colors.blue700 : '#9ba4aa'}`,
+									border: `2px solid ${item === 0 ? colors.blue700 : colors.muted}`,
 									borderRadius: 4,
 									background: item === 0 ? colors.blue100 : 'transparent',
 								}}
@@ -225,7 +247,7 @@ export const GmailReferralSequence = () => {
 						))}
 					</div>
 
-					<div style={{ borderRight: '1px solid #e7eaec', background: '#fff' }}>
+					<div style={{ borderRight: `1px solid ${colors.border}`, background: colors.surface }}>
 						<div
 							style={{
 								display: 'flex',
@@ -233,7 +255,7 @@ export const GmailReferralSequence = () => {
 								alignItems: 'center',
 								justifyContent: 'space-between',
 								padding: '0 17px',
-								borderBottom: '1px solid #edf0f1',
+								borderBottom: `1px solid ${colors.border}`,
 							}}
 						>
 							<strong style={{ fontSize: 17 }}>Primary</strong>
@@ -245,8 +267,8 @@ export const GmailReferralSequence = () => {
 								position: 'relative',
 								minHeight: 112,
 								padding: '18px 16px',
-								borderBottom: '1px solid #edf0f1',
-								background: opened ? '#e8f1f5' : '#fff',
+								borderBottom: `1px solid ${colors.border}`,
+								background: opened ? colors.orangeSoft : colors.surface,
 								boxShadow: opened ? `inset 4px 0 ${colors.orange}` : undefined,
 								...reveal(frame, 18, 12),
 							}}
@@ -285,9 +307,9 @@ export const GmailReferralSequence = () => {
 						</div>
 
 						{['Your company watchlist', 'Weekly role summary', 'Application status update'].map((label) => (
-							<div key={label} style={{ padding: '17px 16px', borderBottom: '1px solid #edf0f1', opacity: 0.78 }}>
+							<div key={label} style={{ padding: '17px 16px', borderBottom: `1px solid ${colors.border}`, opacity: 0.78 }}>
 								<strong style={{ fontSize: 14 }}>RightRefer</strong>
-								<p style={{ margin: '5px 0 0', color: '#514a42', fontSize: 13 }}>{label}</p>
+								<p style={{ margin: '5px 0 0', color: colors.muted, fontSize: 13 }}>{label}</p>
 							</div>
 						))}
 					</div>
@@ -297,10 +319,10 @@ export const GmailReferralSequence = () => {
 							position: 'relative',
 							overflow: 'hidden',
 							padding: '25px 30px',
-							background: 'linear-gradient(135deg, rgba(231,240,244,.5), #fff 48%)',
+							background: `linear-gradient(135deg, ${colors.subtle}, ${colors.surface} 48%)`,
 						}}
 					>
-						<div style={{ display: 'flex', gap: 18, color: '#8c969b', fontSize: 18 }}>
+						<div style={{ display: 'flex', gap: 18, color: colors.muted, fontSize: 18 }}>
 							<span>&larr;</span><span>~</span><span>...</span>
 						</div>
 
@@ -354,7 +376,7 @@ export const GmailReferralSequence = () => {
 										padding: '0 21px',
 										borderRadius: 999,
 										background: colors.orange,
-										color: '#fff',
+										color: colors.onAccent,
 										fontSize: 14,
 										fontWeight: 800,
 										boxShadow: '0 14px 30px rgba(196,58,0,.22)',
@@ -409,7 +431,7 @@ export const CompactGmailReferralSequence = () => {
 
 	return (
 		<AbsoluteFill style={{ padding: 22, background: colors.blue100, fontFamily: font, color: colors.ink }}>
-			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#fff' }}>
+			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: colors.surface }}>
 				<MailTopbar compact />
 				<div style={{ position: 'absolute', inset: '62px 0 0', padding: 28, background: colors.blue50 }}>
 					<div
@@ -421,7 +443,7 @@ export const CompactGmailReferralSequence = () => {
 							padding: 24,
 							border: `1px solid ${colors.blue200}`,
 							borderRadius: 20,
-							background: '#fff',
+							background: colors.surface,
 							boxShadow: '0 20px 55px rgba(18,56,79,.11)',
 							opacity: cardOpacity,
 							transform: 'translate(-50%, -50%)',
@@ -441,7 +463,7 @@ export const CompactGmailReferralSequence = () => {
 					</div>
 
 					<div style={{ ...reveal(frame, 55, 12), opacity: opened ? 1 : 0 }}>
-						<div style={{ display: 'flex', gap: 17, color: '#8c969b', fontSize: 17 }}>
+						<div style={{ display: 'flex', gap: 17, color: colors.muted, fontSize: 17 }}>
 							<span>&larr;</span><span>~</span><span>...</span>
 						</div>
 						<div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginTop: 19 }}>
@@ -470,7 +492,7 @@ export const CompactGmailReferralSequence = () => {
 								marginTop: 18,
 								borderRadius: 999,
 								background: colors.orange,
-								color: '#fff',
+								color: colors.onAccent,
 								fontSize: 15,
 								fontWeight: 800,
 								...pop(frame, 126),
@@ -487,7 +509,7 @@ export const CompactGmailReferralSequence = () => {
 								padding: '14px 15px',
 								border: `1px solid ${colors.blue200}`,
 								borderRadius: 15,
-								background: '#fff',
+								background: colors.surface,
 								...reveal(frame, 161, 8),
 							}}
 						>
@@ -523,9 +545,9 @@ const ReferrerRow = ({
 			alignItems: 'center',
 			gap: 10,
 			padding: '10px 11px',
-			border: `1px solid ${selected ? '#efc6b3' : colors.border}`,
+			border: `1px solid ${selected ? colors.orange : colors.border}`,
 			borderRadius: 13,
-			background: selected ? colors.orangeSoft : '#fff',
+			background: selected ? colors.orangeSoft : colors.surface,
 			...style,
 		}}
 	>
@@ -544,8 +566,8 @@ const ReferrerRow = ({
 				placeItems: 'center',
 				border: `1px solid ${selected ? colors.orange : colors.blue200}`,
 				borderRadius: 7,
-				background: selected ? colors.orange : '#fff',
-				color: '#fff',
+				background: selected ? colors.orange : colors.surface,
+				color: colors.onAccent,
 				fontSize: 12,
 				fontWeight: 800,
 			}}
@@ -583,7 +605,7 @@ const JourneyRail = ({ frame, compact = false }: { frame: number; compact?: bool
 								placeItems: 'center',
 								borderRadius: '50%',
 								background: active ? colors.orange : colors.blue100,
-								color: active ? '#fff' : colors.blue700,
+								color: active ? colors.surface : colors.blue700,
 								fontSize: 12,
 								fontWeight: 800,
 							}}
@@ -616,7 +638,7 @@ const ConnectedJourney = ({ compact = false }: { compact?: boolean }) => {
 		padding: compact ? 18 : 20,
 		border: `1px solid ${colors.border}`,
 		borderRadius: 19,
-		background: '#fff',
+		background: colors.surface,
 	};
 
 	return (
@@ -651,7 +673,7 @@ const ConnectedJourney = ({ compact = false }: { compact?: boolean }) => {
 								marginTop: compact ? 13 : 22,
 								padding: '12px 13px',
 								borderRadius: 14,
-								background: subscribed ? '#e4f0e7' : colors.blue50,
+								background: subscribed ? colors.successSoft : colors.blue50,
 							}}
 						>
 							<strong style={{ color: subscribed ? colors.success : colors.blue700, fontSize: 12 }}>
@@ -674,7 +696,7 @@ const ConnectedJourney = ({ compact = false }: { compact?: boolean }) => {
 										width: 16,
 										height: 16,
 										borderRadius: '50%',
-										background: '#fff',
+										background: colors.surface,
 										transition: 'none',
 									}}
 								/>
@@ -705,12 +727,12 @@ const ConnectedJourney = ({ compact = false }: { compact?: boolean }) => {
 							{!compact && (
 								<>
 									<ReferrerRow name="Rhea S." role="Growth · Microsoft" initials="RS" color={colors.blue700} selected={false} />
-									<ReferrerRow name="Karan M." role="Cloud · Microsoft" initials="KM" color="#6f927f" selected={false} />
+									<ReferrerRow name="Karan M." role="Cloud · Microsoft" initials="KM" color={colors.success} selected={false} />
 								</>
 							)}
 						</div>
 						<div style={{ display: 'flex', gap: 8, marginTop: 12, ...reveal(frame, 153, 8) }}>
-							<Pill tone={coffeeSelected ? 'neutral' : 'green'}>Free request</Pill>
+							<Pill tone={coffeeSelected ? 'neutral' : 'green'}>Referral request</Pill>
 							<Pill tone={coffeeSelected ? 'orange' : 'neutral'}>Coffee {'\u20B9'}100 · optional</Pill>
 						</div>
 					</div>
@@ -747,7 +769,7 @@ const ConnectedJourney = ({ compact = false }: { compact?: boolean }) => {
 												placeItems: 'center',
 												borderRadius: '50%',
 												background: complete ? colors.success : colors.blue100,
-												color: '#fff',
+												color: colors.onAccent,
 												fontSize: 11,
 											}}
 										>
@@ -837,7 +859,7 @@ export const AppreciationScene = () => {
 									padding: compact ? '11px 13px' : 17,
 									border: `${active ? 2 : 1}px solid ${active ? colors.orange : colors.border}`,
 									borderRadius: 17,
-									background: active ? colors.orangeSoft : '#fff',
+									background: active ? colors.orangeSoft : colors.surface,
 									textAlign: compact ? 'left' : 'center',
 									transform: active ? `scale(${0.96 + selectionSpring * 0.04})` : 'scale(1)',
 								}}
@@ -878,7 +900,7 @@ export const AppreciationScene = () => {
 							justifyContent: 'center',
 							borderRadius: 999,
 							background: success ? colors.success : paid ? colors.blue900 : colors.orange,
-							color: '#fff',
+							color: colors.onAccent,
 							fontSize: 15,
 							fontWeight: 800,
 							boxShadow: success
@@ -923,7 +945,7 @@ export const MobileSignalScene = () => {
 
 	return (
 		<AbsoluteFill style={{ padding: 14, background: colors.blue100, fontFamily: font, color: colors.ink }}>
-			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 24, background: '#fff' }}>
+			<Card style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 24, background: colors.surface }}>
 				<div
 					style={{
 						display: 'flex',
@@ -931,8 +953,8 @@ export const MobileSignalScene = () => {
 						alignItems: 'center',
 						justifyContent: 'space-between',
 						padding: '0 17px',
-						borderBottom: '1px solid #e5e8ea',
-						background: '#f8fafb',
+						borderBottom: `1px solid ${colors.border}`,
+						background: colors.subtle,
 					}}
 				>
 					<div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -973,7 +995,7 @@ export const MobileSignalScene = () => {
 								padding: 17,
 								border: `1px solid ${colors.blue200}`,
 								borderRadius: 18,
-								background: '#fff',
+								background: colors.surface,
 								boxShadow: '0 18px 42px rgba(18,56,79,.1)',
 							}}
 						>
@@ -997,7 +1019,7 @@ export const MobileSignalScene = () => {
 								marginTop: 16,
 								borderRadius: 999,
 								background: colors.orange,
-								color: '#fff',
+								color: colors.onAccent,
 								fontSize: 14,
 								fontWeight: 800,
 								...pop(frame, 31),
@@ -1012,7 +1034,7 @@ export const MobileSignalScene = () => {
 							position: 'absolute',
 							inset: 0,
 							padding: 18,
-							background: '#fff',
+							background: colors.surface,
 							...detailReveal,
 							opacity: opened ? detailReveal.opacity : 0,
 						}}
@@ -1072,7 +1094,7 @@ export const MobileSignalScene = () => {
 								marginTop: 14,
 								borderRadius: 999,
 								background: colors.orange,
-								color: '#fff',
+								color: colors.onAccent,
 								fontSize: 14,
 								fontWeight: 800,
 								boxShadow: '0 14px 30px rgba(196,58,0,.2)',
@@ -1111,7 +1133,7 @@ export const MobileJourneyScene = () => {
 										placeItems: 'center',
 										borderRadius: '50%',
 										background: stage >= index ? colors.orange : colors.blue100,
-										color: stage >= index ? '#fff' : colors.blue700,
+										color: stage >= index ? colors.surface : colors.blue700,
 										fontSize: 12,
 										fontWeight: 800,
 									}}
@@ -1139,7 +1161,7 @@ export const MobileJourneyScene = () => {
 								padding: 18,
 								border: `1px solid ${colors.border}`,
 								borderRadius: 19,
-								background: '#fff',
+								background: colors.surface,
 								...reveal(frame, stageStarts[0], 10),
 							}}
 						>
@@ -1162,7 +1184,7 @@ export const MobileJourneyScene = () => {
 									marginTop: 21,
 									padding: '14px 15px',
 									borderRadius: 15,
-									background: frame >= 38 ? '#e4f0e7' : colors.blue50,
+									background: frame >= 38 ? colors.successSoft : colors.blue50,
 								}}
 							>
 								<strong style={{ color: frame >= 38 ? colors.success : colors.blue700, fontSize: 13 }}>
@@ -1185,7 +1207,7 @@ export const MobileJourneyScene = () => {
 											width: 18,
 											height: 18,
 											borderRadius: '50%',
-											background: '#fff',
+											background: colors.surface,
 										}}
 									/>
 								</span>
@@ -1200,7 +1222,7 @@ export const MobileJourneyScene = () => {
 								padding: 18,
 								border: `1px solid ${colors.border}`,
 								borderRadius: 19,
-								background: '#fff',
+								background: colors.surface,
 								...reveal(frame, stageStarts[1], 10),
 							}}
 						>
@@ -1221,7 +1243,7 @@ export const MobileJourneyScene = () => {
 								<ReferrerRow name="Rhea S." role="Growth · Microsoft" initials="RS" color={colors.blue700} selected={false} />
 							</div>
 							<div style={{ display: 'flex', gap: 7, marginTop: 13, ...reveal(frame, 126, 6) }}>
-								<Pill tone="green" style={{ fontSize: 10, padding: '7px 9px' }}>Free request</Pill>
+								<Pill tone="green" style={{ fontSize: 10, padding: '7px 9px' }}>Referral request</Pill>
 								<Pill tone="orange" style={{ fontSize: 10, padding: '7px 9px' }}>Coffee optional</Pill>
 							</div>
 						</div>
@@ -1234,7 +1256,7 @@ export const MobileJourneyScene = () => {
 								padding: 18,
 								border: `1px solid ${colors.border}`,
 								borderRadius: 19,
-								background: '#fff',
+								background: colors.surface,
 								...reveal(frame, stageStarts[2], 10),
 							}}
 						>
@@ -1258,7 +1280,7 @@ export const MobileJourneyScene = () => {
 												gap: 10,
 												padding: '10px 12px',
 												borderRadius: 13,
-												background: complete ? '#e4f0e7' : colors.blue50,
+												background: complete ? colors.successSoft : colors.blue50,
 											}}
 										>
 											<span
@@ -1269,7 +1291,7 @@ export const MobileJourneyScene = () => {
 													placeItems: 'center',
 													borderRadius: '50%',
 													background: complete ? colors.success : colors.blue200,
-													color: '#fff',
+													color: colors.onAccent,
 													fontSize: 12,
 												}}
 											>
@@ -1341,7 +1363,7 @@ export const MobileAppreciationScene = () => {
 									padding: '0 12px',
 									border: `${active ? 2 : 1}px solid ${active ? colors.orange : colors.border}`,
 									borderRadius: 15,
-									background: active ? colors.orangeSoft : '#fff',
+									background: active ? colors.orangeSoft : colors.surface,
 								}}
 							>
 								<span style={{ fontSize: 21, textAlign: 'center' }}>{option.icon}</span>
@@ -1380,7 +1402,7 @@ export const MobileAppreciationScene = () => {
 						marginTop: 12,
 						borderRadius: 999,
 						background: success ? colors.success : paid ? colors.blue900 : colors.orange,
-						color: '#fff',
+						color: colors.onAccent,
 						fontSize: 13,
 						fontWeight: 800,
 						boxShadow: success ? '0 14px 30px rgba(47,122,77,.22)' : '0 14px 30px rgba(196,58,0,.2)',

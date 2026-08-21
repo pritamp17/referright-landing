@@ -1,11 +1,10 @@
 ---
 interface Props {
-	eyebrow: string;
+	eyebrow?: string;
 	title: string;
 	copy?: string;
-	headingId: string;
+	headingId?: string;
 	align?: 'left' | 'center';
-	theme?: 'light' | 'dark';
 	class?: string;
 }
 
@@ -15,21 +14,47 @@ const {
 	copy,
 	headingId,
 	align = 'left',
-	theme = 'light',
 	class: className = '',
 } = Astro.props;
 
 const hasCopySlot = Astro.slots.has('copy');
 ---
 
-<div class:list={['section-intro', `section-intro-${align}`, `section-intro-${theme}`, className]}>
-	<p class="eyebrow">{eyebrow}</p>
-	<h2 id={headingId}>{title}</h2>
-	{
-		(copy || hasCopySlot) && (
-			<p class="section-intro-copy">
-				{hasCopySlot ? <slot name="copy" /> : copy}
-			</p>
-		)
-	}
+<div class:list={['section-intro', `is-${align}`, className]}>
+	{eyebrow && <p class="eyebrow">{eyebrow}</p>}
+	<h2 class="display-2" id={headingId}>{title}</h2>
+	{copy && <p class="lede">{copy}</p>}
+	{hasCopySlot && <p class="lede"><slot name="copy" /></p>}
 </div>
+
+<style>
+	.section-intro {
+		max-width: 44rem;
+	}
+
+	.section-intro :global(.lede) {
+		max-width: 38rem;
+	}
+
+	.is-center {
+		margin-inline: auto;
+		text-align: center;
+	}
+
+	.is-center :global(.lede) {
+		margin-inline: auto;
+	}
+
+	/* Centred headings read as decorative at phone widths, where the eye wants a
+	   consistent left edge. Everything left-aligns below 48rem. */
+	@media (max-width: 48rem) {
+		.is-center {
+			margin-inline: 0;
+			text-align: left;
+		}
+
+		.is-center :global(.lede) {
+			margin-inline: 0;
+		}
+	}
+</style>

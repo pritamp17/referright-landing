@@ -1,0 +1,113 @@
+---
+import RemotionPlayer from './remotion/RemotionPlayer';
+import SectionIntro from './SectionIntro.astro';
+import { OUTCOME_DISCLAIMER, SectionId } from '../lib/constants';
+
+/**
+ * Deliberately light on commercial detail.
+ *
+ * A first-time visitor should not meet a fee table. The mechanics of amounts,
+ * platform fees and payouts belong in the product, after someone has decided to
+ * take part — not on the page that is still earning their trust. What this
+ * section owes the reader is one honest sentence: asking is not a transaction,
+ * and thanking is their choice.
+ */
+const reassurances: readonly string[] = [
+	'Optional, always',
+	'Never required to ask',
+	'Only after the referral lands',
+];
+---
+
+<section class="section appreciation" id={SectionId.Appreciation} aria-labelledby="appreciation-title">
+	<div class="shell">
+		<SectionIntro
+			eyebrow="Afterwards"
+			title="Say thank you, only if you want to."
+			copy="Referrals here come from people who chose to help. If it felt worth it, you can send a small token of appreciation — a coffee, nothing more. It is entirely optional, and it never changes whether you get referred."
+			headingId="appreciation-title"
+			align="center"
+			class="reveal"
+		/>
+
+		<ul class="appreciation-chips reveal">
+			{
+				reassurances.map((item) => (
+					<li>
+						<svg viewBox="0 0 16 16" aria-hidden="true">
+							<path d="M3.4 8.4l3 3 6.2-7" />
+						</svg>
+						{item}
+					</li>
+				))
+			}
+		</ul>
+
+		<div class="media-frame appreciation-frame reveal">
+			<RemotionPlayer variant="appreciation" client:visible />
+		</div>
+
+		<p class="fine-print appreciation-note reveal">{OUTCOME_DISCLAIMER}</p>
+	</div>
+</section>
+
+<style>
+	.appreciation {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.appreciation-chips {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.625rem;
+		margin: 1.75rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.appreciation-chips li {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4375rem;
+		padding: 0.5rem 0.875rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface));
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+
+	.appreciation-chips svg {
+		width: 0.875rem;
+		height: 0.875rem;
+		fill: none;
+		stroke: rgb(var(--color-success));
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 2;
+	}
+
+	.appreciation-frame {
+		max-width: 46rem;
+		margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
+	}
+
+	.appreciation-note {
+		margin-top: 1.25rem;
+		text-align: center;
+	}
+
+	/* Chips read as a left-aligned list on phones, matching the section
+	   heading, which also left-aligns below 48rem. */
+	@media (max-width: 48rem) {
+		.appreciation-chips {
+			justify-content: flex-start;
+		}
+
+		.appreciation-note {
+			text-align: left;
+		}
+	}
+</style>

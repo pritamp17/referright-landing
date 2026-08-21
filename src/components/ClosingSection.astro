@@ -1,0 +1,120 @@
+---
+import Brand from './Brand.astro';
+import { OUTCOME_DISCLAIMER, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
+import { CONTACT_EMAIL, signUpWith } from '../lib/content';
+
+const year = new Date().getFullYear();
+---
+
+<section class="closing" id={SectionId.Contact} aria-labelledby="closing-title">
+	<div class="grid-texture" aria-hidden="true"></div>
+
+	<div class="shell closing-inner reveal">
+		<h2 class="display-2" id="closing-title">Somebody inside is willing to help.</h2>
+		<p class="closing-lede">Tell us the role. We will find them.</p>
+
+		<a
+			class="button button-primary button-lg"
+			href={signUpWith(SignUpIntent.Seeker)}
+			data-track={TrackEvent.ClosingPrimary}
+		>
+			<span>Ask for a referral</span>
+			<svg viewBox="0 0 16 16" aria-hidden="true">
+				<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
+			</svg>
+		</a>
+
+		<p class="fine-print closing-disclaimer">{OUTCOME_DISCLAIMER}</p>
+	</div>
+
+	<footer class="site-footer">
+		<div class="shell footer-inner">
+			<Brand size="sm" />
+
+			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
+
+			<a class="footer-mail" href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.ContactEmail}>
+				{CONTACT_EMAIL}
+			</a>
+		</div>
+	</footer>
+</section>
+
+<style>
+	.closing {
+		position: relative;
+		overflow: hidden;
+		border-top: 1px solid rgb(var(--color-border));
+		isolation: isolate;
+	}
+
+	.closing-inner {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		justify-items: center;
+		padding-block: clamp(4.5rem, 9vw, 8rem);
+		text-align: center;
+	}
+
+	.closing-lede {
+		max-width: 30rem;
+		margin: 1rem 0 2rem;
+		color: rgb(var(--color-muted));
+		font-size: 1.125rem;
+		line-height: 1.6;
+	}
+
+	.closing-disclaimer {
+		margin-top: 1.25rem;
+	}
+
+	/* ---- Footer ---- */
+
+	.site-footer {
+		position: relative;
+		z-index: 1;
+		border-top: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-surface) / 60%);
+	}
+
+	.footer-inner {
+		display: grid;
+		gap: 1rem;
+		justify-items: center;
+		padding-block: 1.75rem;
+		text-align: center;
+	}
+
+	.footer-note {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+	}
+
+	.footer-mail {
+		display: inline-flex;
+		min-height: 2.75rem;
+		align-items: center;
+		color: rgb(var(--color-primary));
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	:global([data-theme='dark']) .footer-mail {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	@media (min-width: 48rem) {
+		.footer-inner {
+			grid-template-columns: auto 1fr auto;
+			align-items: center;
+			justify-items: start;
+			text-align: left;
+		}
+
+		.footer-note {
+			justify-self: center;
+		}
+	}
+</style>

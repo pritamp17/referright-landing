@@ -19,10 +19,20 @@ import {
 	siZoom,
 } from 'simple-icons';
 
-const companies = [
+interface SimpleIcon {
+	readonly path: string;
+	readonly hex: string;
+}
+
+interface Company {
+	readonly name: string;
+	readonly icon: SimpleIcon;
+}
+
+const companies: readonly Company[] = [
 	{ name: 'Google', icon: siGoogle },
 	{ name: 'Atlassian', icon: siAtlassian },
-	{ name: 'Uber', icon: siUber, wordmark: true },
+	{ name: 'Uber', icon: siUber },
 	{ name: 'Meta', icon: siMeta },
 	{ name: 'Netflix', icon: siNetflix },
 	{ name: 'Spotify', icon: siSpotify },
@@ -38,34 +48,82 @@ const companies = [
 	{ name: 'Intel', icon: siIntel },
 	{ name: 'Apple', icon: siApple },
 ];
+
+/* Duplicated once so the marquee can loop seamlessly at -50%. */
+const marquee: readonly Company[] = [...companies, ...companies];
 ---
 
-<div
-	class="company-field"
-	data-company-field
-	data-motion-state="idle"
-	aria-label="Example companies with opportunities people may follow"
->
-	<div class="company-spawn-zones" aria-hidden="true">
-		<span></span><span></span><span></span><span></span>
-	</div>
-	{
-		companies.map((company, index) => (
-			<div
-				class:list={['company-logo-card', company.wordmark && 'company-logo-card-wordmark']}
-				data-company-card
-				data-company-index={index}
-				style={`--brand-color:#${company.icon.hex}`}
-			>
-				<svg viewBox="0 0 24 24" role="img" aria-label={`${company.name} logo`}>
-					<path d={company.icon.path}></path>
-				</svg>
-				{!company.wordmark && <span>{company.name}</span>}
-			</div>
-		))
-	}
-	<div class="company-field-caption" aria-hidden="true">
-		<span>Opportunities move.</span>
-		<strong>RightRefer keeps you close.</strong>
+<div class="company-field" aria-label="Examples of companies people request referrals into">
+	<div class="company-track">
+		{
+			marquee.map((company, index) => (
+				<span class="company-chip" aria-hidden={index >= companies.length ? 'true' : undefined}>
+					<svg viewBox="0 0 24 24" role="img" aria-label={`${company.name} logo`}>
+						<path d={company.icon.path} />
+					</svg>
+					<span>{company.name}</span>
+				</span>
+			))
+		}
 	</div>
 </div>
+
+<style>
+	.company-field {
+		overflow: hidden;
+		mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+	}
+
+	.company-track {
+		display: flex;
+		width: max-content;
+		align-items: center;
+		gap: 0.75rem;
+		animation: company-drift 60s linear infinite;
+	}
+
+	.company-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.625rem 1rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface));
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	/* Logos are rendered in ink, not in brand colours — a wall of competing
+	   brand hues would fight the page's single blue accent. */
+	.company-chip svg {
+		width: 1.125rem;
+		height: 1.125rem;
+		flex: 0 0 auto;
+		fill: rgb(var(--color-ink) / 62%);
+	}
+
+	@keyframes company-drift {
+		from {
+			transform: translateX(0);
+		}
+		to {
+			transform: translateX(calc(-50% - 0.375rem));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.company-track {
+			flex-wrap: wrap;
+			width: 100%;
+			animation: none;
+			justify-content: center;
+		}
+
+		.company-chip[aria-hidden='true'] {
+			display: none;
+		}
+	}
+</style>

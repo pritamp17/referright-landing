@@ -1,44 +1,43 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Brand from '../components/Brand.astro';
+import Appreciation from '../components/Appreciation.astro';
+import ClosingSection from '../components/ClosingSection.astro';
 import CompanyField from '../components/CompanyField.astro';
-import RemotionPlayer from '../components/remotion/RemotionPlayer';
+import Hero from '../components/Hero.astro';
+import Lifecycle from '../components/Lifecycle.astro';
+import Offerings from '../components/Offerings.astro';
+import PeerSignalSection from '../components/PeerSignalSection.astro';
 import SectionIntro from '../components/SectionIntro.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import TestimonialStage, { type Testimonial } from '../components/TestimonialStage.astro';
+import TrustSection from '../components/TrustSection.astro';
+import { Accent, SectionId } from '../lib/constants';
 
-const pageTitle = 'RightRefer, The right referral, at the right time';
+const pageTitle = 'RightRefer — Get referred by someone who actually works there';
 const pageDescription =
-	'Follow the companies you care about, discover relevant openings, and connect through thoughtful job referrals.';
+	'Ask for a referral at your target company. A LinkedIn-verified employee takes it on and submits it with proof, so you always know exactly where your request stands.';
 
-const signupUrl = import.meta.env.PUBLIC_APP_SIGNUP_URL || '/signup';
-const betaReferralCount = Number(import.meta.env.PUBLIC_BETA_REFERRALS || '48');
-const withIntent = (intent: 'seeker' | 'giver') =>
-	`${signupUrl}${signupUrl.includes('?') ? '&' : '?'}intent=${intent}`;
-
-const seekerUrl = withIntent('seeker');
-const giverUrl = withIntent('giver');
-
-const testimonialBatches: Testimonial[][] = [
+const testimonialBatches: readonly (readonly Testimonial[])[] = [
 	[
 		{
 			name: 'Aarav S.',
 			role: 'Software engineer · Bengaluru',
 			initials: 'AS',
-			accent: 'blue',
+			accent: Accent.Primary,
 			quote: 'The context made my referral request feel natural instead of cold.',
 		},
 		{
 			name: 'Maya R.',
 			role: 'Product designer · Pune',
 			initials: 'MR',
-			accent: 'orange',
+			accent: Accent.Reward,
 			quote: 'I found someone whose team was actually hiring, not another random contact.',
 		},
 		{
 			name: 'Neha P.',
 			role: 'Senior developer · Chennai',
 			initials: 'NP',
-			accent: 'sage',
+			accent: Accent.Success,
 			quote: 'I could review the candidate and decide whether I could genuinely help.',
 		},
 	],
@@ -47,580 +46,111 @@ const testimonialBatches: Testimonial[][] = [
 			name: 'Kabir N.',
 			role: 'Cloud engineer · Gurugram',
 			initials: 'KN',
-			accent: 'plum',
+			accent: Accent.Trust,
 			quote: 'The right person saw my request and knew exactly which role I meant.',
 		},
 		{
 			name: 'Ananya J.',
 			role: 'UX researcher · Bengaluru',
 			initials: 'AJ',
-			accent: 'blue',
+			accent: Accent.Primary,
 			quote: 'It felt like starting a useful professional conversation, not asking a stranger.',
 		},
 		{
 			name: 'Priya C.',
 			role: 'Program manager · Hyderabad',
 			initials: 'PC',
-			accent: 'orange',
-			quote: 'Appreciation stayed optional, so the referral still felt human.',
+			accent: Accent.Reward,
+			quote: 'I knew exactly where my request stood the whole way through.',
 		},
 	],
 ];
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
-	<div class="floating-action-cluster" data-action-cluster>
-		<div class="floating-brand-slot" data-brand-dock></div>
-	</div>
+	<SiteHeader />
 
 	<main id="main-content">
-		<section class="hero" id="top" aria-labelledby="hero-title">
-			<div class="hero-media" aria-hidden="true">
-				<video
-					class="hero-video"
-					data-hero-video
-					muted
-					playsinline
-					preload="none"
-					poster="/hero-hands-poster.webp"
-				>
-					<source src="/hero-hands.mp4" type="video/mp4" />
-				</video>
-			</div>
+		<Hero />
 
-			<div class="hero-content">
-				<div class="hero-brand-slot" data-brand-home>
-					<Brand class="brand-morph" split={true} />
-				</div>
-				<h1 id="hero-title">
-					The right <span class="hero-title-refer">Refer</span>ral.<br />
-					At the <span class="hero-title-accent">Right</span> time.
-				</h1>
-				<p class="hero-copy">
-					Follow the companies that matter, discover roles that fit your experience, and reach the
-					right person with context.
-				</p>
-				<div class="hero-cta-slot" data-cta-home>
-					<a
-						class="button button-primary button-large floating-cta"
-						href={signupUrl}
-						aria-label="Get started"
-						data-floating-cta
-						data-track="hero-get-started"
-					>
-						<span>Get Started</span>
-						<svg viewBox="0 0 16 16" aria-hidden="true">
-							<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
-						</svg>
-					</a>
-				</div>
+		<section class="companies" aria-label="Companies people request referrals into">
+			<div class="shell">
+				<p class="companies-label">Requests are open at companies like</p>
 			</div>
-
-			<a class="scroll-cue" href="#company-field">
-				<span>Scroll to discover</span>
-				<span class="scroll-line" aria-hidden="true"></span>
-			</a>
+			<CompanyField />
 		</section>
 
-		<section class="company-field-section" id="company-field" aria-labelledby="company-field-title">
-			<div class="section-shell">
-				<SectionIntro
-					eyebrow="Companies worth following"
-					title="Dream of working there? Get closer."
-					copy="Follow the companies you admire. When they open the right role, you will already be close."
-					headingId="company-field-title"
-					align="center"
-					class="reveal"
-				/>
-				<div class="reveal">
-					<CompanyField />
-				</div>
-			</div>
-		</section>
+		<Offerings />
+		<PeerSignalSection />
+		<Lifecycle />
+		<TrustSection />
+		<Appreciation />
 
-		<section class="testimonials-section" id="stories" aria-labelledby="stories-title">
-			<div class="section-shell">
+		<section class="section stories" id={SectionId.Stories} aria-labelledby="stories-title">
+			<div class="shell">
 				<SectionIntro
-					eyebrow="Early community stories"
-					title="And we’re only getting started."
+					eyebrow="From the private beta"
+					title="What people told us."
+					copy="Feedback from seekers and referrers who used RightRefer during the beta."
 					headingId="stories-title"
 					align="center"
 					class="reveal"
-				>
-					<span slot="copy">
-						Send a referral request completely free. Add an optional coffee thank-you only if it
-						feels right, <strong>it may improve your chances of receiving a referral</strong>, but it
-						never guarantees one.
-					</span>
-				</SectionIntro>
-				<TestimonialStage batches={testimonialBatches} metric={betaReferralCount} />
-			</div>
-		</section>
-
-		<section class="two-sides" id="choose-path" aria-labelledby="two-sides-title">
-			<div class="section-shell">
-				<SectionIntro
-					eyebrow="Built for both sides"
-					title="One journey. Two ways to walk it."
-					copy="Every request starts free. A thank-you, if you send one, is always your call."
-					headingId="two-sides-title"
-					align="center"
-					class="reveal"
 				/>
-
-				<div class="path-grid">
-					<article class="path-card path-card-seeker reveal">
-						<img
-							class="path-card-image"
-							src="/path-seeker.webp"
-							alt=""
-							width="1100"
-							height="614"
-							loading="lazy"
-							decoding="async"
-						/>
-						<div class="path-card-top">
-							<span class="path-number">01</span>
-						</div>
-						<div>
-							<p class="path-label">If you are looking</p>
-							<h3>Ask for help, warmly.</h3>
-							<p>
-								Send a referral request completely free. Add an optional coffee thank-you only if
-								it feels right, <strong>it may improve your chances of receiving a referral</strong>,
-								but it never guarantees one.
-							</p>
-						</div>
-						<a class="text-link" href={seekerUrl} data-track="card-find-referral">
-							Start your search
-							<svg viewBox="0 0 16 16" aria-hidden="true">
-								<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
-							</svg>
-						</a>
-					</article>
-
-					<article class="path-card path-card-giver reveal">
-						<img
-							class="path-card-image"
-							src="/path-giver.webp"
-							alt=""
-							width="1100"
-							height="614"
-							loading="lazy"
-							decoding="async"
-						/>
-						<div class="path-card-top">
-							<span class="path-number">02</span>
-						</div>
-						<div>
-							<p class="path-label">If you can help</p>
-							<h3>Become part of someone’s next chapter.</h3>
-							<p>Review who is asking and why, then decide freely. One thoughtful introduction can become part of someone’s career journey.</p>
-						</div>
-						<a class="text-link" href={giverUrl} data-track="card-give-referral">
-							Offer a referral
-							<svg viewBox="0 0 16 16" aria-hidden="true">
-								<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
-							</svg>
-						</a>
-					</article>
-				</div>
+			</div>
+			<div class="stories-stage reveal">
+				<TestimonialStage batches={testimonialBatches} />
 			</div>
 		</section>
 
-		<section class="signal-section" id="signal" aria-labelledby="signal-title">
-			<div class="section-shell">
-				<SectionIntro
-					eyebrow="Signal, not noise"
-					title="Apply when it matters. Get notified for every role."
-					copy="A relevant role reaches you while the application window is still fresh, with the context and referral path ready."
-					headingId="signal-title"
-					align="center"
-					class="reveal"
-				/>
-				<div class="signal-player-frame reveal">
-					<RemotionPlayer variant="signal" client:visible />
-				</div>
-			</div>
-		</section>
-
-		<section class="journeys-section" id="how-it-works" aria-labelledby="journeys-title">
-			<div class="section-shell">
-				<SectionIntro
-					eyebrow="One journey, three moments"
-					title="How a referral actually moves."
-					copy="Follow Company, choose the right people, and track one request from sent to referred."
-					headingId="journeys-title"
-					align="center"
-					class="reveal"
-				/>
-
-				<div class="journey-flow-frame reveal">
-					<RemotionPlayer variant="journey" client:visible />
-				</div>
-			</div>
-		</section>
-
-		<section class="appreciation-section" aria-labelledby="appreciation-title">
-			<div class="section-shell appreciation-layout">
-				<div class="appreciation-copy">
-					<SectionIntro
-						eyebrow="Helping comes first"
-						title="Optional appreciation can help your request stand out."
-						copy="A small thank-you can improve the chance of a timely response, but it never purchases or guarantees a referral."
-						headingId="appreciation-title"
-						align="left"
-						class="reveal"
-					/>
-					<div class="appreciation-principles reveal">
-						<span><i></i> Free request by default</span>
-						<span><i></i> Referrers decide independently</span>
-						<span><i></i> Appreciation is always optional</span>
-					</div>
-					<div class="refund-promise reveal">
-						<strong>2-day protection</strong>
-						<span>Get your money back if you do not receive a referral within 2 days.</span>
-						<small>Eligible appreciation amounts only. Product terms apply.</small>
-					</div>
-				</div>
-
-				<div class="appreciation-player-frame reveal">
-					<RemotionPlayer variant="appreciation" client:visible />
-				</div>
-			</div>
-		</section>
-
-		<section class="closing-section" aria-labelledby="closing-title">
-			<div class="closing-field" aria-hidden="true">
-				<span></span><span></span><span></span><span></span><span></span>
-			</div>
-			<div class="section-shell closing-content reveal">
-				<p class="eyebrow">Built with your feedback</p>
-				<h2 id="closing-title">Your feedback matters. Help us make RightRefer better.</h2>
-				<p>
-					Every idea, friction point, and honest experience helps us build a more useful and human
-					referral journey.
-				</p>
-				<a class="closing-contact" href="mailto:hello@referright.com">
-					<span>Share what worked, what felt difficult, or what you would like to see next.</span>
-					<strong>Write to Us</strong>
-					<small>hello@referright.com</small>
-					<svg viewBox="0 0 18 18" aria-hidden="true">
-						<path d="M3 9h11M10 4.5 14.5 9 10 13.5"></path>
-					</svg>
-				</a>
-			</div>
-
-			<footer class="site-footer">
-				<div class="section-shell footer-line">
-					<Brand inverse={true} class="brand-footer" />
-					<p>© {new Date().getFullYear()} RightRefer. Professional introductions, handled thoughtfully.</p>
-					<div>
-						<a href="#top">Back to top ↑</a>
-					</div>
-				</div>
-			</footer>
-		</section>
+		<ClosingSection />
 	</main>
-
-	<script>
-		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		const heroRoot = document.querySelector<HTMLElement>('.hero');
-		const heroVideo = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-		const heroController =
-			heroRoot && heroVideo
-				? {
-						play: () => {
-							if (heroVideo.dataset.completed === 'true') return;
-							heroVideo.play().catch(() => heroVideo.removeAttribute('autoplay'));
-						},
-						pause: () => heroVideo.pause(),
-						reduce: () => {
-							heroVideo.pause();
-						},
-					}
-				: null;
-
-		if (heroVideo) {
-			heroVideo.defaultPlaybackRate = 0.5;
-			heroVideo.playbackRate = 0.5;
-			heroVideo.addEventListener('ended', () => {
-				heroVideo.dataset.completed = 'true';
-				heroVideo.pause();
-			});
-
-			if (reducedMotion) {
-				heroController?.reduce();
-			} else {
-				heroController?.play();
-			}
-		}
-
-		const brandLogo = document.querySelector('[data-brand-logo]');
-		const brandLogoImage = brandLogo?.querySelector('img');
-		const brandLogoHome = document.querySelector('[data-brand-logo-home]');
-		const brandHome = document.querySelector('[data-brand-home]');
-		const brandDock = document.querySelector('[data-brand-dock]');
-		const actionCluster = document.querySelector('[data-action-cluster]');
-		let dockFrame = 0;
-
-		const syncActions = () => {
-			if (
-				!(brandLogo instanceof HTMLElement) ||
-				!(brandLogoHome instanceof HTMLElement) ||
-				!(brandHome instanceof HTMLElement) ||
-				!(brandDock instanceof HTMLElement) ||
-				!(actionCluster instanceof HTMLElement)
-			) return;
-
-			const logoSize = brandLogoHome.getBoundingClientRect().width;
-			const dockTop = innerWidth <= 700 ? 12 : 16;
-			const dockScale = innerWidth <= 700 ? 0.82 : 1;
-			const homeDocumentTop = brandLogoHome.getBoundingClientRect().top + scrollY;
-			const heroDocumentBottom = (heroRoot?.getBoundingClientRect().bottom ?? innerHeight) + scrollY;
-			const startScroll = homeDocumentTop - dockTop;
-			const endScroll = Math.max(startScroll + 1, heroDocumentBottom - dockTop - logoSize);
-			const progress = Math.min(1, Math.max(0, (scrollY - startScroll) / (endScroll - startScroll)));
-
-			if (progress <= 0.002) {
-				if (brandLogo.parentElement !== brandLogoHome) brandLogoHome.appendChild(brandLogo);
-				brandLogo.style.removeProperty('transform');
-				if (brandLogoImage instanceof HTMLImageElement) brandLogoImage.style.removeProperty('transform');
-				brandLogo.dataset.docked = 'false';
-				actionCluster.classList.remove('is-active');
-				return;
-			}
-
-			if (brandLogo.parentElement !== brandDock) brandDock.appendChild(brandLogo);
-			actionCluster.classList.add('is-active');
-			const dockRect = brandDock.getBoundingClientRect();
-			const homeLeft = brandLogoHome.getBoundingClientRect().left;
-			const translateX = (homeLeft - dockRect.left) * (1 - progress);
-			const scale = 1 - (1 - dockScale) * progress;
-			brandLogo.style.transform = `translate3d(${translateX}px, 0, 0)`;
-			if (brandLogoImage instanceof HTMLImageElement) {
-				brandLogoImage.style.transform = `scale(${0.92 * scale})`;
-			}
-			brandLogo.dataset.docked = progress >= 0.998 ? 'true' : 'transitioning';
-		};
-
-		if (
-			brandLogo instanceof HTMLElement &&
-			brandLogoHome instanceof HTMLElement &&
-			brandHome instanceof HTMLElement &&
-			brandDock instanceof HTMLElement &&
-			actionCluster instanceof HTMLElement
-		) {
-			const requestDockSync = () => {
-				if (dockFrame) return;
-				dockFrame = requestAnimationFrame(() => {
-					dockFrame = 0;
-					syncActions();
-				});
-			};
-			syncActions();
-			window.addEventListener('scroll', requestDockSync, { passive: true });
-			window.addEventListener('resize', requestDockSync, { passive: true });
-		}
-
-		const revealItems = document.querySelectorAll('.reveal');
-		if (reducedMotion || !('IntersectionObserver' in window)) {
-			revealItems.forEach((item) => item.classList.add('is-visible'));
-		} else {
-			const revealObserver = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (!entry.isIntersecting) return;
-						entry.target.classList.add('is-visible');
-						revealObserver.unobserve(entry.target);
-					});
-				},
-				{ rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
-			);
-			revealItems.forEach((item) => revealObserver.observe(item));
-		}
-
-		type MotionController = {
-			play: () => void;
-			pause: () => void;
-			reduce: () => void;
-		};
-
-		const testimonialRoot = document.querySelector<HTMLElement>('[data-motion="testimonials"]');
-		let testimonialController: MotionController | null = null;
-
-		if (testimonialRoot) {
-			testimonialController = {
-				play: () => {
-					testimonialRoot.dataset.motionState = 'playing';
-				},
-				pause: () => {
-					testimonialRoot.dataset.motionState = 'paused';
-				},
-				reduce: () => {
-					testimonialRoot.dataset.motionState = 'reduced';
-				},
-			};
-		}
-
-		const companyRoot = document.querySelector<HTMLElement>('[data-company-field]');
-		let companyController: MotionController | null = null;
-
-		if (companyRoot) {
-			const cards = Array.from(companyRoot.querySelectorAll<HTMLElement>('[data-company-card]'));
-			const orders = [
-				[0, 1, 2, 3, 4, 5, 6, 7],
-				[8, 9, 10, 11, 12, 13, 14, 15],
-				[16, 2, 4, 6, 9, 11, 13, 15],
-				[1, 3, 5, 7, 10, 12, 14, 16],
-			];
-			const desktopZones = [
-				[[11, 18], [9, 14]], [[30, 34], [31, 34]],
-				[[66, 70], [31, 34]], [[82, 89], [9, 14]],
-				[[11, 18], [86, 91]], [[30, 34], [66, 69]],
-				[[66, 70], [66, 69]], [[82, 89], [86, 91]],
-			];
-			const mobileZones = [
-				[[22, 27], [8, 12]], [[22, 27], [27, 31]],
-				[[73, 78], [34, 38]], [[73, 78], [14, 18]],
-				[[22, 27], [88, 92]], [[22, 27], [69, 73]],
-				[[73, 78], [62, 66]], [[73, 78], [82, 86]],
-			];
-			const narrowMobileZones = [
-				[[20, 23], [8, 12]], [[20, 23], [27, 31]],
-				[[77, 80], [34, 38]], [[77, 80], [14, 18]],
-				[[20, 23], [88, 92]], [[20, 23], [69, 73]],
-				[[77, 80], [62, 66]], [[77, 80], [82, 86]],
-			];
-			let cycle = 0;
-			let timer = 0;
-			const fadeDuration = 1200;
-			const visibleGap = 1500;
-			let running = false;
-			const randomBetween = ([minimum, maximum]: number[]) =>
-				minimum + Math.random() * (maximum - minimum);
-
-			const render = (index: number, animate = false) => {
-				cards.forEach((card) => {
-					card.classList.remove('is-active', 'is-leaving');
-					card.setAttribute('aria-hidden', 'true');
-				});
-
-				const mobile = innerWidth <= 700;
-				const zones = innerWidth <= 340 ? narrowMobileZones : mobile ? mobileZones : desktopZones;
-				const activate = () => {
-					orders[index]?.forEach((cardIndex, positionIndex) => {
-						const card = cards[cardIndex];
-						const zone = zones[positionIndex];
-						if (!card || !zone) return;
-						card.style.setProperty('--field-x', `${randomBetween(zone[0]).toFixed(2)}%`);
-						card.style.setProperty('--field-y', `${randomBetween(zone[1]).toFixed(2)}%`);
-						card.classList.add('is-active');
-						card.setAttribute('aria-hidden', 'false');
-					});
-				};
-				if (animate) requestAnimationFrame(activate);
-				else activate();
-				cycle = index;
-			};
-
-			const schedule = () => {
-				window.clearTimeout(timer);
-				cards.forEach((card) => card.classList.remove('is-leaving'));
-				timer = window.setTimeout(() => {
-					cards
-						.filter((card) => card.classList.contains('is-active'))
-						.forEach((card) => card.classList.add('is-leaving'));
-					timer = window.setTimeout(() => {
-						render((cycle + 1) % orders.length, true);
-						if (running) schedule();
-					}, fadeDuration);
-				}, fadeDuration + visibleGap);
-			};
-
-			render(0);
-			companyController = {
-				play: () => {
-					running = true;
-					schedule();
-				},
-				pause: () => {
-					running = false;
-					window.clearTimeout(timer);
-					cards.forEach((card) => card.classList.remove('is-leaving'));
-				},
-				reduce: () => {
-					running = false;
-					window.clearTimeout(timer);
-					render(0);
-				},
-			};
-		}
-
-		const managedMotion = [
-			heroRoot && heroController ? { root: heroRoot, controller: heroController } : null,
-			testimonialRoot && testimonialController
-				? { root: testimonialRoot, controller: testimonialController }
-				: null,
-			companyRoot && companyController ? { root: companyRoot, controller: companyController } : null,
-		].filter(Boolean) as { root: HTMLElement; controller: MotionController }[];
-
-		if (reducedMotion) {
-			managedMotion.forEach(({ controller }) => controller.reduce());
-		} else if (managedMotion.length > 0) {
-			const motionObserver = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						const item = managedMotion.find(({ root }) => root === entry.target);
-						if (!item) return;
-						if (entry.isIntersecting && document.visibilityState === 'visible') item.controller.play();
-						else item.controller.pause();
-					});
-				},
-				{ threshold: 0.25 },
-			);
-			managedMotion.forEach(({ root }) => motionObserver.observe(root));
-			document.addEventListener('visibilitychange', () => {
-				managedMotion.forEach(({ root, controller }) => {
-					const visible = root.getBoundingClientRect().bottom > 0 && root.getBoundingClientRect().top < innerHeight;
-					if (visible && document.visibilityState === 'visible') controller.play();
-					else controller.pause();
-				});
-			});
-		}
-
-		const metric = document.querySelector<HTMLElement>('[data-beta-metric]');
-		const metricValue = metric?.querySelector<HTMLElement>('[data-count-value]');
-		if (metric && metricValue) {
-			const target = Number(metric.dataset.count || '0');
-			const complete = () => {
-				metricValue.textContent = String(target);
-				metric.classList.add('is-counted');
-			};
-
-			if (reducedMotion || !('IntersectionObserver' in window)) {
-				complete();
-			} else {
-				const metricObserver = new IntersectionObserver(
-					([entry]) => {
-						if (!entry?.isIntersecting) return;
-						const start = performance.now();
-						const duration = 1050;
-						const tick = (now: number) => {
-							const progress = Math.min((now - start) / duration, 1);
-							const eased = 1 - Math.pow(1 - progress, 3);
-							metricValue.textContent = String(Math.round(target * eased));
-							if (progress < 1) requestAnimationFrame(tick);
-							else complete();
-						};
-						requestAnimationFrame(tick);
-						metricObserver.disconnect();
-					},
-					{ threshold: 0.55 },
-				);
-				metricObserver.observe(metric);
-			}
-		}
-	</script>
 </BaseLayout>
+
+<script>
+	/* Progressive reveal. When motion is reduced the stylesheet already shows
+	   everything, so this only ever adds polish and never gates content. */
+	const revealables = document.querySelectorAll<HTMLElement>('.reveal');
+
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+		revealables.forEach((element) => element.classList.add('is-visible'));
+	} else {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('is-visible');
+						observer.unobserve(entry.target);
+					}
+				}
+			},
+			{ rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+		);
+
+		revealables.forEach((element) => observer.observe(element));
+	}
+</script>
+
+<style>
+	.companies {
+		display: grid;
+		gap: 1.25rem;
+		padding-bottom: clamp(2.5rem, 5vw, 4rem);
+	}
+
+	.companies-label {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		text-align: center;
+	}
+
+	.stories {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.stories-stage {
+		margin-top: clamp(2rem, 4vw, 3rem);
+	}
+</style>

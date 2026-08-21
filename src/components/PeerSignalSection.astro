@@ -1,0 +1,56 @@
+---
+import RemotionPlayer from './remotion/RemotionPlayer';
+import SectionIntro from './SectionIntro.astro';
+import { SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
+import { signUpWith } from '../lib/content';
+---
+
+<section class="section peer-signal" id={SectionId.PeerSignal} aria-labelledby="peer-signal-title">
+	<div class="shell">
+		<SectionIntro
+			eyebrow="Offering 03, in practice"
+			title="The role reaches you before the job board does."
+			copy="A senior opening only becomes public once the internal search has failed. Peer signals reach you while it is still being filled quietly."
+			headingId="peer-signal-title"
+			align="center"
+			class="reveal"
+		/>
+
+		<div class="media-frame peer-signal-frame reveal">
+			<RemotionPlayer variant="signal" client:visible />
+		</div>
+
+		<div class="peer-signal-foot reveal">
+			<p class="fine-print">
+				You control the frequency, and you can turn peer signals off at any time.
+			</p>
+			<a class="text-link" href={signUpWith(SignUpIntent.Peer)} data-track={TrackEvent.OfferingPeer}>
+				Turn on peer openings
+				<svg viewBox="0 0 16 16" aria-hidden="true">
+					<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
+				</svg>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.peer-signal {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.peer-signal-frame {
+		max-width: 62rem;
+		margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
+	}
+
+	.peer-signal-foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem 1.5rem;
+		max-width: 62rem;
+		margin: 1.25rem auto 0;
+	}
+</style>

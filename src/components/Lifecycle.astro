@@ -1,0 +1,181 @@
+---
+import RemotionPlayer from './remotion/RemotionPlayer';
+import SectionIntro from './SectionIntro.astro';
+import { SectionId } from '../lib/constants';
+import { LIFECYCLE } from '../lib/content';
+---
+
+<section class="section lifecycle" id={SectionId.HowItWorks} aria-labelledby="lifecycle-title">
+	<div class="shell">
+		<SectionIntro
+			eyebrow="How it works"
+			title="Five steps, and a clock on every one."
+			copy="Nothing sits in limbo. Each stage has a deadline, and both sides can see exactly where the request stands."
+			headingId="lifecycle-title"
+			align="center"
+			class="reveal"
+		/>
+
+		<ol class="rail reveal">
+			{
+				LIFECYCLE.map((step) => (
+					<li class="rail-step">
+						<span class="rail-marker" aria-hidden="true">
+							<span class="rail-dot" />
+						</span>
+						<span class="rail-body">
+							<span class="rail-index mono">{step.index}</span>
+							<strong class="rail-title">{step.title}</strong>
+							<span class="rail-detail">{step.detail}</span>
+							{step.timing && <span class="rail-timing mono">{step.timing}</span>}
+						</span>
+					</li>
+				))
+			}
+		</ol>
+
+		<div class="media-frame lifecycle-frame reveal">
+			<RemotionPlayer variant="journey" client:visible />
+		</div>
+	</div>
+</section>
+
+<style>
+	.lifecycle {
+		border-top: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-elevated) / 45%);
+	}
+
+	:global([data-theme='dark']) .lifecycle {
+		background: rgb(var(--color-surface) / 40%);
+	}
+
+	.rail {
+		display: grid;
+		gap: 0;
+		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+		padding: 0;
+		counter-reset: step;
+		list-style: none;
+	}
+
+	.rail-step {
+		display: grid;
+		grid-template-columns: 1.75rem 1fr;
+		gap: 1rem;
+	}
+
+	/* ---- Marker and connector ---- */
+
+	.rail-marker {
+		position: relative;
+		display: grid;
+		justify-items: center;
+	}
+
+	.rail-dot {
+		position: relative;
+		z-index: 1;
+		width: 0.875rem;
+		height: 0.875rem;
+		margin-top: 0.3125rem;
+		border: 2px solid rgb(var(--color-primary));
+		border-radius: 50%;
+		background: rgb(var(--color-canvas));
+	}
+
+	/* Vertical connector for the stacked layout. */
+	.rail-marker::after {
+		position: absolute;
+		top: 1.25rem;
+		bottom: -0.5rem;
+		width: 1px;
+		background: rgb(var(--color-border));
+		content: '';
+	}
+
+	.rail-step:last-child .rail-marker::after {
+		display: none;
+	}
+
+	/* ---- Body ---- */
+
+	.rail-body {
+		display: grid;
+		gap: 0.25rem;
+		padding-bottom: 2rem;
+	}
+
+	.rail-index {
+		color: rgb(var(--color-primary));
+		font-weight: 600;
+	}
+
+	:global([data-theme='dark']) .rail-index {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	.rail-title {
+		font-size: 1.0625rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+	}
+
+	.rail-detail {
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		line-height: 1.55;
+	}
+
+	.rail-timing {
+		justify-self: start;
+		margin-top: 0.375rem;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface));
+		color: rgb(var(--color-muted));
+	}
+
+	.lifecycle-frame {
+		max-width: 64rem;
+		margin: clamp(1.5rem, 4vw, 2.5rem) auto 0;
+	}
+
+	/* ---- Responsive ----
+	   Stacked by default. From 64rem the rail turns horizontal: five equal
+	   columns with the connector running along the top. */
+
+	@media (min-width: 64rem) {
+		.rail {
+			grid-template-columns: repeat(5, 1fr);
+			gap: 1.5rem;
+		}
+
+		.rail-step {
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.rail-marker {
+			justify-items: start;
+		}
+
+		.rail-dot {
+			margin-top: 0;
+		}
+
+		.rail-marker::after {
+			top: 0.4375rem;
+			right: -1.5rem;
+			bottom: auto;
+			left: 1.25rem;
+			width: auto;
+			height: 1px;
+		}
+
+		.rail-body {
+			padding-bottom: 0;
+		}
+	}
+</style>

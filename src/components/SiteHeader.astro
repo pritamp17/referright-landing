@@ -1,0 +1,121 @@
+---
+import Brand from './Brand.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { SectionId, TrackEvent } from '../lib/constants';
+import { SIGNUP_URL } from '../lib/content';
+
+interface NavItem {
+	readonly label: string;
+	readonly href: string;
+}
+
+const navItems: readonly NavItem[] = [
+	{ label: 'How it works', href: `#${SectionId.HowItWorks}` },
+	{ label: 'Peer openings', href: `#${SectionId.PeerSignal}` },
+	{ label: 'Trust', href: `#${SectionId.Trust}` },
+];
+---
+
+<header class="site-header" data-site-header>
+	<div class="shell header-inner">
+		<Brand size="sm" />
+
+		<nav class="header-nav" aria-label="Primary">
+			{navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+		</nav>
+
+		<div class="header-actions">
+			<ThemeToggle />
+			<a class="button button-primary header-cta" href={SIGNUP_URL} data-track={TrackEvent.NavPrimary}>
+				Get started
+			</a>
+		</div>
+	</div>
+</header>
+
+<script>
+	const header = document.querySelector<HTMLElement>('[data-site-header]');
+
+	if (header) {
+		const sync = (): void => {
+			header.classList.toggle('is-condensed', window.scrollY > 24);
+		};
+		sync();
+		window.addEventListener('scroll', sync, { passive: true });
+	}
+</script>
+
+<style>
+	.site-header {
+		position: sticky;
+		z-index: 100;
+		top: 0;
+		border-bottom: 1px solid transparent;
+		background: rgb(var(--color-canvas) / 0%);
+		transition:
+			background-color var(--dur-mid) ease,
+			border-color var(--dur-mid) ease,
+			backdrop-filter var(--dur-mid) ease;
+	}
+
+	.site-header.is-condensed {
+		border-bottom-color: rgb(var(--color-border));
+		background: rgb(var(--color-canvas) / 82%);
+		backdrop-filter: blur(16px) saturate(1.4);
+	}
+
+	.header-inner {
+		display: flex;
+		height: 4.5rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+	}
+
+	.header-nav {
+		display: none;
+		align-items: center;
+		gap: 2rem;
+	}
+
+	.header-nav a {
+		display: inline-flex;
+		min-height: 2.75rem;
+		align-items: center;
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: color var(--dur-fast) ease;
+	}
+
+	.header-nav a:hover {
+		color: rgb(var(--color-ink));
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.header-cta {
+		min-height: 2.75rem;
+		padding-inline: 1.125rem;
+		font-size: 0.875rem;
+	}
+
+	@media (min-width: 62rem) {
+		.header-nav {
+			display: flex;
+		}
+	}
+
+	/* On the narrowest phones the wordmark plus a pill CTA plus the toggle is
+	   too much; the nav is already hidden, so drop the CTA label weight. */
+	@media (max-width: 24rem) {
+		.header-cta {
+			padding-inline: 0.875rem;
+			font-size: 0.8125rem;
+		}
+	}
+</style>

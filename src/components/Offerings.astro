@@ -1,0 +1,58 @@
+---
+import OfferingChapter from './OfferingChapter.astro';
+import PeerSignalDiagram from './PeerSignalDiagram.astro';
+import SectionIntro from './SectionIntro.astro';
+import { OfferingKind, SectionId, TrackEvent } from '../lib/constants';
+import { OFFERINGS } from '../lib/content';
+
+/** Analytics event per offering, resolved from the enum rather than inlined. */
+const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
+	[OfferingKind.AskForReferral]: TrackEvent.OfferingAsk,
+	[OfferingKind.GiveReferral]: TrackEvent.OfferingGive,
+	[OfferingKind.PeerSignal]: TrackEvent.OfferingPeer,
+};
+---
+
+<section class="section offerings" id={SectionId.Offerings} aria-labelledby="offerings-title">
+	<div class="shell">
+		<SectionIntro
+			eyebrow="Three ways to use RightRefer"
+			title="One network. Three ways it works for you."
+			copy="Whether you need the introduction, can make it, or would take the role yourself — the same verified network serves all three."
+			headingId="offerings-title"
+			align="center"
+			class="reveal"
+		/>
+
+		<div class="chapters">
+			{
+				OFFERINGS.map((offering, index) => (
+					<OfferingChapter
+						offering={offering}
+						reversed={index % 2 === 1}
+						trackEvent={TRACK_BY_KIND[offering.kind]}
+						headingId={`offering-${offering.kind}`}
+					>
+						{offering.kind === OfferingKind.PeerSignal && (
+							<Fragment slot="visual">
+								<PeerSignalDiagram />
+							</Fragment>
+						)}
+					</OfferingChapter>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.offerings {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.chapters {
+		display: grid;
+		gap: clamp(3.5rem, 8vw, 7rem);
+		margin-top: clamp(2.5rem, 5vw, 4rem);
+	}
+</style>
