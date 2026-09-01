@@ -1,0 +1,239 @@
+---
+/*
+ * The cue that says "there is more below".
+ *
+ * The hero now fills the viewport exactly, which solves the composition but
+ * creates a new problem: a screen with no visible cut edge reads as the whole
+ * page. This is the smallest honest fix — a low-contrast marker at the foot of
+ * the fold, sized so it never competes with the primary CTA a few hundred
+ * pixels above it.
+ *
+ * Five variants ship because the right one depends on the final value-prop
+ * treatment; DesignLab.astro switches between them with `data-scroll-cue`.
+ * It fades out as soon as the visitor scrolls, since a cue that survives the
+ * action it asked for is just clutter.
+ */
+---
+
+<a class="cue" href="#value" data-scroll-cue-el aria-label="Scroll to see more">
+	<span class="cue-text" aria-hidden="true">Scroll to explore</span>
+
+	<span class="cue-mark" aria-hidden="true">
+		<svg class="cue-glyph" data-cue="arrow" viewBox="0 0 16 22">
+			<path d="M8 3v15" />
+			<path d="m3.4 13.4 4.6 4.6 4.6-4.6" />
+		</svg>
+
+		<svg class="cue-glyph" data-cue="chevron" viewBox="0 0 16 22">
+			<path d="m3.4 7.6 4.6 4.6 4.6-4.6" />
+			<path class="cue-chevron-trail" d="m3.4 12.6 4.6 4.6 4.6-4.6" />
+		</svg>
+
+		<svg class="cue-glyph" data-cue="mouse" viewBox="0 0 16 22">
+			<rect x="2.6" y="1.6" width="10.8" height="18.8" rx="5.4" />
+			<path class="cue-wheel" d="M8 6v3.2" />
+		</svg>
+
+		<span class="cue-glyph cue-line" data-cue="line"><i></i></span>
+	</span>
+</a>
+
+<style>
+	.cue {
+		--cue-speed: 1;
+
+		position: relative;
+		z-index: 2;
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4375rem;
+		align-self: center;
+		padding: 0.25rem 0.5rem 0;
+		color: rgb(var(--color-primary) / 62%);
+		transition:
+			opacity var(--dur-slow) ease,
+			color var(--dur-mid) ease;
+	}
+
+	:global([data-theme='dark']) .cue {
+		color: rgb(var(--color-primary-strong) / 62%);
+	}
+
+	.cue:hover {
+		color: rgb(var(--color-primary));
+	}
+
+	/* The cue has done its job the moment the page moves. */
+	.cue.is-dismissed {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.cue-text {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.cue-mark {
+		position: relative;
+		display: inline-flex;
+		height: 1.375rem;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.cue-glyph {
+		width: 1rem;
+		height: 1.375rem;
+		display: none;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+	}
+
+	/* Only the selected variant is drawn; the rest stay in the DOM so the
+	   switch costs nothing. */
+	:global([data-scroll-cue='arrow']) .cue-glyph[data-cue='arrow'],
+	:global([data-scroll-cue='chevron']) .cue-glyph[data-cue='chevron'],
+	:global([data-scroll-cue='mouse']) .cue-glyph[data-cue='mouse'],
+	:global([data-scroll-cue='line']) .cue-glyph[data-cue='line'] {
+		display: block;
+	}
+
+	/* "Scroll to explore" is the words on their own — no mark underneath. */
+	:global([data-scroll-cue='text']) .cue-mark {
+		display: none;
+	}
+
+	/* Every other variant lets the mark speak and drops the label. */
+	:global([data-scroll-cue='arrow']) .cue-text,
+	:global([data-scroll-cue='chevron']) .cue-text,
+	:global([data-scroll-cue='mouse']) .cue-text,
+	:global([data-scroll-cue='line']) .cue-text {
+		display: none;
+	}
+
+	/* The trailing chevron is the quieter of the pair. */
+	.cue-chevron-trail {
+		opacity: 0.4;
+	}
+
+	.cue-line {
+		width: 1px;
+		height: 1.375rem;
+		overflow: hidden;
+		border-radius: var(--radius-pill);
+		background: currentcolor;
+		opacity: 0.28;
+	}
+
+	.cue-line i {
+		display: block;
+		width: 100%;
+		height: 45%;
+		border-radius: inherit;
+		background: currentcolor;
+	}
+
+	/* ---- Motion ---- */
+
+	@media (prefers-reduced-motion: no-preference) {
+		/*
+		 * A slow, small travel — under a quarter of a rem, over two seconds. A
+		 * bounce here would pull the eye off the CTA, which is the one thing
+		 * this element must not do.
+		 */
+		:global([data-scroll-cue='arrow']) .cue-glyph[data-cue='arrow'],
+		:global([data-scroll-cue='chevron']) .cue-glyph[data-cue='chevron'] {
+			animation: cue-drift calc(2600ms * var(--cue-speed)) ease-in-out infinite;
+		}
+
+		/* The wheel travels inside the mouse body, not the body itself. */
+		:global([data-scroll-cue='mouse']) .cue-wheel {
+			animation: cue-wheel calc(2200ms * var(--cue-speed)) ease-in-out infinite;
+		}
+
+		:global([data-scroll-cue='line']) .cue-line i {
+			animation: cue-line calc(2400ms * var(--cue-speed)) ease-in-out infinite;
+		}
+
+		:global([data-scroll-cue='text']) .cue-text {
+			animation: cue-fade calc(3000ms * var(--cue-speed)) ease-in-out infinite;
+		}
+	}
+
+	@keyframes cue-drift {
+		0%,
+		100% {
+			opacity: 0.75;
+			transform: translateY(-0.1875rem);
+		}
+		50% {
+			opacity: 1;
+			transform: translateY(0.1875rem);
+		}
+	}
+
+	@keyframes cue-wheel {
+		0%,
+		100% {
+			opacity: 0.4;
+			transform: translateY(0);
+		}
+		50% {
+			opacity: 1;
+			transform: translateY(0.3125rem);
+		}
+	}
+
+	@keyframes cue-line {
+		0% {
+			opacity: 0;
+			transform: translateY(-100%);
+		}
+		35%,
+		65% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(220%);
+		}
+	}
+
+	@keyframes cue-fade {
+		0%,
+		100% {
+			opacity: 0.6;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.cue-glyph,
+		.cue-text,
+		.cue-line i,
+		.cue-wheel {
+			animation: none;
+		}
+	}
+</style>
+
+<script>
+	const cue = document.querySelector<HTMLElement>('[data-scroll-cue-el]');
+
+	if (cue) {
+		const sync = (): void => {
+			cue.classList.toggle('is-dismissed', window.scrollY > 40);
+		};
+		sync();
+		window.addEventListener('scroll', sync, { passive: true });
+	}
+</script>

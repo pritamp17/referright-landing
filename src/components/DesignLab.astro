@@ -1,0 +1,500 @@
+---
+/*
+ * Design preview panel — a development tool, not part of the product surface.
+ *
+ * Each scroll-cue variant is expressed in CSS keyed off a `data-*` attribute on
+ * <html>. This panel is the only thing that writes those attributes, which
+ * means comparing directions is a class swap rather than a code edit, and
+ * deleting this one file plus its import removes the whole mechanism.
+ *
+ * It renders only when the page is served by `astro dev`, or when any page is
+ * loaded with `?design` in the query string. It is inert in a normal build.
+ */
+
+interface Option {
+	readonly value: string;
+	readonly label: string;
+}
+
+interface Control {
+	readonly key: string;
+	/** The `data-` attribute written to <html>, minus the `data-` prefix. */
+	readonly attr: string;
+	readonly label: string;
+	readonly hint: string;
+	readonly options: readonly Option[];
+	/** Segmented controls suit 2–3 short options; longer sets get a select. */
+	readonly as: 'segmented' | 'select';
+}
+
+const controls: readonly Control[] = [
+	{
+		key: 'cue',
+		attr: 'scroll-cue',
+		label: 'Scroll indicator',
+		hint: 'The marker at the foot of the fold.',
+		as: 'select',
+		options: [
+			{ value: 'arrow', label: 'Arrow' },
+			{ value: 'chevron', label: 'Chevron' },
+			{ value: 'mouse', label: 'Mouse indicator' },
+			{ value: 'line', label: 'Animated line' },
+			{ value: 'text', label: '“Scroll to explore”' },
+		],
+	},
+	{
+		key: 'speed',
+		attr: 'cue-speed',
+		label: 'Animation speed',
+		hint: 'Scales the cue’s loop duration.',
+		as: 'segmented',
+		options: [
+			{ value: 'slow', label: 'Slow' },
+			{ value: 'normal', label: 'Normal' },
+			{ value: 'fast', label: 'Fast' },
+		],
+	},
+];
+
+/*
+ * The shipped design. Also the fallback the panel resets to, and the state the
+ * page renders with when the panel is not active at all — so whatever is set
+ * here is what a real visitor sees.
+ */
+const DEFAULTS: Record<string, string> = {
+	cue: 'chevron',
+	speed: 'normal',
+};
+
+const isDev = import.meta.env.DEV;
+---
+
+{/* Written before paint so the page never flashes the default treatment first. */}
+<script
+	is:inline
+	define:vars={{
+		defaults: DEFAULTS,
+		attrs: Object.fromEntries(controls.map((control) => [control.key, control.attr])),
+		speeds: { slow: 1.6, normal: 1, fast: 0.6 },
+	}}
+>
+	(() => {
+		const root = document.documentElement;
+		let saved = {};
+		try {
+			saved = JSON.parse(localStorage.getItem('rightrefer-design-lab') ?? '{}');
+		} catch {
+			saved = {};
+		}
+
+		/*
+		 * Precedence: query string beats the last saved state beats the shipped
+		 * default. The query string is what makes a combination shareable —
+		 * `?design&style=tint&icon=brand` opens the page in that direction
+		 * without touching anyone's stored preferences.
+		 */
+		const params = new URLSearchParams(window.location.search);
+		const fromUrl = {};
+		for (const key of Object.keys(defaults)) {
+			const value = params.get(key);
+			if (value) fromUrl[key] = value;
+		}
+
+		const state = { ...defaults, ...saved, ...fromUrl };
+
+		for (const [key, attr] of Object.entries(attrs)) {
+			// `inherit` means "do not write the attribute", which lets the style
+			// direction's own background rule stand.
+			if (state[key] === 'inherit') root.removeAttribute('data-' + attr);
+			else root.setAttribute('data-' + attr, state[key]);
+		}
+
+		root.style.setProperty('--cue-speed', String(speeds[state.speed] ?? 1));
+		window.__designLabState = state;
+	})();
+</script>
+
+<aside class="lab" data-design-lab data-dev={isDev ? 'true' : 'false'} hidden>
+	<button class="lab-toggle" type="button" data-lab-toggle aria-expanded="false">
+		<svg viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M12 3.25a8.75 8.75 0 1 0 0 17.5 8.75 8.75 0 0 0 0-17.5Z" />
+			<path d="M12 3.25v17.5" />
+		</svg>
+		<span>Design</span>
+	</button>
+
+	<div class="lab-panel" data-lab-panel hidden>
+		<header class="lab-head">
+			<div>
+				<p class="lab-title">Design preview</p>
+				<p class="lab-sub">Development tool · not shipped</p>
+			</div>
+			<button class="lab-reset" type="button" data-lab-reset>Reset</button>
+		</header>
+
+		<div class="lab-body">
+			{
+				controls.map((control) => (
+					<div class="lab-field">
+						<label class="lab-label" for={`lab-${control.key}`}>
+							{control.label}
+						</label>
+
+						{control.as === 'segmented' ? (
+							<div class="lab-segmented" role="group" aria-label={control.label}>
+								{control.options.map((option) => (
+									<button
+										type="button"
+										data-lab-control={control.key}
+										data-lab-value={option.value}
+										aria-pressed="false"
+									>
+										{option.label}
+									</button>
+								))}
+							</div>
+						) : (
+							<select id={`lab-${control.key}`} data-lab-control={control.key}>
+								{control.options.map((option) => (
+									<option value={option.value}>{option.label}</option>
+								))}
+							</select>
+						)}
+
+						<p class="lab-hint">{control.hint}</p>
+					</div>
+				))
+			}
+		</div>
+
+		<footer class="lab-foot">
+			<p class="lab-foot-label">Shareable query</p>
+			<code class="lab-readout" data-lab-readout></code>
+		</footer>
+	</div>
+</aside>
+
+<style>
+	.lab {
+		position: fixed;
+		z-index: 900;
+		right: clamp(0.75rem, 2vw, 1.5rem);
+		bottom: clamp(0.75rem, 2vw, 1.5rem);
+		display: flex;
+		flex-direction: column-reverse;
+		align-items: flex-end;
+		gap: 0.625rem;
+		font-family: var(--font-sans);
+	}
+
+	.lab[hidden] {
+		display: none;
+	}
+
+	.lab-toggle {
+		display: inline-flex;
+		min-height: 2.5rem;
+		align-items: center;
+		gap: 0.4375rem;
+		padding: 0 0.9375rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface) / 90%);
+		box-shadow: var(--shadow-raised);
+		color: rgb(var(--color-ink));
+		cursor: pointer;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		transition:
+			border-color var(--dur-fast) ease,
+			transform var(--dur-fast) var(--ease-out);
+	}
+
+	.lab-toggle:hover {
+		border-color: rgb(var(--color-primary) / 45%);
+		transform: translateY(-1px);
+	}
+
+	.lab-toggle svg {
+		width: 0.9375rem;
+		height: 0.9375rem;
+		fill: none;
+		stroke: rgb(var(--color-primary));
+		stroke-width: 1.6;
+	}
+
+	/* ---- Panel ---- */
+
+	.lab-panel {
+		display: grid;
+		width: min(20rem, calc(100vw - 1.5rem));
+		max-height: min(32rem, calc(100vh - 6rem));
+		grid-template-rows: auto minmax(0, 1fr) auto;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-lg);
+		background: rgb(var(--color-surface) / 96%);
+		box-shadow: var(--shadow-panel);
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
+	}
+
+	/* `display: grid` above outranks the UA's `[hidden] { display: none }`, so
+	   the collapsed state has to be restated here. */
+	.lab-panel[hidden] {
+		display: none;
+	}
+
+	.lab-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.875rem 1rem 0.75rem;
+		border-bottom: 1px solid rgb(var(--color-border) / 70%);
+	}
+
+	.lab-title {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 650;
+		letter-spacing: -0.012em;
+	}
+
+	.lab-sub {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.6875rem;
+	}
+
+	.lab-reset {
+		padding: 0.25rem 0.5rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-sm);
+		background: none;
+		color: rgb(var(--color-muted));
+		cursor: pointer;
+		font-size: 0.6875rem;
+		font-weight: 600;
+	}
+
+	.lab-reset:hover {
+		border-color: rgb(var(--color-primary) / 45%);
+		color: rgb(var(--color-ink));
+	}
+
+	/* The panel is deliberately taller than most viewports allow, so this is
+	   the scroll surface the brief asked for. */
+	.lab-body {
+		display: grid;
+		overflow-y: auto;
+		gap: 0.875rem;
+		padding: 0.875rem 1rem;
+		overscroll-behavior: contain;
+	}
+
+	.lab-field {
+		display: grid;
+		gap: 0.3125rem;
+	}
+
+	.lab-label {
+		color: rgb(var(--color-ink));
+		font-size: 0.75rem;
+		font-weight: 650;
+	}
+
+	.lab-hint {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.6875rem;
+		line-height: 1.35;
+	}
+
+	.lab-field select {
+		width: 100%;
+		min-height: 2.125rem;
+		padding: 0 0.5rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-sm);
+		background: rgb(var(--color-field));
+		color: rgb(var(--color-ink));
+		cursor: pointer;
+		font-size: 0.8125rem;
+	}
+
+	.lab-segmented {
+		display: grid;
+		grid-auto-columns: 1fr;
+		grid-auto-flow: column;
+		gap: 0.25rem;
+		padding: 0.1875rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-sm);
+		background: rgb(var(--color-elevated) / 60%);
+	}
+
+	.lab-segmented button {
+		min-height: 1.75rem;
+		border: none;
+		border-radius: calc(var(--radius-sm) - 0.1875rem);
+		background: none;
+		color: rgb(var(--color-muted));
+		cursor: pointer;
+		font-size: 0.75rem;
+		font-weight: 600;
+		transition:
+			background-color var(--dur-fast) ease,
+			color var(--dur-fast) ease;
+	}
+
+	.lab-segmented button[aria-pressed='true'] {
+		background: rgb(var(--color-surface));
+		box-shadow: var(--shadow-raised);
+		color: rgb(var(--color-ink));
+	}
+
+	.lab-foot {
+		padding: 0.625rem 1rem 0.75rem;
+		border-top: 1px solid rgb(var(--color-border) / 70%);
+	}
+
+	.lab-foot-label {
+		margin: 0 0 0.1875rem;
+		color: rgb(var(--color-muted));
+		font-size: 0.625rem;
+		font-weight: 650;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.lab-readout {
+		display: block;
+		overflow-wrap: anywhere;
+		color: rgb(var(--color-muted));
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		line-height: 1.5;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lab-toggle,
+		.lab-segmented button {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	/*
+	 * Panel behaviour. Reads the state the inline block above already applied,
+	 * so opening the panel never re-flashes the page.
+	 */
+	const SPEEDS: Record<string, number> = { slow: 1.6, normal: 1, fast: 0.6 };
+	const ATTRS: Record<string, string> = {
+		cue: 'scroll-cue',
+		speed: 'cue-speed',
+	};
+	const DEFAULTS: Record<string, string> = {
+		cue: 'chevron',
+		speed: 'normal',
+	};
+	const STORAGE_KEY = 'rightrefer-design-lab';
+
+	const lab = document.querySelector<HTMLElement>('[data-design-lab]');
+
+	if (lab) {
+		const isDev = lab.dataset.dev === 'true';
+		const requested = new URLSearchParams(window.location.search).has('design');
+
+		// Inert on a production build unless explicitly asked for.
+		if (!isDev && !requested) {
+			lab.remove();
+		} else {
+			const panel = lab.querySelector<HTMLElement>('[data-lab-panel]');
+			const toggle = lab.querySelector<HTMLButtonElement>('[data-lab-toggle]');
+			const reset = lab.querySelector<HTMLButtonElement>('[data-lab-reset]');
+			const readout = lab.querySelector<HTMLElement>('[data-lab-readout]');
+			const root = document.documentElement;
+
+			const state: Record<string, string> = {
+				...DEFAULTS,
+				...((window as unknown as { __designLabState?: Record<string, string> })
+					.__designLabState ?? {}),
+			};
+
+			const apply = (): void => {
+				for (const [key, attr] of Object.entries(ATTRS)) {
+					if (state[key] === 'inherit') root.removeAttribute(`data-${attr}`);
+					else root.setAttribute(`data-${attr}`, state[key]);
+				}
+
+				const speed = String(SPEEDS[state.speed] ?? 1);
+				root.style.setProperty('--cue-speed', speed);
+
+				// Selects and segmented buttons both mirror `state`, so the two
+				// control kinds can never disagree about what is active.
+				lab.querySelectorAll<HTMLSelectElement>('select[data-lab-control]').forEach((select) => {
+					const key = select.dataset.labControl;
+					if (key && state[key]) select.value = state[key];
+				});
+
+				lab
+					.querySelectorAll<HTMLButtonElement>('button[data-lab-control]')
+					.forEach((button) => {
+						const key = button.dataset.labControl;
+						const active = Boolean(key) && state[key!] === button.dataset.labValue;
+						button.setAttribute('aria-pressed', String(active));
+					});
+
+				if (readout) {
+					const query = Object.entries(state)
+						.map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+						.join('&');
+					readout.textContent = `?design&${query}`;
+				}
+
+				try {
+					localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+				} catch {
+					/* Private browsing; the panel still works for this session. */
+				}
+			};
+
+			const set = (key: string, value: string): void => {
+				state[key] = value;
+				apply();
+			};
+
+			toggle?.addEventListener('click', () => {
+				const open = panel?.hidden ?? false;
+				if (panel) panel.hidden = !open;
+				toggle.setAttribute('aria-expanded', String(open));
+			});
+
+			reset?.addEventListener('click', () => {
+				Object.assign(state, DEFAULTS);
+				apply();
+			});
+
+			lab.querySelectorAll<HTMLSelectElement>('select[data-lab-control]').forEach((select) => {
+				select.addEventListener('change', () => {
+					const key = select.dataset.labControl;
+					if (key) set(key, select.value);
+				});
+			});
+
+			lab.querySelectorAll<HTMLButtonElement>('button[data-lab-control]').forEach((button) => {
+				button.addEventListener('click', () => {
+					const key = button.dataset.labControl;
+					const value = button.dataset.labValue;
+					if (key && value) set(key, value);
+				});
+			});
+
+			lab.hidden = false;
+			apply();
+		}
+	}
+</script>

@@ -33,9 +33,12 @@ const year = new Date().getFullYear();
 
 			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
 
-			<a class="footer-mail" href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.ContactEmail}>
-				{CONTACT_EMAIL}
-			</a>
+			<div class="footer-support">
+				<span class="footer-support-label">Support</span>
+				<a class="footer-mail" href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.ContactEmail}>
+					{CONTACT_EMAIL}
+				</a>
+			</div>
 		</div>
 	</footer>
 </section>
@@ -92,6 +95,20 @@ const year = new Date().getFullYear();
 		font-size: 0.8125rem;
 	}
 
+	.footer-support {
+		display: grid;
+		justify-items: center;
+		gap: 0.125rem;
+	}
+
+	.footer-support-label {
+		color: rgb(var(--color-muted));
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
 	.footer-mail {
 		display: inline-flex;
 		min-height: 2.75rem;
@@ -115,6 +132,10 @@ const year = new Date().getFullYear();
 
 		.footer-note {
 			justify-self: center;
+		}
+
+		.footer-support {
+			justify-items: end;
 		}
 	}
 </style>

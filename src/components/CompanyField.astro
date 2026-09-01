@@ -28,7 +28,6 @@ interface Company {
 	readonly name: string;
 	readonly icon: SimpleIcon;
 }
-
 const companies: readonly Company[] = [
 	{ name: 'Google', icon: siGoogle },
 	{ name: 'Atlassian', icon: siAtlassian },
@@ -49,6 +48,67 @@ const companies: readonly Company[] = [
 	{ name: 'Apple', icon: siApple },
 ];
 
+/*
+ * Each logo keeps its own brand colour, but a brand hex is only ever tuned for
+ * one background. Apple's black and GitHub's near-black vanish on the dark
+ * canvas; a near-white mark would vanish on the cream one. So every icon
+ * resolves to two values — one per theme — and only the marks that would
+ * actually be unreadable get moved, by the smallest step that fixes them.
+ *
+ * Hue is never rotated and saturation is never touched, so Netflix stays
+ * Netflix red and Spotify stays Spotify green. The test is perceptual
+ * luminance, not the raw hex, which is why a dark-but-saturated red passes on
+ * black while an equally dark navy does not.
+ */
+const channels = (hex: string): readonly number[] => [
+	Number.parseInt(hex.slice(0, 2), 16),
+	Number.parseInt(hex.slice(2, 4), 16),
+	Number.parseInt(hex.slice(4, 6), 16),
+];
+
+/** sRGB channel (0–255) to its linear-light value, per WCAG. */
+const linear = (channel: number): number => {
+	const value = channel / 255;
+	return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+};
+
+const luminance = (rgb: readonly number[]): number =>
+	0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1]) + 0.0722 * linear(rgb[2]);
+
+const toCss = (rgb: readonly number[]): string =>
+	`#${rgb
+		.map((channel) =>
+			Math.round(Math.min(255, Math.max(0, channel)))
+				.toString(16)
+				.padStart(2, '0'),
+		)
+		.join('')}`;
+
+const mixTowards = (rgb: readonly number[], target: number, amount: number): readonly number[] =>
+	rgb.map((channel) => channel + (target - channel) * amount);
+
+/**
+ * Walks the colour towards `target` (255 = white, 0 = black) in small steps and
+ * stops at the first one that reads. Most logos never enter the loop at all.
+ */
+const nudge = (hex: string, target: number, reads: (lum: number) => boolean): string => {
+	const rgb = channels(hex);
+	if (reads(luminance(rgb))) return `#${hex}`;
+
+	for (let amount = 0.1; amount < 0.9; amount += 0.1) {
+		const candidate = mixTowards(rgb, target, amount);
+		if (reads(luminance(candidate))) return toCss(candidate);
+	}
+
+	return toCss(mixTowards(rgb, target, 0.9));
+};
+
+/** On the cream canvas, only near-white marks need darkening. */
+const onLight = (hex: string): string => nudge(hex, 0, (lum) => lum <= 0.6);
+
+/** On the near-black canvas, only genuinely dark marks need lifting. */
+const onDark = (hex: string): string => nudge(hex, 255, (lum) => lum >= 0.09);
+
 /* Duplicated once so the marquee can loop seamlessly at -50%. */
 const marquee: readonly Company[] = [...companies, ...companies];
 ---
@@ -57,7 +117,11 @@ const marquee: readonly Company[] = [...companies, ...companies];
 	<div class="company-track">
 		{
 			marquee.map((company, index) => (
-				<span class="company-chip" aria-hidden={index >= companies.length ? 'true' : undefined}>
+				<span
+					class="company-chip"
+					style={`--logo-light: ${onLight(company.icon.hex)}; --logo-dark: ${onDark(company.icon.hex)};`}
+					aria-hidden={index >= companies.length ? 'true' : undefined}
+				>
 					<svg viewBox="0 0 24 24" role="img" aria-label={`${company.name} logo`}>
 						<path d={company.icon.path} />
 					</svg>
@@ -78,31 +142,50 @@ const marquee: readonly Company[] = [...companies, ...companies];
 		display: flex;
 		width: max-content;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 0.625rem;
+		padding-block: 0.25rem;
 		animation: company-drift 60s linear infinite;
 	}
 
 	.company-chip {
 		display: inline-flex;
+		min-height: 2.625rem;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.625rem 1rem;
-		border: 1px solid rgb(var(--color-border));
+		gap: 0.5625rem;
+		padding: 0 1.0625rem;
+		border: 1px solid rgb(var(--color-border) / 70%);
 		border-radius: var(--radius-pill);
-		background: rgb(var(--color-surface));
-		color: rgb(var(--color-muted));
+		background: rgb(var(--color-surface) / 70%);
+		color: rgb(var(--color-ink) / 78%);
 		font-size: 0.875rem;
-		font-weight: 500;
+		font-weight: 550;
+		letter-spacing: -0.005em;
 		white-space: nowrap;
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 	}
 
-	/* Logos are rendered in ink, not in brand colours — a wall of competing
-	   brand hues would fight the page's single blue accent. */
+	/*
+	 * Each mark carries its own brand colour so the wall reads as real
+	 * companies rather than a set of generic glyphs. The chip around it stays
+	 * neutral and identically sized for every logo, which is what keeps
+	 * seventeen different hues from turning into noise.
+	 */
 	.company-chip svg {
 		width: 1.125rem;
 		height: 1.125rem;
 		flex: 0 0 auto;
-		fill: rgb(var(--color-ink) / 62%);
+		fill: var(--logo-light, rgb(var(--color-ink)));
+	}
+
+	:global([data-theme='dark']) .company-chip {
+		border-color: rgb(var(--color-border) / 80%);
+		background: rgb(var(--color-surface) / 62%);
+		color: rgb(var(--color-ink) / 82%);
+	}
+
+	:global([data-theme='dark']) .company-chip svg {
+		fill: var(--logo-dark, rgb(var(--color-ink)));
 	}
 
 	@keyframes company-drift {
@@ -110,7 +193,7 @@ const marquee: readonly Company[] = [...companies, ...companies];
 			transform: translateX(0);
 		}
 		to {
-			transform: translateX(calc(-50% - 0.375rem));
+			transform: translateX(calc(-50% - 0.3125rem));
 		}
 	}
 
@@ -118,6 +201,7 @@ const marquee: readonly Company[] = [...companies, ...companies];
 		.company-track {
 			flex-wrap: wrap;
 			width: 100%;
+			gap: 0.625rem;
 			animation: none;
 			justify-content: center;
 		}

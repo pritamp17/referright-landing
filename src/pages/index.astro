@@ -4,6 +4,7 @@ import Appreciation from '../components/Appreciation.astro';
 import BetaProof from '../components/BetaProof.astro';
 import ClosingSection from '../components/ClosingSection.astro';
 import CompanyField from '../components/CompanyField.astro';
+import DesignLab from '../components/DesignLab.astro';
 import Hero from '../components/Hero.astro';
 import Lifecycle from '../components/Lifecycle.astro';
 import Offerings from '../components/Offerings.astro';
@@ -73,7 +74,11 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 	<main id="main-content">
 		<Hero />
 
-		<section class="companies" aria-label="Companies people request referrals into">
+		<section
+			class="companies reveal"
+			id="value"
+			aria-label="Companies people request referrals into"
+		>
 			<div class="shell">
 				<p class="companies-label">Requests are open at companies like</p>
 			</div>
@@ -89,6 +94,10 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 
 		<ClosingSection />
 	</main>
+
+	{/* Development-only design preview. Removes itself on a production build
+	    unless the page is loaded with `?design`. */}
+	<DesignLab />
 </BaseLayout>
 
 <script>
@@ -116,19 +125,24 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 </script>
 
 <style>
+	/*
+	 * The hero now owns the whole first screen, so this band is the first thing
+	 * a scroll reveals. It gets its own top padding rather than borrowing the
+	 * hero's, so the logos arrive as a deliberate second beat.
+	 */
 	.companies {
 		display: grid;
-		gap: 1.25rem;
-		padding-bottom: clamp(2.5rem, 5vw, 4rem);
+		gap: 1.5rem;
+		padding-top: clamp(3rem, 6vw, 4.5rem);
+		padding-bottom: clamp(3rem, 6vw, 4.5rem);
 	}
 
 	.companies-label {
 		margin: 0;
 		color: rgb(var(--color-muted));
 		font-size: 0.8125rem;
-		font-weight: 500;
-		letter-spacing: 0.02em;
+		font-weight: 550;
+		letter-spacing: 0.025em;
 		text-align: center;
 	}
-
 </style>

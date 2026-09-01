@@ -4,7 +4,7 @@ import { Accent, LifecycleStage, OfferingKind, POLICY, SignUpIntent } from './co
 /* Links                                                               */
 /* ------------------------------------------------------------------ */
 
-const SIGNUP_BASE: string = import.meta.env.PUBLIC_APP_SIGNUP_URL || '/signup';
+const SIGNUP_BASE: string = import.meta.env.PUBLIC_APP_SIGNUP_URL || 'https://app.rightrefer.com/';
 
 /** Append a sign-up intent without assuming whether the base URL already has a
  *  query string. */
@@ -12,7 +12,8 @@ export const signUpWith = (intent: SignUpIntent): string =>
 	`${SIGNUP_BASE}${SIGNUP_BASE.includes('?') ? '&' : '?'}intent=${intent}`;
 
 export const SIGNUP_URL: string = SIGNUP_BASE;
-export const CONTACT_EMAIL: string = import.meta.env.PUBLIC_CONTACT_EMAIL || 'hello@rightrefer.com';
+export const CONTACT_EMAIL: string =
+	import.meta.env.PUBLIC_CONTACT_EMAIL || 'rightrefer.team@gmail.com';
 
 /** Verified private-beta outcome shown in the landing-page proof module. */
 export const PRIVATE_BETA_REFERRAL_COUNT = 78;
