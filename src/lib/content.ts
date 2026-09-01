@@ -6,10 +6,10 @@ import { Accent, LifecycleStage, OfferingKind, POLICY, SignUpIntent } from './co
 
 const SIGNUP_BASE: string = import.meta.env.PUBLIC_APP_SIGNUP_URL || 'https://app.rightrefer.com/';
 
-/** Append a sign-up intent without assuming whether the base URL already has a
- *  query string. */
-export const signUpWith = (intent: SignUpIntent): string =>
-	`${SIGNUP_BASE}${SIGNUP_BASE.includes('?') ? '&' : '?'}intent=${intent}`;
+/** All CTAs redirect to the app's landing page directly — no intent query
+ *  string. The `intent` param is kept for call-site clarity/future use but is
+ *  intentionally unused here. */
+export const signUpWith = (_intent: SignUpIntent): string => SIGNUP_BASE;
 
 export const SIGNUP_URL: string = SIGNUP_BASE;
 export const CONTACT_EMAIL: string =
