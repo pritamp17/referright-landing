@@ -41,14 +41,11 @@ import { LIFECYCLE } from '../lib/content';
 </section>
 
 <style>
-	/*
-	 * Plain canvas. This used to carry the exact same radial primary wash as the
-	 * trust section directly below it, so the two merged into one long band
-	 * instead of reading as two ideas. The wash now belongs to trust alone.
-	 */
 	.lifecycle {
 		border-top: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-canvas));
+		background:
+			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
+			rgb(var(--color-canvas));
 	}
 
 	.rail {

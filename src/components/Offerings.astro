@@ -94,14 +94,13 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 
 <style>
 	/*
-	 * A raised band. The page below the hero used to be seven consecutive
-	 * sections on the identical canvas, separated only by hairlines; this is
-	 * one of the two surfaces that now breaks that up.
+	 * The shared canvas, like every other section. Separation on this page comes
+	 * from the frame below sitting ON the canvas, not from repainting the band —
+	 * alternating section backgrounds reads as stripes, and it makes the page
+	 * argue with itself rather than hold together.
 	 */
 	.offerings {
 		border-top: 1px solid rgb(var(--color-border));
-		border-bottom: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-surface));
 	}
 
 	/*
@@ -119,6 +118,7 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 		border: 1px solid rgb(var(--color-ink) / 14%);
 		border-radius: var(--radius-xxl);
 		background: rgb(var(--color-ink) / 12%);
+		box-shadow: var(--shadow-raised);
 		list-style: none;
 	}
 
@@ -130,7 +130,7 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 		display: grid;
 		grid-template-rows: auto auto auto auto 1fr auto;
 		padding: clamp(1.5rem, 3vw, 2rem);
-		background: rgb(var(--color-canvas));
+		background: rgb(var(--color-surface));
 	}
 
 	.door-index {

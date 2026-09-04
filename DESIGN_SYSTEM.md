@@ -263,38 +263,41 @@ There are **no hex literals** in that file. Keep it that way.
 
 ---
 
-## 14. Section background rhythm
+## 14. One canvas, contrast at the component level
 
-**The problem this fixes.** Measured on the live page before this change: of the
-nine sections in `<main>`, **seven had no background at all** (`rgba(0,0,0,0)`,
-i.e. bare canvas), and the only two that did — `how-it-works` and `trust` —
-carried the *identical* radial wash while sitting directly next to each other,
-so they merged into one band. The entire page below the hero was one flat cream,
-separated only by 1px hairlines. That, more than any single component, is why it
-read as flat.
+**Sections do not get their own background colours.** Every section sits on
+`--color-canvas`, separated by a hairline and by section spacing. The one
+exception the page already had — a ~4% primary wash on `lifecycle` and `trust` —
+is deliberately far too faint to read as a colour change.
 
-**The rule: no two adjacent sections share a background.** Three surfaces plus
-the closing panel, all composed from locked tokens:
+This rule was learned by breaking it. The page below the hero genuinely was
+flat, and the first attempt at a fix gave each section its own surface:
+`canvas → raised → canvas → tint → canvas → tint → raised → canvas → deep blue`.
+It technically satisfied "no two adjacent sections share a background" and it
+looked *worse* — a striped page where every scroll position announces a new
+band, and the eye reads the seams instead of the content. Alternating bands are
+not rhythm; they are noise with a rule attached.
 
-| Surface | Value | Used by |
-|---|---|---|
-| Canvas | `--color-canvas` | `value`, `stories`, `how-it-works`, `faq` |
-| Raised | `--color-surface` + hairline top and bottom | `offerings`, `appreciation` |
-| Tint | `--color-primary-soft` gradient over canvas | `peer-signal`, `trust` |
-| Brand panel | `--color-brand-panel` | `contact` (closing + footer) |
+**Depth belongs to components, not bands.** A flat page is fixed by giving the
+content real structure and letting it sit on one calm ground:
 
-Giving the sequence `canvas → raised → canvas → tint → canvas → tint → raised →
-canvas → brand`. Check this property when adding or reordering a section; it is
-the whole point and it breaks silently.
+- the offerings frame — a bordered, shadowed container of `--color-surface`
+  cells on the canvas;
+- the FAQ's ruled rows;
+- the trust pillar grid;
+- the `.media-frame` around each film;
+- the brand-panel stat card inside `BetaProof`.
 
-**The closing section is inverted.** `--color-brand-panel` /
-`--color-brand-panel-ink` exist for exactly this, stay blue in *both* themes, and
-were previously used only by one card inside `BetaProof`. On that panel the
-primary button would be blue-on-blue, so the closing CTA uses `.button-on-brand`:
-the panel's foreground becomes the fill and the panel colour becomes the label.
-`Brand` takes `onBrandSurface`, and `.grid-texture` is redrawn from
-`--color-brand-panel-ink` because the shared version is drawn from `--color-ink`,
-which is near-black in light mode and therefore invisible there.
+That is where `--color-surface`, borders and `--shadow-raised` are spent. It
+gives the page more depth than banding did, and the ground stays constant.
+
+**Corollary, and the tell that the banding was wrong: the primary CTA never
+changes appearance.** `.button-primary` is brand blue with a white label in
+every position on the page. When the closing section was briefly a deep blue
+panel it needed an inverted button, because blue-on-blue is unreadable — which
+meant the page's single most important action looked like two different
+controls depending on where you met it. If a background forces a component to
+restyle itself, the background is the thing that is wrong.
 
 ---
 
