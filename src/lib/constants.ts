@@ -46,6 +46,7 @@ export enum SectionId {
 	PeerSignal = 'peer-signal',
 	Trust = 'trust',
 	Appreciation = 'appreciation',
+	Faq = 'faq',
 	Stories = 'stories',
 	Contact = 'contact',
 }
@@ -55,6 +56,7 @@ export enum TrackEvent {
 	HeroPrimary = 'hero-primary',
 	HeroSecondary = 'hero-secondary',
 	NavPrimary = 'nav-primary',
+	FaqContact = 'faq-contact',
 	OfferingAsk = 'offering-ask',
 	OfferingGive = 'offering-give',
 	OfferingPeer = 'offering-peer',
