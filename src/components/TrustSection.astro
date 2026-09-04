@@ -44,12 +44,22 @@ import { TRUST_PILLARS } from '../lib/content';
 	 * the page. A restrained primary wash adds depth without turning the section
 	 * into a separate colored panel.
 	 */
+	/*
+	 * A light blue field, as DESIGN_SYSTEM.md §10 specifies for this section:
+	 * a mechanism-and-evidence argument reads better on a tinted field than on
+	 * the deep brand panel, which reads as marketing theatre.
+	 *
+	 * It had drifted to a 4% radial wash — visually indistinguishable from the
+	 * canvas, and identical to the wash the lifecycle section above it was also
+	 * carrying, so the two merged into one undifferentiated band. This is now a
+	 * real tint, and the lifecycle section is plain canvas, so they separate.
+	 */
 	.trust {
 		position: relative;
 		overflow: hidden;
 		border-top: 1px solid rgb(var(--color-border));
 		background:
-			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
+			linear-gradient(rgb(var(--color-primary-soft) / 62%), rgb(var(--color-primary-soft) / 30%)),
 			rgb(var(--color-canvas));
 		isolation: isolate;
 	}

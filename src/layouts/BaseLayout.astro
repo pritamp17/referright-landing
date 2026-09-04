@@ -1,6 +1,7 @@
 ---
 import Analytics from '@vercel/analytics/astro';
 import { THEME_STORAGE_KEY, ThemeMode } from '../lib/constants';
+import { FAQ_ITEMS } from '../lib/content';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
@@ -89,6 +90,32 @@ const themePrepaint = `(function(){try{
 				name: 'RightRefer',
 				url: canonicalUrl.origin,
 				description,
+			})}
+		/>
+
+		{/*
+		 * FAQ structured data, generated from the same array the FAQ section
+		 * renders so the two cannot drift.
+		 *
+		 * Worth being clear about what this does and does not buy: Google
+		 * retired FAQ rich results on 2026-05-07 (they now show only for
+		 * authoritative government and health sites) and the Search Console FAQ
+		 * report went with it. So this earns no rich result. It stays because it
+		 * describes the Q&A structure to AI search surfaces, and because unused
+		 * structured data is harmless — but nobody should expect stars in the
+		 * SERP from it.
+		 */}
+		<script
+			is:inline
+			type="application/ld+json"
+			set:html={JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'FAQPage',
+				mainEntity: FAQ_ITEMS.map((item) => ({
+					'@type': 'Question',
+					name: item.question,
+					acceptedAnswer: { '@type': 'Answer', text: item.answer },
+				})),
 			})}
 		/>
 		<Analytics />

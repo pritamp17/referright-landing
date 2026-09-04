@@ -14,7 +14,7 @@ const year = new Date().getFullYear();
 		<p class="closing-lede">Tell us the role. We will find them.</p>
 
 		<a
-			class="button button-primary button-lg"
+			class="button button-on-brand button-lg"
 			href={signUpWith(SignUpIntent.Seeker)}
 			data-track={TrackEvent.ClosingPrimary}
 		>
@@ -29,7 +29,7 @@ const year = new Date().getFullYear();
 
 	<footer class="site-footer">
 		<div class="shell footer-inner">
-			<Brand size="sm" />
+			<Brand size="sm" onBrandSurface />
 
 			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
 
@@ -44,11 +44,29 @@ const year = new Date().getFullYear();
 </section>
 
 <style>
+	/*
+	 * The page's ending, and its only inverted surface.
+	 *
+	 * `--color-brand-panel` exists in tokens.css precisely for this and stays
+	 * blue in BOTH themes, so the closing note never washes out in dark mode.
+	 * Until now the page simply stopped on the same cream it opened with, which
+	 * read as running out rather than concluding.
+	 */
 	.closing {
 		position: relative;
 		overflow: hidden;
-		border-top: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-brand-panel));
+		color: rgb(var(--color-brand-panel-ink));
 		isolation: isolate;
+	}
+
+	/* The shared texture is drawn from the ink token, which is near-black in
+	   light mode and therefore invisible on this panel. Re-draw it in the
+	   panel's own foreground instead. */
+	.closing .grid-texture {
+		background-image:
+			linear-gradient(rgb(var(--color-brand-panel-ink) / 7%) 1px, transparent 1px),
+			linear-gradient(90deg, rgb(var(--color-brand-panel-ink) / 7%) 1px, transparent 1px);
 	}
 
 	.closing-inner {
@@ -63,13 +81,36 @@ const year = new Date().getFullYear();
 	.closing-lede {
 		max-width: 30rem;
 		margin: 1rem 0 2rem;
-		color: rgb(var(--color-muted));
+		color: rgb(var(--color-brand-panel-ink) / 78%);
 		font-size: 1.125rem;
 		line-height: 1.6;
 	}
 
 	.closing-disclaimer {
 		margin-top: 1.25rem;
+		color: rgb(var(--color-brand-panel-ink) / 68%);
+	}
+
+	/*
+	 * The primary button is brand blue, which would be blue-on-blue here. On an
+	 * inverted panel the panel's own foreground becomes the fill and the panel
+	 * colour becomes the label — the highest-contrast pairing available without
+	 * introducing a colour.
+	 */
+	.button-on-brand {
+		background: rgb(var(--color-brand-panel-ink));
+		box-shadow: 0 0.75rem 1.75rem rgb(0 0 0 / 22%);
+		color: rgb(var(--color-brand-panel));
+	}
+
+	.button-on-brand:hover {
+		background: rgb(var(--color-brand-panel-ink) / 90%);
+		box-shadow: 0 1rem 2.25rem rgb(0 0 0 / 30%);
+		transform: translateY(-1px);
+	}
+
+	.button-on-brand:focus-visible {
+		outline-color: rgb(var(--color-brand-panel-ink));
 	}
 
 	/* ---- Footer ---- */
@@ -77,8 +118,8 @@ const year = new Date().getFullYear();
 	.site-footer {
 		position: relative;
 		z-index: 1;
-		border-top: 1px solid rgb(var(--color-border));
-		background: rgb(var(--color-surface) / 60%);
+		border-top: 1px solid rgb(var(--color-brand-panel-ink) / 16%);
+		background: rgb(0 0 0 / 14%);
 	}
 
 	.footer-inner {
@@ -91,7 +132,7 @@ const year = new Date().getFullYear();
 
 	.footer-note {
 		margin: 0;
-		color: rgb(var(--color-muted));
+		color: rgb(var(--color-brand-panel-ink) / 68%);
 		font-size: 0.8125rem;
 	}
 
@@ -102,7 +143,7 @@ const year = new Date().getFullYear();
 	}
 
 	.footer-support-label {
-		color: rgb(var(--color-muted));
+		color: rgb(var(--color-brand-panel-ink) / 60%);
 		font-size: 0.6875rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -113,13 +154,9 @@ const year = new Date().getFullYear();
 		display: inline-flex;
 		min-height: 2.75rem;
 		align-items: center;
-		color: rgb(var(--color-primary));
+		color: rgb(var(--color-brand-panel-ink));
 		font-size: 0.875rem;
 		font-weight: 600;
-	}
-
-	:global([data-theme='dark']) .footer-mail {
-		color: rgb(var(--color-primary-strong));
 	}
 
 	@media (min-width: 48rem) {

@@ -1,0 +1,324 @@
+---
+import SectionIntro from './SectionIntro.astro';
+import { SectionId, TrackEvent } from '../lib/constants';
+import { CONTACT_EMAIL, FAQ_ITEMS } from '../lib/content';
+
+/** Stable, readable anchor per question, so a single answer can be linked to. */
+const slugFor = (question: string): string =>
+	`faq-${question
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '')}`;
+---
+
+{/*
+ * Native <details>/<summary>: no framework, no ARIA wiring.
+ *
+ * Browsers already map these to a disclosure and expose the open state, so
+ * hand-rolling `aria-expanded`/`aria-controls` would only duplicate — and risk
+ * contradicting — what the element does natively. Native also wins the three
+ * things that actually matter here, and that a `display: none` accordion
+ * cannot do at all: find-on-page reaches text inside a CLOSED item and opens
+ * it, fragment navigation opens the item it lands on, and the content still
+ * exists in reader mode.
+ *
+ * The APG accordion pattern also wants `role="region"` on each panel, which is
+ * deliberately omitted: it warns against landmark proliferation past roughly
+ * six simultaneously-open panels, and there are nine here.
+ *
+ * Three choices worth recording, because each had a plausible opposite:
+ *
+ * - NOT `<details name>`. That attribute would make this an exclusive
+ *   accordion, where opening one answer silently closes another. It keeps the
+ *   section short, but it takes away the reader's ability to hold two answers
+ *   side by side — and the two most-compared answers here ("is it free" and
+ *   "does it guarantee an interview") are exactly the pair someone wants open
+ *   together.
+ * - The first item IS open. Nine collapsed rows read as a nav list rather than
+ *   answers, and an all-closed accordion hides the fact that it opens at all.
+ *   The open row is the money question, which is also the one this page has
+ *   otherwise been careful not to raise.
+ * - A chevron, not a plus. Tested signifiers: a caret reliably communicates
+ *   "this expands in place", while a plus performs no better than no icon.
+ */}
+<section class="section faq" id={SectionId.Faq} aria-labelledby="faq-title">
+	<div class="shell faq-inner">
+		<SectionIntro
+			eyebrow="Questions"
+			title="The things people ask first."
+			copy="Short, direct answers — including the one about money."
+			headingId="faq-title"
+			align="left"
+			class="reveal faq-head"
+		/>
+
+		<div class="faq-body reveal">
+			<div class="faq-list">
+				{
+					FAQ_ITEMS.map((item, index) => (
+						<details class="faq-item" id={slugFor(item.question)} open={index === 0}>
+							<summary class="faq-summary">
+								<span class="faq-index mono" aria-hidden="true">
+									{String(index + 1).padStart(2, '0')}
+								</span>
+								<h3 class="faq-question">{item.question}</h3>
+								<span class="faq-chevron" aria-hidden="true">
+									<svg viewBox="0 0 16 16">
+										<path d="M4 6.5 8 10.5 12 6.5" />
+									</svg>
+								</span>
+							</summary>
+							<div class="faq-answer">
+								<p>{item.answer}</p>
+							</div>
+						</details>
+					))
+				}
+			</div>
+
+			<p class="fine-print faq-foot">
+				Still unsure about something?
+				<a href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.FaqContact}>{CONTACT_EMAIL}</a>
+			</p>
+		</div>
+	</div>
+</section>
+
+<script>
+	/*
+	 * Two small guarantees the markup cannot make on its own. Everything the
+	 * section does otherwise works with this script absent.
+	 *
+	 * 1. Deep links. Chromium opens an ancestor <details> on fragment
+	 *    navigation; other engines do not, so a shared link would land on a
+	 *    collapsed answer.
+	 * 2. Printing. A closed <details> prints nothing, and no stylesheet can set
+	 *    the `open` attribute — so open everything before print and restore
+	 *    afterwards, or a printed page silently loses eight of nine answers.
+	 */
+	const openFromHash = (): void => {
+		if (!location.hash) return;
+		const target = document.querySelector(location.hash);
+		const item = target?.closest('details');
+		if (item) item.open = true;
+	};
+
+	openFromHash();
+	window.addEventListener('hashchange', openFromHash);
+
+	let openedForPrint: HTMLDetailsElement[] = [];
+
+	window.addEventListener('beforeprint', () => {
+		openedForPrint = Array.from(document.querySelectorAll<HTMLDetailsElement>('.faq-item:not([open])'));
+		openedForPrint.forEach((item) => (item.open = true));
+	});
+
+	window.addEventListener('afterprint', () => {
+		openedForPrint.forEach((item) => (item.open = false));
+		openedForPrint = [];
+	});
+</script>
+
+<style>
+	.faq {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	/*
+	 * The page's one two-column section, and deliberately so. Every other
+	 * section centres its heading; nine stacked questions under a centred
+	 * heading would be the narrowest, tallest block on the page. Splitting it
+	 * gives the display heading room to be large and the answers a comfortable
+	 * measure, and it breaks up a page that is otherwise centred all the way
+	 * down.
+	 */
+	.faq-inner {
+		display: grid;
+		gap: clamp(2rem, 4vw, 3rem);
+	}
+
+	.faq-head {
+		align-self: start;
+	}
+
+	/* ---- List ---- */
+
+	/*
+	 * Hairline rows, not cards. Boxing each question turns nine answers into
+	 * nine objects; a ruled list reads as one document.
+	 */
+	.faq-item {
+		border-top: 1px solid rgb(var(--color-border));
+	}
+
+	.faq-item:last-of-type {
+		border-bottom: 1px solid rgb(var(--color-border));
+	}
+
+	/* Keep the focus ring from being clipped by the neighbouring row's border. */
+	.faq-item:focus-within {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* ---- Summary ---- */
+
+	.faq-summary {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: baseline;
+		gap: 0.875rem;
+		padding-block: 1.125rem;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	/* `list-style: none` alone does not remove Safari's triangle. */
+	.faq-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.faq-summary:focus-visible {
+		outline: 2px solid rgb(var(--color-focus));
+		outline-offset: 2px;
+	}
+
+	.faq-index {
+		color: rgb(var(--color-muted) / 70%);
+		font-weight: 600;
+	}
+
+	.faq-question {
+		margin: 0;
+		font-size: 1.0625rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		line-height: 1.45;
+		transition: color var(--dur-fast) ease;
+	}
+
+	.faq-summary:hover .faq-question,
+	.faq-item[open] .faq-question {
+		color: rgb(var(--color-primary));
+	}
+
+	:global([data-theme='dark']) .faq-summary:hover .faq-question,
+	:global([data-theme='dark']) .faq-item[open] .faq-question {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	.faq-chevron {
+		display: grid;
+		width: 1.5rem;
+		height: 1.5rem;
+		place-items: center;
+		align-self: center;
+		color: rgb(var(--color-muted));
+		transition: transform var(--dur-mid) var(--ease-out);
+	}
+
+	.faq-chevron svg {
+		width: 1rem;
+		height: 1rem;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.75;
+	}
+
+	.faq-item[open] .faq-chevron {
+		color: rgb(var(--color-primary));
+		transform: rotate(180deg);
+	}
+
+	:global([data-theme='dark']) .faq-item[open] .faq-chevron {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	/* ---- Answer ---- */
+
+	.faq-answer {
+		padding-bottom: 1.5rem;
+		/* Align the answer under the question, clear of the index column. */
+		padding-left: calc(1.5rem + 0.875rem);
+	}
+
+	.faq-answer p {
+		max-width: 46ch;
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		line-height: 1.65;
+		text-wrap: pretty;
+	}
+
+	.faq-foot {
+		margin-top: 1.5rem;
+	}
+
+	/* inline-flex + min-height keeps this at the 44px touch floor; a bare inline
+	   link in a paragraph is only as tall as its line box (16px measured). */
+	.faq-foot a {
+		display: inline-flex;
+		min-height: 2.75rem;
+		align-items: center;
+		color: rgb(var(--color-primary));
+		font-weight: 600;
+	}
+
+	:global([data-theme='dark']) .faq-foot a {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	/* ---- Responsive ---- */
+
+	@media (max-width: 30rem) {
+		/* The index is the first thing to go when width is scarce — the question
+		   itself is what has to stay readable. */
+		.faq-index {
+			display: none;
+		}
+
+		.faq-summary {
+			grid-template-columns: 1fr auto;
+			gap: 0.75rem;
+		}
+
+		.faq-answer {
+			padding-left: 0;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.faq-inner {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			gap: clamp(3rem, 6vw, 5rem);
+		}
+	}
+
+	/* Height animation where the engine supports it, a snap where it does not.
+	   Chromium honours `interpolate-size`; Safari and Firefox fall back. */
+	@supports selector(::details-content) {
+		@media (prefers-reduced-motion: no-preference) {
+			.faq-item::details-content {
+				overflow: clip;
+				block-size: 0;
+				transition:
+					block-size var(--dur-mid) var(--ease-out),
+					content-visibility var(--dur-mid) allow-discrete;
+				interpolate-size: allow-keywords;
+			}
+
+			.faq-item[open]::details-content {
+				block-size: auto;
+			}
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.faq-chevron {
+			transition: none;
+		}
+	}
+</style>

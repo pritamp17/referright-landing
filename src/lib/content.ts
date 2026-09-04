@@ -1,4 +1,4 @@
-import { Accent, LifecycleStage, OfferingKind, POLICY, SignUpIntent } from './constants';
+import { Accent, LifecycleStage, OfferingKind, OUTCOME_DISCLAIMER, POLICY, SignUpIntent } from './constants';
 
 /* ------------------------------------------------------------------ */
 /* Links                                                               */
@@ -173,4 +173,78 @@ export const TRUST_STRIP: readonly TrustStripItem[] = [
 	{ value: 'Referrer Appreciation, Your Way', label: 'Add an optional thank-you amount.' },
 	{ value: '100% Free', label: 'No payment required' },
 	{ value: '2-Day Response', label: 'Get clarity, sooner. ' },
+] as const;
+
+/* ------------------------------------------------------------------ */
+/* Frequently asked questions                                          */
+/* ------------------------------------------------------------------ */
+
+export interface FaqItem {
+	readonly question: string;
+	/** One or two short paragraphs. Kept as plain strings so the same array can
+	 *  feed both the rendered section and the page's structured data. */
+	readonly answer: string;
+}
+
+/*
+ * Nine questions, in the order a real visitor arrives at them: what this costs
+ * and who sees my request, then what happens if it goes wrong, then the two
+ * questions a prospective referrer asks, then peer openings.
+ *
+ * Two rules govern this copy.
+ *
+ * 1. COMMERCIAL RESTRAINT (DESIGN_SYSTEM.md §7). "Is it free" is the single
+ *    most common question a first-time visitor has, and refusing to answer it
+ *    reads as evasion — so it IS answered here, in plain words. What it must
+ *    never carry is a number: no amount, no fee, no percentage, no payout
+ *    schedule. Those belong inside the product, after someone has decided to
+ *    take part.
+ * 2. HONESTY (§8). Every window below interpolates POLICY rather than naming a
+ *    literal, so this section cannot promise a deadline the product does not
+ *    keep. "Employment verified through LinkedIn" is the accurate claim;
+ *    "employer verified" is banned because it says something stronger than the
+ *    product actually checks.
+ */
+export const FAQ_ITEMS: readonly FaqItem[] = [
+	{
+		question: 'Is it free to ask for a referral?',
+		answer:
+			'Yes. Asking costs you nothing, and nothing is owed upfront. If a referral lands and you feel it was worth it, you can send a small token of appreciation afterwards — but it is entirely optional, it is never required in order to ask, and it never changes whether you get referred.',
+	},
+	{
+		question: 'Who actually sees my request?',
+		answer:
+			'Only people whose employment at that company has been verified through LinkedIn. Your request is not published to a public board and it is not broadcast to recruiters. Your search stays yours.',
+	},
+	{
+		question: 'What happens if nobody picks up my request?',
+		answer: `Every request carries one clock: ${POLICY.claimWindowHours} hours from the moment it goes live. If no verified employee claims it in that window, the request closes and tells you plainly that nobody picked it up — rather than sitting open indefinitely. You are free to send it again.`,
+	},
+	{
+		question: 'How do I know the referral was actually submitted?',
+		answer:
+			'Because you see the proof. A referral is not marked done on someone’s word — the referrer submits it inside their company’s own system and attaches a timestamped screenshot of having done so. That evidence is shown to you.',
+	},
+	{
+		question: 'What if the proof looks wrong?',
+		answer: `You have ${POLICY.confirmationWindowHours} hours after the proof is submitted to confirm it or raise a dispute. Disputes are read and decided by a person, never closed automatically: the referral either stands, or it is overturned and you are refunded. Where the evidence genuinely is not conclusive either way, it is closed without a penalty to either side.`,
+	},
+	{
+		question: 'Does a referral guarantee an interview?',
+		answer: `No, and anyone promising otherwise is not being straight with you. ${OUTCOME_DISCLAIMER} It puts your application in front of a real person inside the company at a moment when the role is still open, which is the part that is genuinely hard to arrange on your own. The hiring decision remains entirely theirs.`,
+	},
+	{
+		question: 'How do you know a referrer really works there?',
+		answer: `Referrers sign in with LinkedIn, and their employment is re-checked every ${POLICY.employmentRecheckDays} days. Someone who has left the company stops receiving requests. This is employment verified through LinkedIn — we do not claim their employer has endorsed or approved anything.`,
+	},
+	{
+		question: 'If I am a referrer, do I have to refer everyone who asks?',
+		answer:
+			'Not at all. You see the role and the person’s background first, and you decide whether you can genuinely vouch for them. Nothing is auto-assigned to you, and passing on a request costs you nothing. A referral is worth something precisely because it was a choice.',
+	},
+	{
+		question: 'What are peer openings?',
+		answer:
+			'Senior roles are often filled quietly and only get posted publicly once the internal search has failed. Peer openings tell you a relevant role exists while that window is still open. You are shown the opening itself — never the identity of whoever asked about it. You control how often they arrive, and you can turn them off at any time.',
+	},
 ] as const;

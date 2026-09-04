@@ -113,12 +113,12 @@ mono**.
 | `ThemeToggle.astro` | Light/dark switch. |
 | `SiteHeader.astro` | Sticky header, condenses on scroll. |
 | `Hero.astro` | Asymmetric split, aurora field, contained media panel, trust strip. |
-| `Offerings.astro` → `OfferingChapter.astro` | The three-offering spine. |
-| `PeerSignalDiagram.astro` | Cross-company matching illustration. |
+| `Offerings.astro` | The three doors — three cells in one frame. See §14. |
 | `PeerSignalSection.astro` | Offering 03 deep dive + signal film. |
 | `Lifecycle.astro` | Five-stage rail + journey film. |
 | `TrustSection.astro` | Light-blue trust panel, four pillars. |
 | `Appreciation.astro` | The light thank-you note + appreciation film. |
+| `Faq.astro` | Nine questions as native `<details>`. See §15. |
 | `TestimonialStage.astro` | Beta feedback marquee. |
 | `CompanyField.astro` | Company logo marquee. |
 | `ClosingSection.astro` | Final CTA + footer. |
@@ -162,6 +162,13 @@ the product, after someone has decided to take part.
    get referred. That is the entire commercial surface.
 4. The appreciation film may show example amounts — it appears *inside* that
    section and depicts the actual flow. Nowhere else.
+5. **The FAQ may answer "is it free", in words, with no numbers.** Refusing to
+   answer the single most common question a first-time visitor has reads as
+   evasion, which costs more trust than the restraint buys. So `FAQ_ITEMS[0]`
+   says plainly that asking costs nothing and that a thank-you is optional,
+   never required, and never changes whether you get referred — and names no
+   amount, fee, percentage or payout schedule. That sentence is the entire
+   exception; rules 1–4 are otherwise unchanged.
 
 ---
 
@@ -253,3 +260,101 @@ the player renders as real DOM, those custom properties re-resolve on theme
 switch — the films retheme themselves with no re-render.
 
 There are **no hex literals** in that file. Keep it that way.
+
+---
+
+## 14. Section background rhythm
+
+**The problem this fixes.** Measured on the live page before this change: of the
+nine sections in `<main>`, **seven had no background at all** (`rgba(0,0,0,0)`,
+i.e. bare canvas), and the only two that did — `how-it-works` and `trust` —
+carried the *identical* radial wash while sitting directly next to each other,
+so they merged into one band. The entire page below the hero was one flat cream,
+separated only by 1px hairlines. That, more than any single component, is why it
+read as flat.
+
+**The rule: no two adjacent sections share a background.** Three surfaces plus
+the closing panel, all composed from locked tokens:
+
+| Surface | Value | Used by |
+|---|---|---|
+| Canvas | `--color-canvas` | `value`, `stories`, `how-it-works`, `faq` |
+| Raised | `--color-surface` + hairline top and bottom | `offerings`, `appreciation` |
+| Tint | `--color-primary-soft` gradient over canvas | `peer-signal`, `trust` |
+| Brand panel | `--color-brand-panel` | `contact` (closing + footer) |
+
+Giving the sequence `canvas → raised → canvas → tint → canvas → tint → raised →
+canvas → brand`. Check this property when adding or reordering a section; it is
+the whole point and it breaks silently.
+
+**The closing section is inverted.** `--color-brand-panel` /
+`--color-brand-panel-ink` exist for exactly this, stay blue in *both* themes, and
+were previously used only by one card inside `BetaProof`. On that panel the
+primary button would be blue-on-blue, so the closing CTA uses `.button-on-brand`:
+the panel's foreground becomes the fill and the panel colour becomes the label.
+`Brand` takes `onBrandSurface`, and `.grid-texture` is redrawn from
+`--color-brand-panel-ink` because the shared version is drawn from `--color-ink`,
+which is near-black in light mode and therefore invisible there.
+
+---
+
+## 15. The FAQ
+
+Native `<details>`/`<summary>`. No framework, and deliberately no
+`aria-expanded` / `aria-controls`: browsers already map these elements to a
+disclosure and expose the open state, so hand-wiring ARIA duplicates it. The APG
+accordion pattern also wants `role="region"` per panel — omitted on purpose,
+since it warns against landmark proliferation past ~6 simultaneously-open
+panels and there are nine here.
+
+Native buys three things a `display: none` accordion cannot do at all:
+find-on-page reaches text inside a **closed** item and opens it, fragment
+navigation opens the item it lands on, and the content survives reader mode. A
+small progressive-enhancement script covers the two gaps the markup can't:
+opening on `hashchange` (only Chromium does this natively) and expanding
+everything before `beforeprint`, since a closed `<details>` prints nothing and
+no stylesheet can set the `open` attribute.
+
+Three choices with plausible opposites, recorded so they don't get "fixed":
+
+- **Not `<details name>`.** That would make it an exclusive accordion where
+  opening one answer closes another. It keeps the section short, but it stops a
+  reader holding two answers side by side — and "is it free" and "does it
+  guarantee an interview" are exactly the pair people compare.
+- **The first item ships `open`.** Nine collapsed rows read as a nav list, and
+  an all-closed accordion hides that it opens at all.
+- **A chevron, not a plus.** In tested signifiers a caret reliably communicates
+  "expands in place"; a plus performs no better than no icon at all.
+
+Content lives in `FAQ_ITEMS` in `content.ts` and every window interpolates
+`POLICY`, so the FAQ cannot advertise a deadline the product does not keep. The
+same array generates the `FAQPage` JSON-LD in `BaseLayout.astro`, so the two
+cannot drift. Note that markup earns **no rich result** — Google retired FAQ
+rich results on 2026-05-07 — it is there to describe the Q&A to AI search
+surfaces.
+
+---
+
+## 16. Known palette limitation — accent identity
+
+`Offerings.astro` renders all three doors in **one** accent, and must keep doing
+so until the palette changes. Per-card accents look right on paper but do not
+survive these tokens:
+
+| | light | dark |
+|---|---|---|
+| `--color-primary-soft` | `234 243 248` | `16 42 67` |
+| `--color-reward-soft` | `219 234 254` | **`16 42 67`** |
+| `--color-primary-strong` | `0 65 130` | `112 181 249` |
+| `--color-reward-ink` | `30 64 175` | **`112 181 249`** |
+
+In dark mode `primary` and `reward` are **identical**, so "Ask for a referral"
+and "Hear about openings" would render pixel-identical; in light mode both are
+near-identical pale blues. Separately, `--color-trust-soft` in dark is
+`23 26 29`, which *is* `--color-elevated` — a trust-accented chip has no tint at
+all in dark.
+
+The palette is locked, so identity comes from the numeral and the icon
+silhouette, which are unambiguous in both themes. This also states the section's
+claim better: one network, so one colour, entered three ways. If the palette is
+ever reopened, giving `reward` a genuinely different dark hue would be the fix.
