@@ -72,6 +72,8 @@ export enum Accent {
 	Trust = 'trust',
 	Reward = 'reward',
 	Success = 'success',
+	/** Teal: something in flight, in someone else's hands. */
+	Progress = 'progress',
 	Danger = 'danger',
 }
 

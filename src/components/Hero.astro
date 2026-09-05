@@ -2,7 +2,6 @@
 import HeroScrollCue from './HeroScrollCue.astro';
 import { POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
 import { TRUST_STRIP, signUpWith } from '../lib/content';
-import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 ---
 
 {/*
@@ -68,7 +67,7 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		{/* The drawing earns attention; this rotating pair earns belief. Two cards
 		    stay visible while the third quietly pops in to replace one of them. */}
 		<div class="hero-proof-stack" aria-label="Recent referral examples">
-			<article class="hero-proof-card" data-proof-slot="0" data-proof-index="0">
+			<article class="hero-proof-card" data-proof-slot="0" data-cycle-index="0">
 				<div class="hero-proof-head">
 					<span class="hero-proof-status">Referral submitted</span>
 					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
@@ -78,7 +77,7 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 				<span class="hero-proof-bar" aria-hidden="true"><i style="--proof-progress: 78%"></i></span>
 			</article>
 
-			<article class="hero-proof-card" data-proof-slot="1" data-proof-index="1">
+			<article class="hero-proof-card" data-proof-slot="1" data-cycle-index="1">
 				<div class="hero-proof-head">
 					<span class="hero-proof-status">Referral received</span>
 					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
@@ -107,17 +106,6 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		<HeroScrollCue />
 	</div>
 </section>
-
-{/*
- * The mask itself is set as a real `:root`-level custom property, written
- * once via `set:html`, rather than through Astro's `define:vars`.
- * `define:vars` looked like the natural fit but actually inlines the value as
- * a `style` attribute on every element the component renders — for a ~270KB
- * base64 string that meant 40+ copies of it in the page (measured: 42 copies,
- * an 11MB document). A single `:root` declaration is one copy, inherited by
- * the two rules that use it below like any other custom property.
- */}
-<style is:global set:html={`:root { --ink-doors-mask: ${INK_DOORS_MASK}; }`} />
 
 <style>
 	/*
@@ -230,9 +218,8 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	.ink {
 		position: absolute;
 		inset: 0;
-		/* --ink-doors-mask is set once, above, from ink-doors-asset.ts — see
-		   that file for why this is an inline data URI rather than a /public
-		   file reference. */
+		/* --ink-doors-mask points at /public/ink-doors-mask.webp and is declared
+		   once in global.css, so the closing bookend can paint the same wall. */
 		mask-image: var(--ink-doors-mask);
 		mask-repeat: no-repeat;
 		mask-size: 100% 100%;
@@ -361,28 +348,20 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		transform: translateY(-0.375rem) scale(0.99);
 		filter: blur(4px);
 		padding: 1rem 1.0625rem 1.0625rem;
-		border: 1px solid rgb(var(--color-border) / 55%);
+		border: 1px solid var(--glass-border);
 		border-radius: var(--radius-2xl);
-		background: rgb(var(--color-surface) / 46%);
+		background: var(--glass-bg);
 		box-shadow:
-			0 1rem 2.5rem rgb(23 33 43 / 6%),
-			inset 0 1px 0 rgb(255 255 255 / 40%);
-		backdrop-filter: blur(22px) saturate(1.4);
-		-webkit-backdrop-filter: blur(22px) saturate(1.4);
+			var(--glass-shadow),
+			inset 0 1px 0 var(--glass-highlight);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 		pointer-events: auto;
 		transition:
 			opacity var(--proof-dur) var(--ease-out),
 			transform var(--proof-dur) var(--ease-out),
 			filter var(--proof-dur) var(--ease-out);
 		visibility: hidden;
-	}
-
-	:global([data-theme='dark']) .hero-proof-card {
-		border-color: rgb(var(--color-border) / 60%);
-		background: rgb(var(--color-surface) / 38%);
-		box-shadow:
-			0 1rem 2.5rem rgb(0 0 0 / 28%),
-			inset 0 1px 0 rgb(255 255 255 / 6%);
 	}
 
 	.hero-proof-head {
@@ -639,105 +618,66 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 </style>
 
 <script>
+	import { startCardCycle } from '../lib/card-cycle';
+
 	interface ProofCard {
-		role: string;
-		meta: string;
-		progress: string;
+		readonly role: string;
+		readonly meta: string;
+		readonly progress: string;
 	}
 
 	const proofCards: readonly ProofCard[] = [
-		{
-			role: 'Product Manager',
-			meta: 'Verified employee · screenshot attached',
-			progress: '78%',
-		},
-		{
-			role: 'Software Engineering Intern',
-			meta: 'Employee referral · role match confirmed',
-			progress: '56%',
-		},
-		{
-			role: 'UI/UX Designer',
-			meta: 'Verified employee · portfolio reviewed',
-			progress: '88%',
-		},
+		{ role: 'Product Manager', meta: 'Verified employee · screenshot attached', progress: '78%' },
+		{ role: 'Software Engineering Intern', meta: 'Employee referral · role match confirmed', progress: '56%' },
+		{ role: 'UI/UX Designer', meta: 'Verified employee · portfolio reviewed', progress: '88%' },
 	];
 
-	const proofStack = document.querySelector<HTMLElement>('.hero-proof-stack');
-	const proofArt = document.querySelector<HTMLElement>('.hero-art');
-	const proofSlots = Array.from(document.querySelectorAll<HTMLElement>('[data-proof-slot]'));
+	const stack = document.querySelector<HTMLElement>('.hero-proof-stack');
+	const art = document.querySelector<HTMLElement>('.hero-art');
+	const slots = Array.from(document.querySelectorAll<HTMLElement>('[data-proof-slot]'));
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	/* Mirrors `--proof-dur` in the stylesheet: the card fades out over exactly
-	   this long, so the swap happens on the frame it finishes and never mid-fade. */
-	const PROOF_TRANSITION_MS = 1100;
-	/* One full turn of the rotation, fade-out and fade-in included. Deliberately
-	   unhurried — the card is meant to be read, not caught. */
-	const PROOF_CYCLE_MS = 7200;
-	/* Air between the drawing settling and the cards arriving. */
-	const PROOF_REVEAL_DELAY_MS = 1400;
-
-	if (proofStack && proofSlots.length === 2) {
-		let nextSlotIndex = 0;
-		let rotationStarted = false;
-
-		const scheduleNext = (): void => {
-			window.setTimeout(() => {
-				const visibleIndexes = new Set(
-					proofSlots.map((slot) => Number(slot.dataset.proofIndex)),
-				);
-				const nextIndex = proofCards.findIndex((_, index) => !visibleIndexes.has(index));
-				const slot = proofSlots[nextSlotIndex];
-				const nextCard = proofCards[nextIndex];
-
-				if (!slot || !nextCard) return;
-
-				nextSlotIndex = (nextSlotIndex + 1) % 2;
-				slot.classList.remove('is-entering');
-				slot.classList.add('is-exiting');
-
-				window.setTimeout(() => {
-					slot.classList.remove('is-exiting');
-					slot.dataset.proofIndex = String(nextIndex);
-					const role = slot.querySelector<HTMLElement>('.hero-proof-role');
-					const meta = slot.querySelector<HTMLElement>('.hero-proof-meta');
-					const progress = slot.querySelector<HTMLElement>('.hero-proof-bar i');
-					if (role) role.textContent = nextCard.role;
-					if (meta) meta.textContent = nextCard.meta;
-					progress?.style.setProperty('--proof-progress', nextCard.progress);
-
-					slot.classList.add('is-entering');
-					window.requestAnimationFrame(() => {
-						window.requestAnimationFrame(() => slot.classList.remove('is-entering'));
-					});
-				}, PROOF_TRANSITION_MS);
-
-				scheduleNext();
-			}, PROOF_CYCLE_MS);
-		};
-
-		const revealCards = (): void => {
-			window.setTimeout(() => {
-				if (rotationStarted) return;
-				rotationStarted = true;
-				proofStack.classList.add('is-ready');
-				if (!reducedMotion) scheduleNext();
-			}, PROOF_REVEAL_DELAY_MS);
-		};
-
-		if (reducedMotion || !proofArt) {
-			revealCards();
-		} else {
-			const fallback = window.setTimeout(revealCards, 1800);
-			proofArt.addEventListener(
-				'animationend',
-				(event) => {
-					if (event.animationName !== 'ink-wipe') return;
-					window.clearTimeout(fallback);
-					revealCards();
-				},
-				{ once: true },
-			);
+	/* The cards arrive once the drawing has settled: after the ink-wipe ends,
+	   or after a fallback timer if the animation never reports back. */
+	const artSettled = new Promise<void>((resolve) => {
+		if (reducedMotion || !art) {
+			resolve();
+			return;
 		}
+		const fallback = window.setTimeout(resolve, 1800);
+		art.addEventListener(
+			'animationend',
+			(event) => {
+				if (event.animationName !== 'ink-wipe') return;
+				window.clearTimeout(fallback);
+				resolve();
+			},
+			{ once: true },
+		);
+	});
+
+	if (stack && slots.length === 2) {
+		startCardCycle<ProofCard>({
+			stack,
+			slots,
+			pool: proofCards,
+			/* Mirrors `--proof-dur` in the stylesheet: the card fades out over
+			   exactly this long, so the swap lands on the frame it finishes. */
+			transitionMs: 1100,
+			/* One full turn, fade-out and fade-in included. Deliberately
+			   unhurried — the card is meant to be read, not caught. */
+			cycleMs: 7200,
+			/* Air between the drawing settling and the cards arriving. */
+			revealDelayMs: 1400,
+			ready: artSettled,
+			render: (slot, card) => {
+				const role = slot.querySelector<HTMLElement>('.hero-proof-role');
+				const meta = slot.querySelector<HTMLElement>('.hero-proof-meta');
+				const progress = slot.querySelector<HTMLElement>('.hero-proof-bar i');
+				if (role) role.textContent = card.role;
+				if (meta) meta.textContent = card.meta;
+				progress?.style.setProperty('--proof-progress', card.progress);
+			},
+		});
 	}
 </script>

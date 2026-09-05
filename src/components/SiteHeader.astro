@@ -19,9 +19,9 @@ const navItems: readonly NavItem[] = [
 
 <header class="site-header" data-site-header>
 	<div class="shell header-inner">
-		<Brand size="sm" />
+		<Brand size="sm" class="header-brand" />
 
-		<nav class="header-nav" aria-label="Primary">
+		<nav class="header-nav" aria-label="Primary" data-nav-spy>
 			{navItems.map((item) => <a href={item.href}>{item.label}</a>)}
 		</nav>
 
@@ -35,6 +35,9 @@ const navItems: readonly NavItem[] = [
 </header>
 
 <script>
+	import { navSpy } from '../lib/motion';
+	import { SectionId } from '../lib/constants';
+
 	const header = document.querySelector<HTMLElement>('[data-site-header]');
 
 	if (header) {
@@ -43,10 +46,22 @@ const navItems: readonly NavItem[] = [
 		};
 		sync();
 		window.addEventListener('scroll', sync, { passive: true });
+
+		navSpy(
+			header.querySelectorAll<HTMLAnchorElement>('[data-nav-spy] a'),
+			document.getElementById(SectionId.Top),
+		);
 	}
 </script>
 
 <style>
+	/*
+	 * Over the hero the header is transparent; a soft blur band underneath
+	 * keeps the wordmark legible against the drawing. The moment the page
+	 * scrolls, the header ADDS chrome — a translucent canvas, a heavier blur
+	 * and a hairline — so it never floats naked over content. Its height never
+	 * changes: a shrinking sticky header shifts everything under it.
+	 */
 	.site-header {
 		position: sticky;
 		z-index: 100;
@@ -71,16 +86,23 @@ const navItems: readonly NavItem[] = [
 			transparent 90%
 		);
 		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		content: '';
 		mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
 		-webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
 		pointer-events: none;
+		transition: opacity var(--dur-mid) ease;
 	}
 
 	.site-header.is-condensed {
-		border-bottom-color: transparent;
-		background: transparent;
-		backdrop-filter: none;
+		border-bottom-color: rgb(var(--color-border) / 70%);
+		background: rgb(var(--color-canvas) / 72%);
+		backdrop-filter: blur(14px) saturate(1.3);
+		-webkit-backdrop-filter: blur(14px) saturate(1.3);
+	}
+
+	.site-header.is-condensed::after {
+		opacity: 0;
 	}
 
 	.header-inner {
@@ -91,6 +113,15 @@ const navItems: readonly NavItem[] = [
 		gap: 1.5rem;
 	}
 
+	.header-inner :global(.header-brand) {
+		transform-origin: left center;
+		transition: transform var(--dur-mid) var(--ease-out);
+	}
+
+	.site-header.is-condensed .header-inner :global(.header-brand) {
+		transform: scale(0.92);
+	}
+
 	.header-nav {
 		display: none;
 		align-items: center;
@@ -98,6 +129,7 @@ const navItems: readonly NavItem[] = [
 	}
 
 	.header-nav a {
+		position: relative;
 		display: inline-flex;
 		min-height: 2.75rem;
 		align-items: center;
@@ -108,8 +140,32 @@ const navItems: readonly NavItem[] = [
 		transition: color var(--dur-fast) ease;
 	}
 
-	.header-nav a:hover {
+	/* The section under the reader is marked by a small dot, not a bar — the
+	   bar would fight the hairline the header already draws. */
+	.header-nav a::after {
+		position: absolute;
+		bottom: 0.25rem;
+		left: 50%;
+		width: 0.25rem;
+		height: 0.25rem;
+		border-radius: 50%;
+		background: rgb(var(--color-primary));
+		content: '';
+		transform: translateX(-50%) scale(0);
+		transition: transform var(--dur-mid) var(--ease-out);
+	}
+
+	:global([data-theme='dark']) .header-nav a::after {
+		background: rgb(var(--color-primary-strong));
+	}
+
+	.header-nav a:hover,
+	.header-nav a[aria-current='true'] {
 		color: rgb(var(--color-ink));
+	}
+
+	.header-nav a[aria-current='true']::after {
+		transform: translateX(-50%) scale(1);
 	}
 
 	.header-actions {
