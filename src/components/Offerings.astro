@@ -1,6 +1,6 @@
 ---
 import SectionIntro from './SectionIntro.astro';
-import { OfferingKind, SectionId, TrackEvent } from '../lib/constants';
+import { Accent, OfferingKind, SectionId, TrackEvent } from '../lib/constants';
 import { OFFERINGS } from '../lib/content';
 
 /** Analytics event per offering, resolved from the enum rather than inlined. */
@@ -13,35 +13,30 @@ const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
 /*
  * Three doors in one wall.
  *
- * This section previously drew the argument literally: a hub on a horizontal
- * spine with three connectors dropping to three roles. It failed twice. The
- * hub sat on top of the middle column's connector so the outer two dots read
- * as unexplained specks, and it spent roughly seven vertical rems to carry
- * three short lines of text. Worse, the whole diagram was `display: none`
- * below 64rem — so the geometry earned nothing at all on a phone, which is
- * where most of this traffic is.
+ * "One network, three ways in" is made structurally rather than drawn: three
+ * cells inside a single bordered frame, divided by hairlines. Belonging to one
+ * frame IS the argument, it holds at every width, and it rhymes with the wall
+ * of doors in the hero.
  *
- * "One network, three ways in" is now made structurally instead of drawn:
- * three cells inside a single bordered frame, divided by hairlines. Belonging
- * to one frame IS the argument, it holds at every width, and it rhymes with
- * the wall of doors in the hero. The frame is the same composition the trust
- * pillars use, so the page's two explanatory sections read as one system.
+ * Each cell is a door, and the hover state is the thing that makes it one: a
+ * wedge of light falls in from the left edge the way it does when a door opens
+ * into a dark room, the icon well lights up, and the chapter numeral goes from
+ * a ghost to the cell's own accent. `clip-path` and `opacity` do all of it —
+ * no layout, no paint of anything but the beam.
  *
- * Each cell carries an accent rule rather than an accent fill — the product
- * application's own "state is a rail, not a fill" convention, so the marketing
- * page and the signed-in product argue in the same visual language.
- *
- * ONE accent, not three, and deliberately so. Rendering each door in its own
- * `offering.accent` looks right on paper but does not survive the palette: in
- * dark mode `--color-primary-soft` and `--color-reward-soft` are both
- * `16 42 67`, and `--color-primary-strong` and `--color-reward-ink` are both
- * `112 181 249` — so "Ask for a referral" and "Hear about openings" render
- * pixel-identical, and even in light mode both resolve to near-identical pale
- * blues. The palette is locked, so the fix is not to lean on it: identity comes
- * from the numeral and the icon silhouette, which are unambiguous in both
- * themes. It also states the section's actual claim better — one network, so
- * one colour, entered three ways.
+ * The three accents are back. They were surrendered once (DESIGN_SYSTEM.md §16)
+ * because `--color-primary-soft` and `--color-reward-soft` were the same triple
+ * in dark mode, so two of three doors rendered identically. The token re-sync
+ * fixed that at the source: ask is primary blue, give is success green, and
+ * peer openings is the new `progress` teal — three hues that separate in both
+ * themes, each already carrying the meaning it has inside the product.
  */
+const DOOR_ACCENT: Readonly<Record<OfferingKind, Accent>> = {
+	[OfferingKind.AskForReferral]: Accent.Primary,
+	[OfferingKind.GiveReferral]: Accent.Success,
+	[OfferingKind.PeerSignal]: Accent.Progress,
+};
+
 const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 	[OfferingKind.AskForReferral]: 'M3 14h10M9 9l4 5-4 5M16.5 4h8v20h-8',
 	[OfferingKind.GiveReferral]: 'M5 14.5l5.5 5.5L23 7',
@@ -60,12 +55,13 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 			class="reveal"
 		/>
 
-		<ul class="doors accent-primary reveal">
+		<ul class="doors reveal">
 			{
 				OFFERINGS.map((offering, index) => (
-					<li class="door">
-						<span class="door-index mono">{String(index + 1).padStart(2, '0')}</span>
-						<span class="door-rule" aria-hidden="true" />
+					<li class:list={['door', `accent-${DOOR_ACCENT[offering.kind]}`]}>
+						<span class="door-index numeral" aria-hidden="true">
+							{String(index + 1).padStart(2, '0')}
+						</span>
 
 						<span class="door-icon" aria-hidden="true">
 							<svg viewBox="0 0 28 28">
@@ -76,6 +72,7 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 							</svg>
 						</span>
 
+						<span class="door-rule" aria-hidden="true" />
 						<h3 class="door-title">{offering.title}</h3>
 						<p class="door-line">{offering.line}</p>
 
@@ -124,41 +121,91 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 
 	/*
 	 * `grid` + `1fr` on the copy row is what pins all three CTAs to a shared
-	 * baseline no matter how the one-liners wrap.
+	 * baseline no matter how the one-liners wrap. The cell is deliberately tall:
+	 * three squat boxes read as a feature table, three tall ones read as doors.
 	 */
 	.door {
+		position: relative;
 		display: grid;
+		min-height: 21rem;
 		grid-template-rows: auto auto auto auto 1fr auto;
-		padding: clamp(1.5rem, 3vw, 2rem);
+		align-content: start;
+		padding: clamp(1.75rem, 3vw, 2.25rem);
 		background: rgb(var(--color-surface));
+		isolation: isolate;
 	}
 
+	/*
+	 * The light. Closed, it is a sliver with no width at the left edge; open, it
+	 * is the trapezoid a doorway throws across a floor. Only the clip-path and
+	 * the opacity move.
+	 *
+	 * It is a pseudo-element on the cell rather than a child, so nothing in
+	 * here has to reach past it to restack the cell's real content: a negative
+	 * z-index inside the cell's own stacking context paints it over the cell
+	 * background and under every word.
+	 */
+	.door::before {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		background: linear-gradient(
+			104deg,
+			rgb(var(--accent) / 20%) 0%,
+			rgb(var(--accent) / 7%) 38%,
+			transparent 66%
+		);
+		clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+		content: '';
+		opacity: 0;
+		pointer-events: none;
+		transition:
+			clip-path 560ms var(--ease-out),
+			opacity 320ms var(--ease-out);
+	}
+
+	.door:hover::before,
+	.door:focus-within::before {
+		clip-path: polygon(0 0, 66% 16%, 84% 94%, 0 100%);
+		opacity: 1;
+	}
+
+	/* The chapter numeral sits in the corner as a watermark and comes forward in
+	   the cell's own accent when the door opens. */
 	.door-index {
-		color: rgb(var(--color-muted));
-		font-weight: 600;
+		position: absolute;
+		z-index: 1;
+		top: clamp(1.25rem, 2.4vw, 1.75rem);
+		right: clamp(1.25rem, 2.4vw, 1.75rem);
+		color: rgb(var(--color-ink) / 11%);
+		font-size: 3.25rem;
+		transition: color var(--dur-slow) var(--ease-out);
 	}
 
-	.door-rule {
-		width: 2rem;
-		height: 2px;
-		margin-top: 0.875rem;
-		border-radius: var(--radius-pill);
-		background: rgb(var(--accent));
+	.door:hover .door-index,
+	.door:focus-within .door-index {
+		color: rgb(var(--accent) / 62%);
 	}
 
 	.door-icon {
 		display: inline-grid;
-		width: 3rem;
-		height: 3rem;
-		margin-top: 1.5rem;
+		width: 3.25rem;
+		height: 3.25rem;
 		place-items: center;
 		border-radius: 50%;
 		background: rgb(var(--accent-soft));
+		box-shadow: 0 0 0 0 rgb(var(--accent) / 0%);
+		transition: box-shadow var(--dur-slow) var(--ease-out);
+	}
+
+	.door:hover .door-icon,
+	.door:focus-within .door-icon {
+		box-shadow: 0 0 0 0.5rem rgb(var(--accent) / 12%);
 	}
 
 	.door-icon svg {
-		width: 1.375rem;
-		height: 1.375rem;
+		width: 1.5rem;
+		height: 1.5rem;
 		fill: none;
 		stroke: rgb(var(--accent-ink));
 		stroke-linecap: round;
@@ -166,27 +213,86 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 		stroke-width: 1.6;
 	}
 
+	.door-rule {
+		width: 2rem;
+		height: 2px;
+		margin-top: 1.5rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--accent));
+		transform-origin: left center;
+		transition: transform var(--dur-slow) var(--ease-out);
+	}
+
+	.door:hover .door-rule,
+	.door:focus-within .door-rule {
+		transform: scaleX(1.9);
+	}
+
 	.door-title {
-		margin: 1.125rem 0 0;
-		font-size: 1.125rem;
-		font-weight: 600;
-		letter-spacing: -0.015em;
+		margin: 0.875rem 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 2vw, 1.75rem);
+		font-weight: 400;
+		letter-spacing: -0.03em;
+		line-height: 1.15;
 	}
 
 	.door-line {
-		margin: 0.4375rem 0 0;
+		margin: 0.625rem 0 0;
+		max-width: 20rem;
 		color: rgb(var(--color-muted));
-		font-size: 0.9375rem;
+		font-size: 1rem;
 		line-height: 1.55;
 	}
 
 	.door-cta {
-		margin-top: 1rem;
+		margin-top: 1.25rem;
+		color: rgb(var(--accent-ink));
+	}
+
+	/* ---- Entrance ----
+	   The frame arrives as one object, then its three cells resolve in turn.
+	   No blur here: a blurred cell bleeds over the 1px dividers and makes the
+	   frame's own lines flicker. */
+
+	@media (prefers-reduced-motion: no-preference) {
+		.doors.is-visible .door {
+			animation: door-in 640ms var(--ease-out) both;
+		}
+
+		.doors.is-visible .door:nth-child(2) {
+			animation-delay: 90ms;
+		}
+
+		.doors.is-visible .door:nth-child(3) {
+			animation-delay: 180ms;
+		}
+
+		@keyframes door-in {
+			from {
+				opacity: 0;
+				transform: translateY(0.75rem);
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
+		}
 	}
 
 	/* ---- Responsive ----
 	   Single column is the phone layout. The frame simply becomes three columns
 	   from 64rem; nothing is hidden at any width. */
+
+	@media (max-width: 63.999rem) {
+		.door {
+			min-height: 0;
+		}
+
+		.door-index {
+			font-size: 2.75rem;
+		}
+	}
 
 	@media (min-width: 64rem) {
 		.doors {

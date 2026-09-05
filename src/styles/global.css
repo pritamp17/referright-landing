@@ -157,11 +157,18 @@ svg {
 	letter-spacing: -0.03em;
 }
 
-/* Large numerals: chapter markers, counts. Louize at display size, tight. */
+/*
+ * Large numerals: chapter markers, counts. Louize at display size, tight.
+ *
+ * Louize defaults to old-style figures, where the zero is x-height and the one
+ * is an unserifed stroke — so "01" reads as "OI" at a glance, which is exactly
+ * wrong for a chapter marker. The face does carry lining figures; ask for them
+ * explicitly, and take tabular widths so a column of markers stays aligned.
+ */
 .numeral {
 	font-family: var(--font-display);
 	font-weight: 400;
-	font-variant-numeric: tabular-nums;
+	font-variant-numeric: lining-nums tabular-nums;
 	letter-spacing: -0.05em;
 	line-height: 0.9;
 }
