@@ -20,6 +20,11 @@ const hasObserver = (): boolean => 'IntersectionObserver' in window;
  * `.reveal` fades up once when it first enters the viewport. `.reveal-group`
  * does the same for each of its children in turn — every child receives its
  * index as `--i`, which the stylesheet turns into a transition delay.
+ *
+ * `[data-reveal-mark]` is the third form: it takes `is-visible` and nothing
+ * else. Use it where the element must stay fully painted — a cell in a shared
+ * frame, say, where fading the cell would show the frame's gap colour through
+ * the hole — but something inside it still wants to start when it is read.
  */
 export function revealObserver(root: ParentNode = document): void {
 	for (const group of root.querySelectorAll<HTMLElement>('.reveal-group')) {
@@ -28,7 +33,7 @@ export function revealObserver(root: ParentNode = document): void {
 		});
 	}
 
-	const targets = root.querySelectorAll<HTMLElement>('.reveal, .reveal-group');
+	const targets = root.querySelectorAll<HTMLElement>('.reveal, .reveal-group, [data-reveal-mark]');
 
 	if (prefersReducedMotion() || !hasObserver()) {
 		targets.forEach((target) => target.classList.add('is-visible'));

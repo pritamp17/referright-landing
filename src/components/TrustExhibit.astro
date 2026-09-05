@@ -1,0 +1,472 @@
+---
+import type { Accent } from '../lib/constants';
+
+/*
+ * One trust pillar, with the mechanism drawn above the claim.
+ *
+ * Every exhibit is inline SVG and DOM painted from tokens — no images, no
+ * second dark-mode export, and each one animates once when it is first read.
+ * The drawing is not decoration: it shows the specific thing the sentence
+ * underneath claims the product does.
+ */
+export type ExhibitKind = 'verified' | 'proof' | 'window' | 'nothing-owed';
+
+interface Props {
+	readonly kind: ExhibitKind;
+	readonly index: string;
+	readonly title: string;
+	readonly detail: string;
+	readonly accent: Accent;
+}
+
+const { kind, index, title, detail, accent } = Astro.props;
+---
+
+<li class:list={['exhibit', `accent-${accent}`, `is-${kind}`]} data-reveal-mark>
+	<p class="exhibit-index mono">Mechanism {index}</p>
+
+	<div class="exhibit-art" aria-hidden="true">
+		{
+			kind === 'verified' && (
+				<div class="art-verified">
+					<span class="art-card">
+						<span class="art-avatar" />
+						<span class="art-lines">
+							<i /><i />
+						</span>
+						<span class="art-check">
+							<svg viewBox="0 0 16 16">
+								<path d="M3.4 8.4l3 3 6.2-7" />
+							</svg>
+						</span>
+					</span>
+					<span class="art-recheck">
+						<svg viewBox="0 0 44 44">
+							<circle class="art-ring-track" cx="22" cy="22" r="18" />
+							<circle class="art-ring-arc" cx="22" cy="22" r="18" />
+						</svg>
+					</span>
+				</div>
+			)
+		}
+
+		{
+			kind === 'proof' && (
+				<div class="art-proof">
+					<span class="art-shot">
+						<i /><i /><i />
+					</span>
+					<span class="art-stamp mono">14:32</span>
+				</div>
+			)
+		}
+
+		{
+			kind === 'window' && (
+				<div class="art-window">
+					<span class="art-ring">
+						<svg viewBox="0 0 44 44">
+							<circle class="art-ring-track" cx="22" cy="22" r="18" />
+							<circle class="art-ring-arc" cx="22" cy="22" r="18" />
+						</svg>
+					</span>
+					<span class="art-pills">
+						<i class="is-confirm">Confirm</i>
+						<i>Dispute</i>
+					</span>
+				</div>
+			)
+		}
+
+		{
+			kind === 'nothing-owed' && (
+				<div class="art-owed">
+					<span class="art-lock">
+						<svg viewBox="0 0 28 28">
+							<rect class="art-lock-body" x="6" y="12" width="16" height="12" rx="2.5" />
+							<path class="art-lock-shackle" d="M10 12V9a4 4 0 0 1 8 0v3" />
+						</svg>
+					</span>
+					<span class="art-free">Free to ask</span>
+				</div>
+			)
+		}
+	</div>
+
+	<h3 class="exhibit-title">{title}</h3>
+	<p class="exhibit-detail">{detail}</p>
+</li>
+
+<style>
+	/*
+	 * The cell is a pane of a shared frame and never fades: at any opacity
+	 * below 1 the frame's own gap colour shows straight through it, so a
+	 * reveal that has not fired yet would read as a hole in the wall rather
+	 * than as a card on its way in. It is marked rather than revealed, and the
+	 * contents are what arrive.
+	 */
+	.exhibit {
+		position: relative;
+		display: grid;
+		gap: 0.625rem;
+		align-content: start;
+		padding: clamp(1.5rem, 3vw, 2rem);
+		background: rgb(var(--color-surface));
+		isolation: isolate;
+	}
+
+	/* A soft light behind the exhibit under the pointer. The cells share one
+	   frame, so this is the only thing that can single one out without
+	   breaking the frame's continuity. */
+	.exhibit::before {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		background: radial-gradient(
+			70% 90% at 22% 0%,
+			rgb(var(--accent) / 10%),
+			transparent 70%
+		);
+		content: '';
+		opacity: 0;
+		transition: opacity var(--dur-slow) var(--ease-out);
+	}
+
+	.exhibit:hover::before,
+	.exhibit:focus-within::before {
+		opacity: 1;
+	}
+
+	.exhibit-index {
+		color: rgb(var(--color-muted) / 78%);
+		grid-row: 1;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.exhibit-title {
+		margin: 0.75rem 0 0;
+		color: rgb(var(--color-ink));
+		font-size: 1.1875rem;
+		font-weight: 650;
+		letter-spacing: -0.02em;
+	}
+
+	.exhibit-detail {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 1rem;
+		line-height: 1.6;
+	}
+
+	/* ---- Shared art chrome ---- */
+
+	.exhibit-art {
+		display: flex;
+		min-height: 5.5rem;
+		align-items: center;
+		margin-top: 0.75rem;
+	}
+
+	.art-ring-track,
+	.art-ring-arc {
+		fill: none;
+		stroke-width: 3.5;
+	}
+
+	.art-ring-track {
+		stroke: rgb(var(--color-border));
+	}
+
+	/* 2πr for r=18. Each ring draws itself once, when the card is read. */
+	.art-ring-arc {
+		stroke: rgb(var(--accent));
+		stroke-dasharray: 113.1;
+		stroke-dashoffset: 113.1;
+		stroke-linecap: round;
+	}
+
+	/* ---- 01 Verified employment ---- */
+
+	.art-verified {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+	}
+
+	.art-card {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		padding: 0.625rem 0.875rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-sm);
+		background: rgb(var(--color-elevated));
+	}
+
+	.art-avatar {
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 50%;
+		/* `--accent-soft` on `--color-elevated` is two near-identical greys in
+		   dark mode and two near-identical pales in light; the accent itself
+		   at low alpha reads on both. */
+		background: rgb(var(--accent) / 24%);
+	}
+
+	.art-lines {
+		display: grid;
+		gap: 0.3125rem;
+	}
+
+	.art-lines i {
+		width: 3.5rem;
+		height: 0.375rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ink) / 22%);
+	}
+
+	.art-lines i:last-child {
+		width: 2.25rem;
+		background: rgb(var(--color-ink) / 12%);
+	}
+
+	.art-check {
+		position: absolute;
+		right: -0.4375rem;
+		bottom: -0.4375rem;
+		display: grid;
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 50%;
+		background: rgb(var(--accent));
+		place-items: center;
+		transform: scale(0);
+	}
+
+	.art-check svg {
+		width: 0.6875rem;
+		height: 0.6875rem;
+		fill: none;
+		stroke: rgb(var(--color-primary-ink));
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 2.4;
+	}
+
+	.art-recheck svg,
+	.art-ring svg {
+		display: block;
+		width: 2.25rem;
+		height: 2.25rem;
+		transform: rotate(-90deg);
+	}
+
+	/* ---- 02 Proof ---- */
+
+	.art-proof {
+		position: relative;
+		width: fit-content;
+	}
+
+	.art-shot {
+		display: grid;
+		width: 8.5rem;
+		gap: 0.375rem;
+		padding: 0.75rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-sm);
+		background: rgb(var(--color-elevated));
+	}
+
+	.art-shot i {
+		height: 0.375rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ink) / 12%);
+	}
+
+	.art-shot i:first-child {
+		width: 72%;
+		background: rgb(var(--color-ink) / 24%);
+	}
+
+	.art-shot i:last-child {
+		width: 46%;
+	}
+
+	.art-stamp {
+		position: absolute;
+		right: -1.5rem;
+		bottom: -0.5rem;
+		padding: 0.3125rem 0.5625rem;
+		border: 1px solid rgb(var(--accent) / 40%);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--accent-soft));
+		color: rgb(var(--accent-ink));
+		font-weight: 650;
+		transform: scale(1.35) rotate(-4deg);
+		opacity: 0;
+	}
+
+	/* ---- 03 The window ---- */
+
+	.art-window {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+	}
+
+	.art-pills {
+		display: flex;
+		gap: 0.4375rem;
+	}
+
+	.art-pills i {
+		padding: 0.375rem 0.75rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface));
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+		font-style: normal;
+		font-weight: 600;
+	}
+
+	.art-pills .is-confirm {
+		border-color: rgb(var(--accent) / 38%);
+		background: rgb(var(--accent-soft));
+		color: rgb(var(--accent-ink));
+	}
+
+	/* ---- 04 Nothing owed ---- */
+
+	.art-owed {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+	}
+
+	.art-lock svg {
+		width: 2.5rem;
+		height: 2.5rem;
+		fill: none;
+		stroke: rgb(var(--accent-ink));
+		stroke-linecap: round;
+		stroke-width: 1.7;
+	}
+
+	.art-lock-body {
+		fill: rgb(var(--accent-soft));
+	}
+
+	.art-lock-shackle {
+		transform-origin: 18px 12px;
+	}
+
+	.art-free {
+		padding: 0.4375rem 0.875rem;
+		border: 1px solid rgb(var(--accent) / 34%);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--accent-soft));
+		color: rgb(var(--accent-ink));
+		font-size: 0.8125rem;
+		font-weight: 650;
+	}
+
+	/* ---- The exhibits animate once, when they are first read ---- */
+
+	@media (prefers-reduced-motion: no-preference) {
+		:global(.js) .exhibit > * {
+			opacity: 0;
+			transform: translateY(0.75rem);
+			transition:
+				opacity var(--dur-reveal) var(--ease-out),
+				transform var(--dur-reveal) var(--ease-out);
+		}
+
+		:global(.js) .exhibit.is-visible > * {
+			opacity: 1;
+			transform: none;
+		}
+
+		.exhibit.is-visible .art-ring-arc {
+			animation: ring-draw 1100ms var(--ease-out) 240ms both;
+		}
+
+		/* The check and the stamp land rather than fade: an arriving proof is
+		   the one beat in this section that should read as an event. */
+		.exhibit.is-visible .art-check {
+			animation: land 520ms var(--ease-spring) 700ms both;
+		}
+
+		.exhibit.is-visible .art-stamp {
+			animation: stamp 460ms var(--ease-spring) 420ms both;
+		}
+
+		.exhibit.is-visible .art-lock-shackle {
+			animation: unlock 620ms var(--ease-out) 460ms both;
+		}
+
+		@keyframes ring-draw {
+			from {
+				stroke-dashoffset: 113.1;
+			}
+			to {
+				stroke-dashoffset: 22.6;
+			}
+		}
+
+		@keyframes land {
+			from {
+				transform: scale(0);
+			}
+			to {
+				transform: scale(1);
+			}
+		}
+
+		@keyframes stamp {
+			from {
+				opacity: 0;
+				transform: scale(1.35) rotate(-4deg);
+			}
+			to {
+				opacity: 1;
+				transform: scale(1) rotate(-4deg);
+			}
+		}
+
+		/* The shackle lifts and tips open — the claim is that nothing is
+		   locked behind a payment, so the lock is shown giving way. */
+		@keyframes unlock {
+			from {
+				transform: none;
+			}
+			to {
+				transform: translateY(-0.125rem) rotate(-22deg);
+			}
+		}
+	}
+
+	/* Resting states have to be the finished states, because the blanket
+	   reduced-motion rule collapses every animation to its first frame. */
+	@media (prefers-reduced-motion: reduce) {
+		.art-ring-arc {
+			stroke-dashoffset: 22.6;
+		}
+
+		.art-check {
+			transform: scale(1);
+		}
+
+		.art-stamp {
+			opacity: 1;
+			transform: rotate(-4deg);
+		}
+
+		.art-lock-shackle {
+			transform: translateY(-0.125rem) rotate(-22deg);
+		}
+	}
+</style>

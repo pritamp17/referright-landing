@@ -1,6 +1,5 @@
 ---
-import RemotionPlayer from './remotion/RemotionPlayer';
-import SectionIntro from './SectionIntro.astro';
+import AppreciationCard from './AppreciationCard.astro';
 import { OUTCOME_DISCLAIMER, SectionId } from '../lib/constants';
 
 /**
@@ -11,6 +10,10 @@ import { OUTCOME_DISCLAIMER, SectionId } from '../lib/constants';
  * take part — not on the page that is still earning their trust. What this
  * section owes the reader is one honest sentence: asking is not a transaction,
  * and thanking is their choice.
+ *
+ * The visual sits on the LEFT here, mirroring the peer-openings section above
+ * it. Two split sections in a row with the picture on the same side reads as a
+ * template; alternating reads as a page that was composed.
  */
 const reassurances: readonly string[] = [
 	'Optional, always',
@@ -20,34 +23,35 @@ const reassurances: readonly string[] = [
 ---
 
 <section class="section appreciation" id={SectionId.Appreciation} aria-labelledby="appreciation-title">
-	<div class="shell">
-		<SectionIntro
-			eyebrow="Afterwards"
-			title="Say thank you, only if you want to."
-			copy="Referrals here come from people who chose to help. If it felt worth it, you can send a small token of appreciation, a coffee and nothing more. It is entirely optional, and it never changes whether you get referred."
-			headingId="appreciation-title"
-			align="center"
-			class="reveal"
-		/>
-
-		<ul class="appreciation-chips reveal">
-			{
-				reassurances.map((item) => (
-					<li>
-						<svg viewBox="0 0 16 16" aria-hidden="true">
-							<path d="M3.4 8.4l3 3 6.2-7" />
-						</svg>
-						{item}
-					</li>
-				))
-			}
-		</ul>
-
-		<div class="media-frame appreciation-frame reveal">
-			<RemotionPlayer variant="appreciation" client:visible />
+	<div class="shell appreciation-grid">
+		<div class="appreciation-visual">
+			<AppreciationCard />
 		</div>
 
-		<p class="fine-print appreciation-note reveal">{OUTCOME_DISCLAIMER}</p>
+		<div class="appreciation-copy reveal">
+			<p class="eyebrow">Afterwards</p>
+			<h2 class="display-2" id="appreciation-title">Say thank you, only if you want to.</h2>
+			<p class="lede">
+				Referrals here come from people who chose to help. If it felt worth it, you can send a small
+				token of appreciation, a coffee and nothing more. It is entirely optional, and it never
+				changes whether you get referred.
+			</p>
+
+			<ul class="appreciation-chips">
+				{
+					reassurances.map((item) => (
+						<li>
+							<svg viewBox="0 0 16 16" aria-hidden="true">
+								<path d="M3.4 8.4l3 3 6.2-7" />
+							</svg>
+							{item}
+						</li>
+					))
+				}
+			</ul>
+
+			<p class="fine-print appreciation-note">{OUTCOME_DISCLAIMER}</p>
+		</div>
 	</div>
 </section>
 
@@ -56,10 +60,19 @@ const reassurances: readonly string[] = [
 		border-top: 1px solid rgb(var(--color-border));
 	}
 
+	.appreciation-grid {
+		display: grid;
+		gap: clamp(2.5rem, 5vw, 4rem);
+		align-items: center;
+	}
+
+	.appreciation-copy .lede {
+		max-width: 32rem;
+	}
+
 	.appreciation-chips {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
 		gap: 0.625rem;
 		margin: 1.75rem 0 0;
 		padding: 0;
@@ -89,25 +102,18 @@ const reassurances: readonly string[] = [
 		stroke-width: 2;
 	}
 
-	.appreciation-frame {
-		max-width: 46rem;
-		margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
-	}
-
 	.appreciation-note {
-		margin-top: 1.25rem;
-		text-align: center;
+		margin-top: 1.5rem;
 	}
 
-	/* Chips read as a left-aligned list on phones, matching the section
-	   heading, which also left-aligns below 48rem. */
-	@media (max-width: 48rem) {
-		.appreciation-chips {
-			justify-content: flex-start;
+	@media (min-width: 64rem) {
+		.appreciation-grid {
+			gap: clamp(3rem, 7vw, 6rem);
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		}
 
-		.appreciation-note {
-			text-align: left;
+		.appreciation-visual {
+			justify-self: end;
 		}
 	}
 </style>

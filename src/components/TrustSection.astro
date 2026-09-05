@@ -1,40 +1,61 @@
 ---
+import TrustExhibit, { type ExhibitKind } from './TrustExhibit.astro';
 import { OUTCOME_DISCLAIMER, SectionId } from '../lib/constants';
 import { TRUST_PILLARS } from '../lib/content';
+
+/*
+ * Trust, as four exhibits rather than four sentences.
+ *
+ * The claims were already the right ones — each is backed by something the
+ * product genuinely does — but they were set as four paragraphs in four boxes,
+ * which is exactly how an unbacked claim looks too. Each pillar now shows its
+ * own mechanism above the words: the verification badge landing, the proof
+ * screenshot being stamped, the review window drawing itself, the lock coming
+ * off. Nothing here is an illustration of a feeling; every one of them is a
+ * picture of the specific thing the sentence claims.
+ *
+ * The head is sticky beside them from 64rem: the argument stays on screen
+ * while the evidence for it scrolls past, which is the shape of the argument.
+ */
+const EXHIBIT_KINDS: readonly ExhibitKind[] = ['verified', 'proof', 'window', 'nothing-owed'];
 ---
 
 <section class="section trust" id={SectionId.Trust} aria-labelledby="trust-title">
 	<div class="trust-orbit" aria-hidden="true"></div>
 
 	<div class="shell trust-inner">
-		<div class="trust-head reveal">
-			<p class="eyebrow trust-eyebrow">Why this is safe to use</p>
-			<h2 class="display-2" id="trust-title">Trust here is a mechanism, not a slogan.</h2>
-			<p class="trust-lede">
-				Every claim on this page is backed by something the product actually does. Here is exactly
-				what protects both sides.
-			</p>
+		<div class="trust-aside">
+			<div class="trust-head reveal">
+				<p class="eyebrow trust-eyebrow">Why this is safe to use</p>
+				<h2 class="display-2" id="trust-title">Trust here is a mechanism, not a slogan.</h2>
+				<p class="trust-lede">
+					Every claim on this page is backed by something the product actually does. Here is
+					exactly what protects both sides.
+				</p>
+
+				<p class="trust-disclaimer">
+					<svg viewBox="0 0 16 16" aria-hidden="true">
+						<circle cx="8" cy="8" r="6.4"></circle>
+						<path d="M8 5.2v3.4M8 10.6v.2"></path>
+					</svg>
+					{OUTCOME_DISCLAIMER}
+				</p>
+			</div>
 		</div>
 
 		<ul class="trust-grid">
 			{
-				TRUST_PILLARS.map((pillar) => (
-					<li class="trust-card reveal">
-						<span class="trust-card-rule" aria-hidden="true" />
-						<h3 class="trust-card-title">{pillar.title}</h3>
-						<p class="trust-card-detail">{pillar.detail}</p>
-					</li>
+				TRUST_PILLARS.map((pillar, index) => (
+					<TrustExhibit
+						kind={EXHIBIT_KINDS[index]}
+						index={String(index + 1).padStart(2, '0')}
+						title={pillar.title}
+						detail={pillar.detail}
+						accent={pillar.accent}
+					/>
 				))
 			}
 		</ul>
-
-		<p class="trust-disclaimer reveal">
-			<svg viewBox="0 0 16 16" aria-hidden="true">
-				<circle cx="8" cy="8" r="6.4"></circle>
-				<path d="M8 5.2v3.4M8 10.6v.2"></path>
-			</svg>
-			{OUTCOME_DISCLAIMER}
-		</p>
 	</div>
 </section>
 
@@ -55,7 +76,8 @@ import { TRUST_PILLARS } from '../lib/content';
 	}
 
 	/* Concentric rings, echoing the reach of the network. Purely decorative and
-	   cheap — no image request. */
+	   cheap — no image request. They turn once every two minutes, slowly enough
+	   that it registers as depth rather than as movement. */
 	.trust-orbit {
 		position: absolute;
 		z-index: 0;
@@ -64,9 +86,9 @@ import { TRUST_PILLARS } from '../lib/content';
 		width: min(60rem, 130vw);
 		aspect-ratio: 1;
 		background:
-			radial-gradient(circle, transparent 29%, rgb(var(--color-primary) / 5%) 29.2%, transparent 30%),
-			radial-gradient(circle, transparent 43%, rgb(var(--color-primary) / 4%) 43.2%, transparent 44%),
-			radial-gradient(circle, transparent 58%, rgb(var(--color-primary) / 3%) 58.2%, transparent 59%);
+			radial-gradient(circle, transparent 29%, rgb(var(--color-primary) / 9%) 29.2%, transparent 30%),
+			radial-gradient(circle, transparent 43%, rgb(var(--color-primary) / 7%) 43.2%, transparent 44%),
+			radial-gradient(circle, transparent 58%, rgb(var(--color-primary) / 5%) 58.2%, transparent 59%);
 		pointer-events: none;
 		transform: translate(-50%, -50%);
 	}
@@ -91,73 +113,18 @@ import { TRUST_PILLARS } from '../lib/content';
 	}
 
 	.trust-lede {
-		max-width: 34rem;
+		max-width: 30rem;
 		margin: 1.125rem 0 0;
 		color: rgb(var(--color-muted));
 		font-size: 1.0625rem;
 		line-height: 1.65;
 	}
 
-	/* ---- Pillars ---- */
-
-	/*
-	 * The dividers between cards used to be drawn in the brand blue at 14–16%
-	 * alpha, showing through the 1px grid gap. On this section's own pale-blue
-	 * background that is one light blue sitting on another: the outer edge
-	 * just barely read against the page, and the INTERNAL dividers, pinched
-	 * between two near-white card fills, all but vanished — the four pillars
-	 * looked like one card. The ink token reads as a true neutral line against
-	 * both the pale-blue backdrop and the near-white cards, so it is what
-	 * actually separates them; the brand blue stays on the small corner rule
-	 * inside each card instead.
-	 */
-	.trust-grid {
-		display: grid;
-		gap: 1px;
-		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
-		padding: 0;
-		overflow: hidden;
-		border: 1px solid rgb(var(--color-ink) / 14%);
-		border-radius: var(--radius-xxl);
-		background: rgb(var(--color-ink) / 12%);
-		list-style: none;
-	}
-
-	.trust-card {
-		display: grid;
-		gap: 0.625rem;
-		padding: clamp(1.5rem, 3vw, 2rem);
-		background: rgb(var(--color-surface));
-	}
-
-	.trust-card-rule {
-		width: 2rem;
-		height: 2px;
-		border-radius: var(--radius-pill);
-		background: rgb(var(--color-primary) / 45%);
-	}
-
-	.trust-card-title {
-		margin: 0.375rem 0 0;
-		color: rgb(var(--color-ink));
-		font-size: 1.0625rem;
-		font-weight: 600;
-		letter-spacing: -0.015em;
-	}
-
-	.trust-card-detail {
-		margin: 0;
-		color: rgb(var(--color-muted));
-		font-size: 0.9375rem;
-		line-height: 1.6;
-	}
-
-	/* ---- Disclaimer ---- */
-
 	.trust-disclaimer {
 		display: flex;
 		align-items: center;
 		gap: 0.625rem;
+		max-width: 26rem;
 		margin: 1.75rem 0 0;
 		color: rgb(var(--color-muted));
 		font-size: 0.875rem;
@@ -173,11 +140,85 @@ import { TRUST_PILLARS } from '../lib/content';
 		stroke-width: 1.4;
 	}
 
+	/* ---- Exhibits ---- */
+
+	/*
+	 * The dividers between cards used to be drawn in the brand blue at 14–16%
+	 * alpha, showing through the 1px grid gap. On this section's own pale-blue
+	 * background that is one light blue sitting on another: the outer edge
+	 * just barely read against the page, and the INTERNAL dividers, pinched
+	 * between two near-white card fills, all but vanished — the four pillars
+	 * looked like one card. The ink token reads as a true neutral line against
+	 * both the pale-blue backdrop and the near-white cards, so it is what
+	 * actually separates them; the accents stay inside each cell instead.
+	 */
+	.trust-grid {
+		display: grid;
+		gap: 1px;
+		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+		padding: 0;
+		overflow: hidden;
+		border: 1px solid rgb(var(--color-ink) / 14%);
+		border-radius: var(--radius-xxl);
+		background: rgb(var(--color-ink) / 12%);
+		box-shadow: var(--shadow-raised);
+		list-style: none;
+	}
+
 	/* ---- Responsive ---- */
 
 	@media (min-width: 48rem) {
 		.trust-grid {
 			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.trust-inner {
+			display: grid;
+			align-items: start;
+			gap: clamp(2.5rem, 6vw, 5rem);
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		}
+
+		/*
+		 * The claim holds still while its evidence scrolls past it.
+		 *
+		 * The sticky element is the head INSIDE the grid item, never the grid
+		 * item itself: a sticky grid item is pushed down by its own `top`
+		 * offset in Chromium — measured, and not fixed by `align-self: start`
+		 * or `height: fit-content` — so the head would begin 7.5rem below the
+		 * exhibits it is meant to sit beside. `.trust-aside` takes the column;
+		 * the head sticks within it.
+		 */
+		.trust-head {
+			position: sticky;
+			top: 7.5rem;
+		}
+
+		.trust-grid {
+			margin-top: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.trust-orbit {
+			animation: orbit-turn 120s linear infinite;
+		}
+
+		@keyframes orbit-turn {
+			from {
+				transform: translate(-50%, -50%) rotate(0deg);
+			}
+			to {
+				transform: translate(-50%, -50%) rotate(360deg);
+			}
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.trust-head {
+			position: static;
 		}
 	}
 </style>

@@ -144,7 +144,7 @@ export const TRUST_PILLARS: readonly TrustPillar[] = [
 	{
 		title: 'A window to disagree',
 		detail: `You have ${POLICY.confirmationWindowHours} hours after proof is submitted to confirm or dispute. Disputes are reviewed by a person, not closed automatically.`,
-		accent: Accent.Trust,
+		accent: Accent.Warning,
 	},
 	{
 		title: 'Nothing is owed upfront',
@@ -173,6 +173,65 @@ export const TRUST_STRIP: readonly TrustStripItem[] = [
 	{ value: 'Referrer Appreciation, Your Way', label: 'Add an optional thank-you amount.' },
 	{ value: '100% Free', label: 'No payment required' },
 	{ value: '2-Day Response', label: 'Get clarity, sooner. ' },
+] as const;
+
+/* ------------------------------------------------------------------ */
+/* Peer openings                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One opening as a member would meet it.
+ *
+ * These describe the ROLE and nothing else. A peer opening never carries the
+ * identity of whoever asked about it (DESIGN_SYSTEM.md §8 rule 4), and
+ * nothing here claims we are hiring at these employers or that a referral is
+ * assured — `path` says a route exists, which is exactly what the product
+ * checks.
+ */
+export interface PeerSignal {
+	readonly role: string;
+	readonly company: string;
+	readonly location: string;
+	readonly posted: string;
+	readonly path: string;
+}
+
+export const PEER_SIGNALS: readonly PeerSignal[] = [
+	{
+		role: 'Product Manager',
+		company: 'Microsoft',
+		location: 'Bengaluru',
+		posted: '18 minutes ago',
+		path: 'Referral path available',
+	},
+	{
+		role: 'Senior Backend Engineer',
+		company: 'Atlassian',
+		location: 'Bengaluru',
+		posted: '40 minutes ago',
+		path: 'Referral path available',
+	},
+	{
+		role: 'Design Systems Lead',
+		company: 'Figma',
+		location: 'Remote, India',
+		posted: '1 hour ago',
+		path: 'Referral path available',
+	},
+	{
+		role: 'Staff Data Engineer',
+		company: 'Stripe',
+		location: 'Bengaluru',
+		posted: '2 hours ago',
+		path: 'Referral path available',
+	},
+	{
+		role: 'Engineering Manager',
+		company: 'Netflix',
+		location: 'Mumbai',
+		posted: '3 hours ago',
+		path: 'Referral path available',
+	},
 ] as const;
 
 /* ------------------------------------------------------------------ */

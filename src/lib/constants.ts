@@ -74,6 +74,8 @@ export enum Accent {
 	Success = 'success',
 	/** Teal: something in flight, in someone else's hands. */
 	Progress = 'progress',
+	/** Amber: waiting on the reader — a window they have to act inside. */
+	Warning = 'warning',
 	Danger = 'danger',
 }
 

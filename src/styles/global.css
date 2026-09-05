@@ -388,6 +388,12 @@ strong {
 	--accent-ink: var(--color-progress-ink);
 }
 
+.accent-warning {
+	--accent: var(--color-warning);
+	--accent-soft: var(--color-warning-soft);
+	--accent-ink: var(--color-warning-ink);
+}
+
 /* ------------------------------------------------------------------ */
 /* Surfaces                                                            */
 /* ------------------------------------------------------------------ */
@@ -419,51 +425,6 @@ strong {
 	background-size: 4.5rem 4.5rem;
 	mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000, transparent 78%);
 	pointer-events: none;
-}
-
-/* ------------------------------------------------------------------ */
-/* Remotion players (removed with the films in Phase 3)               */
-/* ------------------------------------------------------------------ */
-
-.media-frame {
-	overflow: hidden;
-	border: 1px solid rgb(var(--color-border));
-	border-radius: var(--radius-xxl);
-	background: rgb(var(--color-elevated));
-	box-shadow:
-		0 0 0 1px rgb(var(--color-ink) / 6%),
-		var(--shadow-panel);
-}
-
-[data-theme='dark'] .media-frame {
-	box-shadow: var(--shadow-panel);
-}
-
-.remotion-player {
-	width: 100%;
-	overflow: hidden;
-	background: rgb(var(--color-elevated));
-}
-
-.remotion-player-signal {
-	aspect-ratio: 1280 / 800;
-}
-
-.remotion-player-journey {
-	aspect-ratio: 1280 / 680;
-}
-
-.remotion-player-appreciation {
-	aspect-ratio: 900 / 640;
-}
-
-.remotion-player-signal.is-compact,
-.remotion-player-journey.is-compact {
-	aspect-ratio: 390 / 520;
-}
-
-.remotion-player-appreciation.is-compact {
-	aspect-ratio: 390 / 480;
 }
 
 /* ------------------------------------------------------------------ */

@@ -86,11 +86,18 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 			<CompanyField />
 		</section>
 
+		{/*
+		  * The order is the argument: what this is, how it works, why it is
+		  * safe, who says so, then the two offerings that need their own
+		  * demonstration, then the questions. Trust sits ahead of the beta
+		  * quotes deliberately — a stranger's word is worth more once the
+		  * mechanism behind it has been shown.
+		  */}
 		<Offerings />
-		<BetaProof batches={testimonialBatches} />
-		<PeerSignalSection />
 		<Lifecycle />
 		<TrustSection />
+		<BetaProof batches={testimonialBatches} />
+		<PeerSignalSection />
 		<Appreciation />
 		<Faq />
 
