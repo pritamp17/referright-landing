@@ -219,10 +219,17 @@ const policyLinks = [
 		list-style: none;
 	}
 
+	/* Padding rather than height alone: the shortest label here is 36px wide.
+	   The negative margin keeps the text aligned with the column heading, so
+	   the target grows without the column looking indented. */
 	.footer-nav a {
 		display: inline-flex;
-		min-height: 2.5rem;
+		min-width: 2.75rem;
+		min-height: 2.75rem;
 		align-items: center;
+		margin-inline: -0.5rem;
+		padding-inline: 0.5rem;
+		border-radius: var(--radius-sm);
 		color: rgb(var(--color-muted));
 		font-size: 0.9375rem;
 		transition: color var(--dur-fast) ease;
