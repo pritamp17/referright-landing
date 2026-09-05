@@ -28,7 +28,7 @@ const { batches } = Astro.props;
 				<div class="track" data-testimonial-track>
 					{[...batch, ...batch].map((testimonial, cardIndex) => (
 						<article
-							class:list={['quote-card', `accent-${testimonial.accent}`]}
+							class:list={['quote-card', 'glass', 'lift', `accent-${testimonial.accent}`]}
 							aria-hidden={cardIndex >= batch.length ? 'true' : undefined}
 						>
 							<div class="quote-person">

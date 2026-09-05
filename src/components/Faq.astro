@@ -43,14 +43,23 @@ const slugFor = (question: string): string =>
  */}
 <section class="section faq" id={SectionId.Faq} aria-labelledby="faq-title">
 	<div class="shell faq-inner">
-		<SectionIntro
-			eyebrow="Questions"
-			title="The things people ask first."
-			copy="Short, direct answers — including the one about money."
-			headingId="faq-title"
-			align="left"
-			class="reveal faq-head"
-		/>
+		<div class="faq-aside">
+			<div class="faq-sticky">
+				<SectionIntro
+					eyebrow="Questions"
+					title="The things people ask first."
+					copy="Short, direct answers — including the one about money."
+					headingId="faq-title"
+					align="left"
+					class="reveal faq-head"
+				/>
+
+				<p class="fine-print faq-foot reveal">
+					<span>Still unsure about something?</span>
+					<a href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.FaqContact}>{CONTACT_EMAIL}</a>
+				</p>
+			</div>
+		</div>
 
 		<div class="faq-body reveal">
 			<div class="faq-list">
@@ -75,11 +84,6 @@ const slugFor = (question: string): string =>
 					))
 				}
 			</div>
-
-			<p class="fine-print faq-foot">
-				Still unsure about something?
-				<a href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.FaqContact}>{CONTACT_EMAIL}</a>
-			</p>
 		</div>
 	</div>
 </section>
@@ -148,7 +152,39 @@ const slugFor = (question: string): string =>
 	 * nine objects; a ruled list reads as one document.
 	 */
 	.faq-item {
+		position: relative;
 		border-top: 1px solid rgb(var(--color-border));
+		transition: background-color var(--dur-mid) ease;
+	}
+
+	/*
+	 * The open row carries a rail and a whisper of tint, so the answer being
+	 * read is visibly one row rather than loose text between two hairlines.
+	 * State is a rail, not a fill — the product's own convention.
+	 */
+	.faq-item::before {
+		position: absolute;
+		top: -1px;
+		bottom: 0;
+		left: -1rem;
+		width: 2px;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-primary));
+		content: '';
+		opacity: 0;
+		transition: opacity var(--dur-mid) var(--ease-out);
+	}
+
+	.faq-item[open]::before {
+		opacity: 1;
+	}
+
+	:global([data-theme='dark']) .faq-item::before {
+		background: rgb(var(--color-primary-strong));
+	}
+
+	.faq-item:hover:not([open]) {
+		background: rgb(var(--color-hairline) / 60%);
 	}
 
 	.faq-item:last-of-type {
@@ -190,7 +226,7 @@ const slugFor = (question: string): string =>
 
 	.faq-question {
 		margin: 0;
-		font-size: 1.0625rem;
+		font-size: 1.125rem;
 		font-weight: 600;
 		letter-spacing: -0.01em;
 		line-height: 1.45;
@@ -248,12 +284,18 @@ const slugFor = (question: string): string =>
 		max-width: 46ch;
 		margin: 0;
 		color: rgb(var(--color-muted));
-		font-size: 0.9375rem;
+		font-size: 1rem;
 		line-height: 1.65;
 		text-wrap: pretty;
 	}
 
+	/* The link is inline-flex for its touch target, which swallows the space
+	   after the question mark; the gap has to be stated rather than typed. */
 	.faq-foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0 0.4375rem;
 		margin-top: 1.5rem;
 	}
 
@@ -292,8 +334,24 @@ const slugFor = (question: string): string =>
 
 	@media (min-width: 64rem) {
 		.faq-inner {
+			align-items: start;
 			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
 			gap: clamp(3rem, 6vw, 5rem);
+		}
+
+		/* The sticky element sits inside the grid item, never IS the grid item —
+		   see TrustSection.astro for the measurement behind that. Head and
+		   contact line travel together, so the way to ask a question that is
+		   not listed stays on screen the whole way down the list. */
+		.faq-sticky {
+			position: sticky;
+			top: 7.5rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.faq-sticky {
+			position: static;
 		}
 	}
 

@@ -1,20 +1,21 @@
 # RightRefer landing — design system
 
-> Status: current as of the "premium three-offering" redesign.
-> The palette is **locked**. Do not introduce new colour values.
+> Current as of the premium redesign of everything below the hero.
+> The palette is mirrored from the product application; do not invent colour
+> values here, compose the existing tokens instead.
 
 ---
 
 ## 1. Principle
 
-The landing page and the signed-in product are one company. Every colour, radius
-and shadow on this page resolves from the **same token names** the application
-declares in its `tailwind.config.ts` and `src/styles/tokens.css`.
+The landing page and the signed-in product are one company. Every colour,
+radius and shadow on this page resolves from the **same token names** the
+application declares in its `tailwind.config.ts` and `src/styles/tokens.css`.
 
-The application consumes them through Tailwind as `rgb(var(--token) / <alpha-value>)`.
-This page has no Tailwind and consumes them directly as CSS custom properties.
-Same names, same values, same two themes — with one intentional divergence
-noted in §2.3.
+The application consumes them through Tailwind as
+`rgb(var(--token) / <alpha-value>)`. This page has no Tailwind and consumes
+them directly as CSS custom properties. Same names, same values, same two
+themes — with one intentional divergence noted in §2.3.
 
 ---
 
@@ -30,47 +31,50 @@ border-color: rgb(var(--color-primary) / 28%);
 
 ### 2.1 Mirrored from the product application
 
-| Token | Light | Dark |
-|---|---|---|
-| `--color-canvas` | `251 248 242` (#FBF8F2) | `5 5 5` (#050505) |
-| `--color-shell` | `255 255 255` | `0 0 0` |
-| `--color-elevated` | `241 245 249` | `23 26 29` |
-| `--color-field` | `255 255 255` | `11 13 15` |
-| `--color-ink` | `23 33 43` (#17212B) | `245 247 250` |
-| `--color-muted` | `83 97 112` | `174 181 189` |
-| `--color-border` | `216 225 234` | `43 48 54` |
-| `--color-primary` | `10 102 194` (#0A66C2) | `10 102 194` |
-| `--color-primary-hover` | `0 65 130` (#004182) | `0 65 130` |
-| `--color-primary-strong` | `0 65 130` | `112 181 249` |
-| `--color-primary-soft` | `234 243 248` | `16 42 67` |
-| `--color-primary-ink` | `255 255 255` | `255 255 255` |
+Re-synced 2026-09-06 against the surface-ladder and status-colour work in the
+unified PRD (§8.11, §8.13). The families:
 
-Plus the semantic triads `trust`, `reward`, `danger`, `success` (each with
-`-soft` and `-ink`), and `--color-focus` / `--color-focus-contrast`.
+| Family | Meaning | Light | Dark |
+|---|---|---|---|
+| `canvas` / `shell` | the page ground | `251 248 242` | `5 5 5` |
+| `surface-sunken` · `surface` · `elevated` | the depth ladder | `246 248 251` · `255 253 248` · `238 242 247` | `12 14 17` · `20 22 26` · `32 36 42` |
+| `hairline` · `border` · `border-strong` | three weights of line | `236 240 246` · `216 225 234` · `178 190 203` | `29 32 37` · `48 54 62` · `72 80 90` |
+| `ink` · `muted` | type | `23 33 43` · `83 97 112` | `245 247 250` · `174 181 189` |
+| `primary` (+ `-hover -strong -soft -ink`) | LinkedIn blue, primary actions | `10 102 194` | same, `-strong` lifts to `112 181 249` |
+| `progress` (+ `-soft -ink`) | teal — in flight, in someone else's hands | `13 148 136` | `45 212 191` |
+| `warning` (+ `-soft -ink`) | amber — waiting on the reader | `180 83 9` | `245 158 11` |
+| `success` (+ `-soft -ink`) | green — done | `21 128 61` | `74 222 128` |
+| `reward` (+ `-soft -ink`) | violet — money | `109 40 217` | `167 139 250` |
+| `danger` (+ `-soft -ink`) | red | `185 28 28` | `248 113 113` |
+| `trust` · `focus` · `sonar` · `overlay` · `band-from/-to` | as in the product | | |
+
+**`reward` is violet, not a second blue, and this matters here.** It was
+blue-600 in both files, which made `--color-reward-soft` and
+`--color-primary-soft` byte-identical in dark mode (`16 42 67`). That is why an
+earlier version of this document recorded that the three offerings had to share
+one accent. They no longer do — see §16.
 
 ### 2.2 Landing-only extensions
 
 | Token | Purpose |
 |---|---|
-| `--color-brand-panel` | Deep blue surface for inverted panels. Stays blue in **both** themes so an inverted panel never washes out. |
-| `--color-brand-panel-ink` | Foreground on that panel. |
-| `--shadow-raised` / `--shadow-panel` / `--shadow-media` | Three-step elevation ladder. |
-| `--radius-sm` · `--radius-xl` · `--radius-2xl` · `--radius-lg` · `--radius-xxl` | `xl` and `2xl` are the product's; the larger steps exist for hero-scale media. |
+| `--color-brand-panel` / `-ink` | Deep blue surface for inverted panels. Stays blue in **both** themes so an inverted panel never washes out. |
+| `--glass-bg` / `-border` / `-highlight` / `-shadow` / `-blur` | The glass recipe, composed entirely from existing tokens. See §6. |
+| `--shadow-panel` / `--shadow-media` | Two heavier steps than the product needs, for hero-scale surfaces. |
+| `--radius-sm` · `--radius-lg` · `--radius-xxl` · `--radius-pill` | `xl`/`2xl` are the product's; the larger steps exist for hero-scale media. |
 | `--shell` / `--shell-gutter` / `--section-space` | Layout rhythm. |
+| `--ease-spring` · `--dur-reveal` · `--stagger` | Motion vocabulary added with the shared reveal system. |
 
 ### 2.3 Intentional divergence — `--color-surface` in light mode
 
-The product application sets `--color-surface: 255 255 255` (pure white) in
-light mode. On the landing page this reads as clinical against the warm
-`#FBF8F2` canvas, so **light-mode `--color-surface` here is `255 253 248`** — a
-faint cream, a few points off white. Card chrome still separates cleanly from
-the canvas, but the whole page now sits on one warm register instead of white
-cards floating on a cream canvas.
+The product sets `--color-surface: 255 255 255` in light mode. On the landing
+page that reads as clinical against the warm `#FBF8F2` canvas, so **light-mode
+`--color-surface` here is `255 253 248`** — a faint cream, a few points off
+white. Card chrome still separates cleanly from the canvas, but the whole page
+sits on one warm register instead of white cards floating on cream.
 
-Dark mode is unaffected (`--color-surface: 16 18 20`, unchanged). This is the
-only value in this file that does not match the product 1:1 — every other
-token is mirrored exactly. If the product ever moves off pure white too, drop
-this override and go back to mirroring.
+Dark mode is unaffected. This is the only value that does not match the product
+1:1. If the product ever moves off pure white too, drop the override.
 
 ---
 
@@ -78,15 +82,20 @@ this override and go back to mirroring.
 
 Explicit two-value theme, `ThemeMode.Light | ThemeMode.Dark`. Deliberately no
 `system` value — the product persists an explicit choice, and this page matches
-it so a visitor's preference survives the hand-off into `/app`.
+it so a visitor's preference survives the hand-off into the app.
 
 - Applied as `data-theme` on `<html>`.
-- Persisted under the `rightrefer-theme` localStorage key — **shared with the
+- Persisted under the `rightrefer-theme` localStorage key, **shared with the
   product**.
 - Resolved by an `is:inline` prepaint script in `BaseLayout.astro`, before first
-  paint. Without it, a returning dark-mode visitor gets a flash of the light
+  paint. Without it a returning dark-mode visitor gets a flash of the light
   canvas.
-- First-ever visit falls back to `prefers-color-scheme`.
+- **Light is the default and the only first-visit theme.** `prefers-color-scheme`
+  is deliberately not consulted: this page is a first impression, and it should
+  be the same first impression for everyone. Dark is opt-in and remembered.
+- The same script stamps `js` on `<html>`. Every scroll-reveal rule is gated
+  behind that class, so a visitor whose bundle never loads reads a fully visible
+  page rather than a blank one.
 - `ThemeToggle.astro` dispatches `rightrefer:themechange` on switch.
 
 ---
@@ -95,13 +104,17 @@ it so a visitor's preference survives the hand-off into `/app`.
 
 | Role | Family | Used for |
 |---|---|---|
-| Body / UI | **Inter** | Everything. All copy, labels, buttons, navigation. |
-| Display | **Louize** | Landing headlines only (`.display-1/2/3`) and pull-quotes. |
-| Mono | system mono stack | Numbers, deadlines, reference codes, index markers. |
+| Body / UI | **Inter** | All copy, labels, buttons, navigation. |
+| Display | **Louize** | Headlines (`.display-1/2/3`), section titles, pull-quotes, and the large numerals in `.numeral`. |
+| Mono | system mono stack | Deadlines, reference codes, eyebrows, small index markers. |
 
-**Louize is banned inside the product application.** Here it is limited to
-display type — never body, never UI, and (unlike the previous system) **never
-mono**.
+**Louize is banned inside the product application.** Here it is display type
+only — never body, never UI.
+
+**Louize sets figures old-style by default**, where the zero is x-height and the
+one is an unserifed stroke, so `01` reads as `OI`. `.numeral` therefore asks for
+`font-variant-numeric: lining-nums tabular-nums`, and anything that prints a
+number in Louize must do the same.
 
 ---
 
@@ -111,38 +124,49 @@ mono**.
 |---|---|
 | `Brand.astro` | Wordmark + mark. `onBrandSurface` for saturated panels. |
 | `ThemeToggle.astro` | Light/dark switch. |
-| `SiteHeader.astro` | Sticky header, condenses on scroll. |
-| `Hero.astro` | Asymmetric split, aurora field, contained media panel, trust strip. |
-| `Offerings.astro` | The three doors — three cells in one frame. See §14. |
-| `PeerSignalSection.astro` | Offering 03 deep dive + signal film. |
-| `Lifecycle.astro` | Five-stage rail + journey film. |
-| `TrustSection.astro` | Light-blue trust panel, four pillars. |
-| `Appreciation.astro` | The light thank-you note + appreciation film. |
+| `SiteHeader.astro` | Sticky header. Transparent over the hero; gains a translucent canvas, a heavier blur and a hairline on scroll. Marks the section being read. |
+| `DoorWall.astro` | The hand-inked wall of doors, as a token-painted alpha mask. `hero` and `bookend` variants. See §9. |
+| `Hero.astro` | Full-fold split: copy left, wall right, two glass proof cards in the quiet pockets. |
+| `CompanyField.astro` | Company logo marquee. Pauses offscreen and under the pointer. |
+| `Offerings.astro` | The three doors — three cells in one frame, one accent each. See §16. |
+| `Lifecycle.astro` + `RequestStage.astro` | How it works, as a scroll-driven story. See §10. |
+| `TrustSection.astro` + `TrustExhibit.astro` | Four mechanisms, each drawing its own evidence. |
+| `BetaProof.astro` + `TestimonialStage.astro` | Private-beta count and the quote marquee. |
+| `PeerSignalSection.astro` + `SignalStack.astro` | Offering 03, as a cycling stack of live openings. |
+| `Appreciation.astro` + `AppreciationCard.astro` | The thank-you step, as the card the member meets. |
 | `Faq.astro` | Nine questions as native `<details>`. See §15. |
-| `TestimonialStage.astro` | Beta feedback marquee. |
-| `CompanyField.astro` | Company logo marquee. |
-| `ClosingSection.astro` | Final CTA + footer. |
+| `ClosingSection.astro` | The bookend, the primary call to action, and the footer. |
 
 Section CSS lives in each component's scoped `<style>`. `global.css` holds only
-shared vocabulary plus Remotion player sizing (whose class names are generated
-inside the React island and cannot be reached from a scoped block).
+shared vocabulary.
 
 ---
 
-## 6. Typed vocabulary
+## 6. Shared vocabulary
 
-`src/lib/constants.ts` — every string used in more than one place is an enum:
-`ThemeMode` · `OfferingKind` · `SignUpIntent` · `SectionId` · `TrackEvent` ·
-`Accent` · `LifecycleStage`.
+`global.css` owns exactly five things beyond the reset and the type scale:
 
-`src/lib/content.ts` — single source of truth for offerings, lifecycle steps,
-trust pillars, the hero trust strip, and the peer-matching example.
+- **`.glass`** — a low-alpha surface with a heavy backdrop blur and an inset top
+  highlight, so whatever is behind it reads through. It began as the hero proof
+  card and is now the page's floating-object recipe: the request stage, the
+  signal cards, the appreciation card and the quote cards all use it.
+- **`.lift`** — a two-pixel hover rise onto `--shadow-panel`.
+- **`.reveal` / `.reveal-group`** — fade-up on first read; a group staggers its
+  children by `--i × --stagger`. Both gated on `.js`.
+- **`.button-*` / `.text-link`** — the primary button carries one sheen that
+  crosses it on hover; the text link draws its underline in from the left.
+- **`.accent-*`** — five accent triads, each mapping to a semantic token family
+  and never to a raw colour.
 
-### Policy constants
+`src/lib/motion.ts` is the behaviour half: `revealObserver`, `motionGate`,
+`countUp`, `stageController` and `navSpy`. `src/lib/card-cycle.ts` rotates a
+pool of cards through a fixed number of slots and is shared by the hero and the
+signal stack. There is no animation library.
 
-`POLICY` mirrors the product's policy layer: claim window (48h), confirmation
-window (24h), employment re-check (10 days). If a policy changes in the
-product, change it here in the same PR.
+`[data-reveal-mark]` is a third reveal form that takes `is-visible` and no
+styling. Use it where an element must stay painted — a cell in a shared frame,
+where fading the cell would show the frame's own gap colour through the hole —
+but something inside it still needs to start when it is read.
 
 ---
 
@@ -153,22 +177,22 @@ fee table. Amounts, fees, payout schedules and refund mechanics belong inside
 the product, after someone has decided to take part.
 
 1. **No pricing section.** No fee breakdown, no worked receipt, no percentage,
-   no payout schedule, no UPI/withdrawal language anywhere in page copy.
-2. **The hero raises no commercial claim at all.** Its trust strip answers "is
-   this person real / will anything happen / what if it goes wrong / who sees
-   my search" — never "what does it cost".
+   no payout schedule, no withdrawal language anywhere in page copy.
+2. **The hero raises no commercial claim** beyond stating that asking is free.
+   Its trust strip answers "is this person real", "what does this cost me" and
+   "how long will this take". Note that `100% Free` is a commercial claim and
+   is there deliberately; if the model changes, that line changes first.
 3. **One honest sentence, late in the page.** `Appreciation.astro` says a
    thank-you is optional, never required to ask, and never changes whether you
    get referred. That is the entire commercial surface.
-4. The appreciation film may show example amounts — it appears *inside* that
-   section and depicts the actual flow. Nowhere else.
+4. **The appreciation card may show example amounts** — it appears *inside* that
+   section and depicts the actual flow. Nowhere else. In that card, Skip is
+   given exactly the same width and weight as Send: a card where the way out is
+   smaller than the way through would contradict the sentence beside it.
 5. **The FAQ may answer "is it free", in words, with no numbers.** Refusing to
-   answer the single most common question a first-time visitor has reads as
-   evasion, which costs more trust than the restraint buys. So `FAQ_ITEMS[0]`
-   says plainly that asking costs nothing and that a thank-you is optional,
-   never required, and never changes whether you get referred — and names no
-   amount, fee, percentage or payout schedule. That sentence is the entire
-   exception; rules 1–4 are otherwise unchanged.
+   answer the most common question a visitor has reads as evasion, which costs
+   more trust than the restraint buys. `FAQ_ITEMS[0]` says plainly that asking
+   costs nothing and names no amount, fee, percentage or schedule.
 
 ---
 
@@ -180,39 +204,73 @@ the product, after someone has decided to take part.
    LinkedIn*, a different and weaker claim.
 3. No guaranteed-outcome language anywhere.
 4. Peer-signal copy states that peers see **the opening**, never the identity of
-   the person who asked.
+   the person who asked. `PEER_SIGNALS` therefore carries a role, an employer, a
+   location and an age — and nothing about a person.
+5. Every deadline in copy interpolates `POLICY`, so the page cannot advertise a
+   window the product does not keep.
 
 ---
 
-## 9. Hero composition
+## 9. The wall of doors
 
-The single most important rule on this page, and the failure the redesign
-fixed: **copy never sits on top of the film.** The previous hero laid centred
-text over a full-bleed video at `scale(1.3)`, then patched the resulting
-illegibility with `text-shadow` — a structural failure wearing a cosmetic fix.
+The page's one piece of artwork, and the only image it loads:
+`public/ink-doors-mask.webp`, a single-channel alpha mask of a hand-inked wall
+of doors with one of them opening from the inside.
 
-Now:
+It is never a flat picture. `DoorWall.astro` paints it through three nested
+masks — one fades it out before it reaches the copy, one fades its top and
+bottom edges, one carries the drawing — and colours it with tokens:
+`.ink-base` takes the ink colour, `.ink-accent` repaints only the strokes within
+a small radius of the open door in brand blue, and `.hero-glow` is the light
+spilling out of the doorway behind the linework. One asset, both themes, no
+second dark-mode export.
 
-- Copy occupies its own column on the page canvas. The film occupies a
-  contained, masked panel beside it. They never overlap.
-- **There is no `text-shadow` anywhere in the hero.**
-- One headline, one primary action, one line of fine print. No supporting
-  paragraph — the film and the proof card carry that weight visually.
-- Atmosphere comes from the **aurora field**: three heavily blurred radial
-  blobs drifting on long, offset cycles, animating only `transform` so it stays
-  on the compositor — no layout, no paint, no canvas, no JavaScript.
+**Copy never sits on top of it.** The copy occupies its own column on the page
+canvas; the wall occupies the rest. There is no `text-shadow` anywhere in this
+codebase, because nothing needs one.
+
+Two variants:
+
+- `hero` — right-hand side, wiping on left to right over 1500ms so the closed
+  doors are established before the open one lights up.
+- `bookend` — centred, mirrored, linework dimmed to 20%, doorway light raised.
+  It lights as the closing section is reached rather than on load, so the page
+  ends on the image it opened with, from the other side of the door.
 
 ---
 
-## 10. Trust section register
+## 10. The scroll-driven stage
 
-`TrustSection.astro` deliberately does **not** use the deep `--color-brand-panel`
-the way the closing section does. A wall of dark blue reads as marketing
-theatre; a mechanism-and-evidence section reads better on a **light blue
-field** — `--color-primary-soft` in light mode, a dim desaturated blue-black in
-dark mode — with ink-coloured text. The four pillar cards sit on the page
-surface, not on an inverted panel, so the copy stays legible without a
-brand-panel-ink override.
+`Lifecycle.astro` is the page's signature moment and the one place it asks for
+a long scroll.
+
+The five steps scroll in one column and `RequestStage.astro` — one referral
+request as a glass card — sticks in the other. `stageController` in
+`lib/motion.ts` watches which step is crossing the middle band of the viewport
+(`rootMargin: -45% 0 -45%`) and writes `data-active-step` on the stage; every
+transition in the card keys off that single attribute, and CSS does the rest.
+
+Rules this section holds itself to:
+
+- **Emphasis, never visibility.** An unreached step is dimmed to 0.42 and no
+  further. The whole list is readable, selectable and searchable with the
+  script absent.
+- **The card's colours are the product's lifecycle presentation** (PRD §8.13),
+  expressed as a rail rather than a fill: open is primary, work in someone
+  else's hands is `progress`, something waiting on the reader is `warning`,
+  done is `success`.
+- **A step is at least 20rem tall on desktop.** Anything shorter lets two steps
+  share the middle band and the card flickers between them.
+- **On a phone the card pins to the top** and the steps pass beneath it. Because
+  the card is glass, the column it sits in takes an opaque ground that fades out
+  at the card's lower edge — otherwise two paragraphs read through each other.
+- **Under `prefers-reduced-motion` the stage is not sticky**: it becomes a plain
+  block above the list, showing the final state.
+
+**A sticky element is never a grid item.** Measured in Chromium: a sticky grid
+item that may stretch over its (very tall) grid area is pushed down by its own
+`top` offset, and neither `align-self: start` nor `height: fit-content` fixes
+it. `TrustSection` and `Faq` therefore stick an element *inside* the grid item.
 
 ---
 
@@ -223,9 +281,9 @@ queries only add layout changes upward.
 
 | Query | Change |
 |---|---|
-| `min-width: 48rem` (768px) | Trust pillars and peer nodes go two-up; hero strip goes four-up. |
+| `min-width: 48rem` (768px) | Trust exhibits go two-up; the footer goes three-up. |
 | `min-width: 62rem` (992px) | Header navigation appears. |
-| `min-width: 64rem` (1024px) | Hero splits two-column; offering chapters split and alternate; lifecycle rail turns horizontal. |
+| `min-width: 64rem` (1024px) | Hero splits two-column; the offerings frame goes three-up; the lifecycle, trust, peer-signal, appreciation and FAQ sections all split, alternating which side carries the picture. |
 
 ### Verification matrix
 
@@ -237,38 +295,32 @@ Every change is rendered and checked at **1440 / 1024 / 768 / 390 / 360** in
 - Every `<a>` and `<button>` is at least 44px in its smallest dimension.
 - The hero primary CTA is above the fold at 390×844.
 - Text contrast clears WCAG AA (4.5:1).
+- A run with `prefers-reduced-motion: reduce` renders every section in its
+  final state, with nothing sticky and nothing mid-animation.
 
 ---
 
 ## 12. Motion
 
-- All animation is gated behind `prefers-reduced-motion`.
-- The hero film and both marquees play only while on screen
-  (`IntersectionObserver`), and pause when scrolled away or the tab is hidden.
-- The hero video is `preload="none"` and only upgrades to `auto` on entering the
-  viewport.
-- `.reveal` elements are **visible by default** when motion is reduced.
+- All animation is gated behind `prefers-reduced-motion`, and every animated
+  element has a resting state that IS its finished state — the blanket
+  reduced-motion rule collapses animations to their first frame, so an element
+  whose first frame is invisible would simply never appear.
+- Only `opacity`, `transform`, `filter` and `clip-path` are animated.
+- Both marquees, the signal stack and the trust orbit run only while on screen;
+  the marquees and the signal stack also pause under the pointer, because a
+  drifting click target is a hostile one.
+- Reveals fire once and unobserve.
+- There is no animation library and no video on this page.
 
 ---
 
-## 13. Remotion films
-
-Three compositions in `src/components/remotion/RightReferScenes.tsx`: `signal`,
-`journey`, `appreciation`. Their palette is a single `colors` object where
-**every value is a token reference**, e.g. `rgb(var(--color-primary))`. Because
-the player renders as real DOM, those custom properties re-resolve on theme
-switch — the films retheme themselves with no re-render.
-
-There are **no hex literals** in that file. Keep it that way.
-
----
-
-## 14. One canvas, contrast at the component level
+## 13. One canvas, contrast at the component level
 
 **Sections do not get their own background colours.** Every section sits on
 `--color-canvas`, separated by a hairline and by section spacing. The one
-exception the page already had — a ~4% primary wash on `lifecycle` and `trust` —
-is deliberately far too faint to read as a colour change.
+exception the page has — a ~4% primary wash on `lifecycle` and `trust` — is
+deliberately far too faint to read as a colour change.
 
 This rule was learned by breaking it. The page below the hero genuinely was
 flat, and the first attempt at a fix gave each section its own surface:
@@ -278,26 +330,37 @@ looked *worse* — a striped page where every scroll position announces a new
 band, and the eye reads the seams instead of the content. Alternating bands are
 not rhythm; they are noise with a rule attached.
 
-**Depth belongs to components, not bands.** A flat page is fixed by giving the
-content real structure and letting it sit on one calm ground:
+**Depth belongs to components, and rhythm belongs to layout.** What actually
+fixed the flatness was giving the content real structure and real variety of
+composition on one calm ground:
 
-- the offerings frame — a bordered, shadowed container of `--color-surface`
-  cells on the canvas;
-- the FAQ's ruled rows;
-- the trust pillar grid;
-- the `.media-frame` around each film;
-- the brand-panel stat card inside `BetaProof`.
-
-That is where `--color-surface`, borders and `--shadow-raised` are spent. It
-gives the page more depth than banding did, and the ground stays constant.
+- the offerings frame and the trust frame — bordered, shadowed containers of
+  `--color-surface` cells on the canvas;
+- the glass objects: the request stage, the signal cards, the appreciation card,
+  the quote cards;
+- the FAQ's ruled rows and the brand-panel stat card;
+- and the section rhythm itself, which alternates centred, split-with-picture-
+  right, and split-with-picture-left, so no two consecutive sections have the
+  same shape.
 
 **Corollary, and the tell that the banding was wrong: the primary CTA never
 changes appearance.** `.button-primary` is brand blue with a white label in
 every position on the page. When the closing section was briefly a deep blue
-panel it needed an inverted button, because blue-on-blue is unreadable — which
-meant the page's single most important action looked like two different
-controls depending on where you met it. If a background forces a component to
-restyle itself, the background is the thing that is wrong.
+panel it needed an inverted button, which meant the page's single most important
+action looked like two different controls depending on where you met it. If a
+background forces a component to restyle itself, the background is wrong.
+
+---
+
+## 14. Page order
+
+Hero → companies → three doors → how it works → trust → beta quotes → peer
+openings → appreciation → questions → bookend.
+
+The order is the argument: what this is, how it works, why it is safe, who says
+so, then the two offerings that need their own demonstration, then the
+questions. Trust sits ahead of the beta quotes deliberately — a stranger's word
+is worth more once the mechanism behind it has been shown.
 
 ---
 
@@ -329,35 +392,36 @@ Three choices with plausible opposites, recorded so they don't get "fixed":
 - **A chevron, not a plus.** In tested signifiers a caret reliably communicates
   "expands in place"; a plus performs no better than no icon at all.
 
-Content lives in `FAQ_ITEMS` in `content.ts` and every window interpolates
-`POLICY`, so the FAQ cannot advertise a deadline the product does not keep. The
-same array generates the `FAQPage` JSON-LD in `BaseLayout.astro`, so the two
-cannot drift. Note that markup earns **no rich result** — Google retired FAQ
-rich results on 2026-05-07 — it is there to describe the Q&A to AI search
-surfaces.
+The open row carries a rail, matching the product's convention that state is a
+rail rather than a fill. The head and the contact line stick together beside the
+list, so the way to ask a question that is not listed stays on screen.
+
+Content lives in `FAQ_ITEMS` in `content.ts`, and the same array generates the
+`FAQPage` JSON-LD in `BaseLayout.astro`, so the two cannot drift. That markup
+earns **no rich result** — Google retired FAQ rich results on 2026-05-07 — it is
+there to describe the Q&A to AI search surfaces.
 
 ---
 
-## 16. Known palette limitation — accent identity
+## 16. Accent identity — resolved
 
-`Offerings.astro` renders all three doors in **one** accent, and must keep doing
-so until the palette changes. Per-card accents look right on paper but do not
-survive these tokens:
+An earlier version of this document recorded that `Offerings.astro` had to
+render all three doors in one accent, because in dark mode
+`--color-primary-soft` and `--color-reward-soft` were both `16 42 67` and
+`--color-primary-strong` and `--color-reward-ink` were both `112 181 249`, so
+two of the three would have rendered pixel-identical.
 
-| | light | dark |
+The token re-sync fixed that at the source. `reward` is violet in both themes
+and `progress` is a new teal family, so the doors now read:
+
+| Door | Accent | Why that one |
 |---|---|---|
-| `--color-primary-soft` | `234 243 248` | `16 42 67` |
-| `--color-reward-soft` | `219 234 254` | **`16 42 67`** |
-| `--color-primary-strong` | `0 65 130` | `112 181 249` |
-| `--color-reward-ink` | `30 64 175` | **`112 181 249`** |
+| Ask for a referral | `primary` | It is the page's primary action. |
+| Give a referral | `success` | The giver's side completes things. |
+| Hear about openings | `progress` | Something in flight, reaching you. |
 
-In dark mode `primary` and `reward` are **identical**, so "Ask for a referral"
-and "Hear about openings" would render pixel-identical; in light mode both are
-near-identical pale blues. Separately, `--color-trust-soft` in dark is
-`23 26 29`, which *is* `--color-elevated` — a trust-accented chip has no tint at
-all in dark.
-
-The palette is locked, so identity comes from the numeral and the icon
-silhouette, which are unambiguous in both themes. This also states the section's
-claim better: one network, so one colour, entered three ways. If the palette is
-ever reopened, giving `reward` a genuinely different dark hue would be the fix.
+The trust exhibits use the same vocabulary: `primary`, `success`, `warning` for
+the window that is waiting on the reader, and `reward` for the one about money.
+The rule that produced the original problem still stands — never pick an accent
+because of how it looks, pick it because of what it already means in the
+product.

@@ -1,4 +1,5 @@
 ---
+import DoorWall from './DoorWall.astro';
 import HeroScrollCue from './HeroScrollCue.astro';
 import { POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
 import { TRUST_STRIP, signUpWith } from '../lib/content';
@@ -17,21 +18,9 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 	<div class="hero-wash" aria-hidden="true"></div>
 	<div class="grid-texture hero-grid" aria-hidden="true"></div>
 
-	{/*
-	 * The artwork is a single alpha mask painted with theme tokens, never a
-	 * flat picture: `.ink-base` takes the ink colour, `.ink-accent` re-paints
-	 * only the strokes near the open door in the brand blue. One asset, both
-	 * themes, no second dark-mode export.
-	 */}
-	<div class="hero-art" aria-hidden="true">
-		<div class="hero-art-inner">
-			<div class="ink-stage">
-				<span class="hero-glow"></span>
-				<span class="ink ink-base"></span>
-				<span class="ink ink-accent"></span>
-			</div>
-		</div>
-	</div>
+	{/* The wall itself lives in DoorWall.astro, because the closing section
+	    ends the page on the same image. */}
+	<DoorWall variant="hero" class="hero-art" />
 
 	<div class="shell hero-inner">
 		<div class="hero-copy">
@@ -154,129 +143,6 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 		z-index: 0;
 		background-size: 3.25rem 3.25rem;
 		mask-image: radial-gradient(ellipse 78% 70% at 42% 42%, #000, transparent 76%);
-	}
-
-	/* ---- The drawing ---- */
-
-	/*
-	 * Three nested masks, each doing exactly one job, because a single element
-	 * can only carry one mask reliably across engines:
-	 *   .hero-art        — fades the drawing out before it reaches the copy
-	 *   .hero-art-inner  — fades it out at the top and bottom edges
-	 *   .ink             — the drawing itself
-	 */
-	.hero-art {
-		position: absolute;
-		z-index: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		pointer-events: none;
-		mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
-		-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
-	}
-
-	.hero-art-inner {
-		position: absolute;
-		inset: 0;
-		/*
-		 * A soft defocus on the drawing only. The headline sits on the flat
-		 * canvas, never on top of the art, so this never softens type — it only
-		 * pushes the wall of doors slightly out of focus, the way a shallow
-		 * depth of field keeps a background present without letting it compete
-		 * for the eye. The proof card and every other UI element sit outside
-		 * this element and stay perfectly sharp.
-		 */
-		filter: blur(1.25px) saturate(0.94);
-		mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
-		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
-	}
-
-	@media (min-width: 90rem) {
-		.hero-art-inner {
-			filter: blur(1.5px) saturate(0.94);
-		}
-	}
-
-	/*
-	 * The stage is the drawing's own coordinate space, sized by width and held
-	 * at its native ratio. Everything below can then be positioned in fractions
-	 * of the picture — "38% across, 50% down" is the open door at every
-	 * viewport size — instead of in fractions of the section, which drift as
-	 * the window changes shape.
-	 */
-	.ink-stage {
-		position: absolute;
-		top: 50%;
-		right: 0;
-		width: 62%;
-		aspect-ratio: 1280 / 1636;
-		transform: translateY(-50%);
-	}
-
-	.ink {
-		position: absolute;
-		inset: 0;
-		/* --ink-doors-mask points at /public/ink-doors-mask.webp and is declared
-		   once in global.css, so the closing bookend can paint the same wall. */
-		mask-image: var(--ink-doors-mask);
-		mask-repeat: no-repeat;
-		mask-size: 100% 100%;
-		-webkit-mask-image: var(--ink-doors-mask);
-		-webkit-mask-repeat: no-repeat;
-		-webkit-mask-size: 100% 100%;
-	}
-
-	.ink-base {
-		background: rgb(var(--color-ink));
-		opacity: 0.5;
-	}
-
-	:global([data-theme='dark']) .ink-base {
-		opacity: 0.42;
-	}
-
-	/*
-	 * Only the strokes inside this radius turn blue. The circle is centred on
-	 * the open door, so the door, the hand and the light rays pick up the brand
-	 * colour and the other two hundred doors stay in ink.
-	 */
-	.ink-accent {
-		background: radial-gradient(
-			17% 13% at 38% 50%,
-			rgb(var(--color-primary)) 0%,
-			rgb(var(--color-primary) / 92%) 52%,
-			transparent 100%
-		);
-	}
-
-	:global([data-theme='dark']) .ink-accent {
-		background: radial-gradient(
-			17% 13% at 38% 50%,
-			rgb(var(--color-primary-strong)) 0%,
-			rgb(var(--color-primary-strong) / 90%) 52%,
-			transparent 100%
-		);
-	}
-
-	/* Light actually spilling out of the doorway, behind the linework. */
-	.hero-glow {
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(
-			26% 20% at 38% 50%,
-			rgb(var(--color-primary) / 16%),
-			transparent 62%
-		);
-	}
-
-	:global([data-theme='dark']) .hero-glow {
-		background: radial-gradient(
-			30% 24% at 38% 50%,
-			rgb(var(--color-primary) / 34%),
-			transparent 64%
-		);
 	}
 
 	/* ---- Copy ---- */
@@ -471,42 +337,14 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 	/* ---- Entrance ---- */
 
 	@media (prefers-reduced-motion: no-preference) {
-		/* The drawing wipes on left to right, so the wall of closed doors is
-		   established before the open one arrives. */
-		.hero-art {
-			animation: ink-wipe 1500ms var(--ease-out) 120ms both;
-		}
-
-		.ink-accent,
-		.hero-glow {
-			animation: light-on 900ms ease-out 1150ms both;
-		}
-
+		/* The cards arrive after the wall has been drawn — see the script
+		   below, which waits on DoorWall's own `ink-wipe`. */
 		.hero-proof-stack.is-ready .hero-proof-card {
 			opacity: 1;
 			transform: none;
 			filter: blur(0);
 			visibility: visible;
 		}
-
-		@keyframes ink-wipe {
-			from {
-				clip-path: inset(0 100% 0 0);
-			}
-			to {
-				clip-path: inset(0 0 0 0);
-			}
-		}
-
-		@keyframes light-on {
-			from {
-				opacity: 0;
-			}
-			to {
-				opacity: 1;
-			}
-		}
-
 	}
 
 	/* ---- Responsive ---- */
@@ -517,19 +355,6 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 	 * beside it, and the proof card sits under the buttons as a normal block.
 	 */
 	@media (max-width: 63.999rem) {
-		.hero-art {
-			left: 12%;
-			mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
-			-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
-			opacity: 0.7;
-		}
-
-		.ink-stage {
-			top: 44%;
-			right: -22%;
-			width: 108%;
-		}
-
 		.hero-copy {
 			max-width: 30rem;
 		}

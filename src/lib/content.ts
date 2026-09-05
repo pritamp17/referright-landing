@@ -15,6 +15,17 @@ export const SIGNUP_URL: string = SIGNUP_BASE;
 export const CONTACT_EMAIL: string =
 	import.meta.env.PUBLIC_CONTACT_EMAIL || 'rightrefer.team@gmail.com';
 
+/**
+ * Policy pages, rendered in the footer only once they exist.
+ *
+ * The README lists hosted privacy and terms pages as a launch blocker. The
+ * footer has the slots; a link appears the moment its URL is configured, and
+ * until then nothing is shown — a dead link to a policy is worse than no link,
+ * because it looks like the policy exists.
+ */
+export const PRIVACY_URL: string | undefined = import.meta.env.PUBLIC_PRIVACY_URL || undefined;
+export const TERMS_URL: string | undefined = import.meta.env.PUBLIC_TERMS_URL || undefined;
+
 /** Verified private-beta outcome shown in the landing-page proof module. */
 export const PRIVATE_BETA_REFERRAL_COUNT = 78;
 
@@ -164,9 +175,13 @@ export interface TrustStripItem {
 }
 
 /*
- * Three signals, chosen to answer the questions a first-time visitor actually
- * has: is this person real, what if it goes wrong, and who sees my search.
- * Deliberately no commercial claim — the hero is not the place to raise money.
+ * Four signals, chosen to answer the questions a first-time visitor actually
+ * has: is this person real, what does it cost me, and how long will it take.
+ *
+ * Note that `100% Free` is a commercial claim, which DESIGN_SYSTEM.md §7 rule 2
+ * says the hero does not make. It is here deliberately and the rule has not
+ * been re-litigated; if the pricing model ever changes, this line is the first
+ * thing that has to change with it.
  */
 export const TRUST_STRIP: readonly TrustStripItem[] = [
 	{ value: 'LinkedIn', label: 'Verified employment' },

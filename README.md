@@ -4,7 +4,9 @@ The public marketing site for RightRefer, built as a static Astro application.
 
 ## Design system
 
-Use [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) as the source of truth for visual tokens, page composition, components, motion, responsiveness, accessibility, and design QA.
+Use [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) as the source of truth for visual
+tokens, page composition, components, motion, responsiveness, accessibility and
+design QA.
 
 ## Local development
 
@@ -12,7 +14,7 @@ Requires Node.js `22.12+`.
 
 ```sh
 npm install
-copy .env.example .env
+cp .env.example .env
 npm run dev
 ```
 
@@ -22,15 +24,22 @@ The development server runs at `http://localhost:4321`.
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `SITE_URL` | Production landing-page origin used for canonical URLs and the sitemap | `https://www.rightrefer.com` |
-| `PUBLIC_APP_SIGNUP_URL` | Auth handoff used by all calls to action | `/signup` |
-| `PUBLIC_BETA_REFERRALS` | Successfully referred people shown in the beta social-proof metric | `48` |
+| `SITE_URL` | Production origin, used for canonical URLs and the sitemap | `https://www.rightrefer.com` |
+| `PUBLIC_APP_SIGNUP_URL` | Auth handoff used by every call to action | `https://app.rightrefer.com/` |
+| `PUBLIC_CONTACT_EMAIL` | Support address in the FAQ and the footer | `rightrefer.team@gmail.com` |
+| `PUBLIC_PRIVACY_URL` | Hosted privacy policy | unset — the footer link is not rendered |
+| `PUBLIC_TERMS_URL` | Hosted terms | unset — the footer link is not rendered |
 
-Seeker and giver buttons append `intent=seeker` or `intent=giver` to the configured signup URL.
+Every call to action points at `PUBLIC_APP_SIGNUP_URL` directly. `signUpWith`
+still takes a `SignUpIntent` for call-site clarity, but the intent is not
+appended to the URL.
 
 ## Analytics
 
-Vercel Web Analytics is injected once through `src/layouts/BaseLayout.astro`. Enable **Web Analytics** for the project in the Vercel dashboard before deploying; the `/_vercel/insights/*` routes are provided by Vercel and are not available in a local static preview.
+Vercel Web Analytics is injected once through `src/layouts/BaseLayout.astro`.
+Enable **Web Analytics** for the project in the Vercel dashboard before
+deploying; the `/_vercel/insights/*` routes are provided by Vercel, so a local
+`npm run preview` will log one 404 for that script and nothing else.
 
 ## Commands
 
@@ -40,19 +49,39 @@ Vercel Web Analytics is injected once through `src/layouts/BaseLayout.astro`. En
 | `npm run build` | Generate the production site in `dist/` |
 | `npm run preview` | Preview the production build |
 
-## Launch assumptions
+## What this page ships
 
-- The product name is **RightRefer**.
-- The transparent RightRefer mark is served from `public/rightrefer-logo.webp`; a right-sized PNG variant is used as the favicon.
-- The site-wide Louize typeface is self-hosted as WOFF2 from `public/Louize.woff2`.
-- The hero uses the optimized `public/hero-hands.mp4` video once, holds on its final frame, and uses `hero-hands-poster.webp` as its loading and reduced-motion frame.
-- As the hero scrolls away, only the logo moves continuously toward the far-right dock; scrolling backward returns it beside the wordmark. The wordmark and Get Started CTA remain in the hero.
-- The Built for both sides cards lazy-load `public/path-seeker.webp` and `public/path-giver.webp` as blurred, overlaid imagery.
-- Company logos are rendered from the CC0-licensed Simple Icons package. They remain the property of their respective owners and do not imply affiliation.
-- The Gmail and Microsoft marks used in the product stories are served from `public/gmail-icon.svg` and `public/microsoft-logo.svg`; usage must follow their respective brand guidelines.
-- Product-story animations use three client-visible Remotion Player islands: the timely-opportunity email, the connected referral journey, and optional appreciation. Players pause when offscreen.
-- Testimonial copy is prototype content and must be replaced with verified, consented customer quotes before a public launch.
-- `PUBLIC_BETA_REFERRALS` must be replaced with verified beta data before launch.
-- The optional appreciation amount and two-day refund message must match the final payments workflow and published terms.
-- CTA destinations are configured through `PUBLIC_APP_SIGNUP_URL`.
-- Add links to the final hosted privacy policy and terms before public launch.
+- **No framework runtime.** The page is Astro plus roughly 7 KB of hand-written
+  JavaScript across seven small island scripts. There is no React, no animation
+  library and no video.
+- **One image.** `public/ink-doors-mask.webp` is the hand-inked wall of doors,
+  shipped as a single-channel alpha mask and painted with theme tokens, so one
+  file serves both themes. It is preloaded, and it is reused by the closing
+  section as the page's bookend.
+- **Two typefaces.** Louize is self-hosted from `public/Louize.woff2` and used
+  for display type only; Inter is loaded from Google Fonts for everything else.
+- **Company logos** are rendered from the CC0-licensed Simple Icons package at
+  build time. They remain the property of their respective owners and do not
+  imply affiliation. Microsoft's four squares are drawn inline, because their
+  brand guidelines forbid recolouring the mark to a single colour.
+
+## Launch checklist
+
+- [ ] **Testimonial copy is prototype content.** `testimonialBatches` in
+      `src/pages/index.astro` must be replaced with verified, consented customer
+      quotes before a public launch.
+- [ ] **The private-beta figure must be verified.**
+      `PRIVATE_BETA_REFERRAL_COUNT` in `src/lib/content.ts` is currently `78`.
+- [ ] **Set `PUBLIC_PRIVACY_URL` and `PUBLIC_TERMS_URL`.** The footer renders
+      each link only once its URL exists, so an unset value shows nothing rather
+      than a link to a page that is not there.
+- [ ] **Confirm Louize's production embedding rights**, file provenance and any
+      required attribution. If they cannot be confirmed, the fallback is a
+      licensed editorial serif chosen before release, with the semantic font
+      roles unchanged.
+- [ ] **Keep `POLICY` in step with the product.** Every deadline in page copy
+      interpolates it, so a policy change in the application is a change here in
+      the same pull request.
+- [ ] **The peer-signal examples name real employers.** They describe a role and
+      never a person, and they claim only that a referral path exists — confirm
+      that still matches what the product checks before launch.
