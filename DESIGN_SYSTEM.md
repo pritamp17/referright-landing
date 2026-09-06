@@ -127,13 +127,9 @@ number in Louize must do the same.
 | `SiteHeader.astro` | Sticky header. Transparent over the hero; gains a translucent canvas, a heavier blur and a hairline on scroll. Marks the section being read. |
 | `DoorWall.astro` | The hand-inked wall of doors, as a token-painted alpha mask. `hero` and `bookend` variants. See §9. |
 | `Hero.astro` | Full-fold split: copy left, wall right, two glass proof cards in the quiet pockets. |
-| `CompanyField.astro` | Company logo marquee. Pauses offscreen and under the pointer. |
-| `Offerings.astro` | The three doors: three cells in one frame, one accent each. See §16. |
-| `Lifecycle.astro` + `RequestStage.astro` | How it works, as a scroll-driven story. See §10. |
-| `TrustSection.astro` + `TrustExhibit.astro` | Four mechanisms, each drawing its own evidence. |
+| `CompanyField.astro` | Company logo marquee. Belongs to the hero block, not to a section of its own. Pauses offscreen and under the pointer. |
+| `ProductStory.astro` + `RequestStage.astro` | The entire product, as one scroll-driven story. See §10. |
 | `BetaProof.astro` + `TestimonialStage.astro` | Private-beta count and the quote marquee. |
-| `PeerSignalSection.astro` + `SignalStack.astro` | Offering 03, as a cycling stack of live openings. |
-| `Appreciation.astro` + `AppreciationCard.astro` | The thank-you step, as the card the member meets. |
 | `Faq.astro` | Nine questions as native `<details>`. See §15. |
 | `ClosingSection.astro` | The bookend, the primary call to action, and the footer. |
 
@@ -213,9 +209,9 @@ the product, after someone has decided to take part.
 3. **One honest sentence, late in the page.** `Appreciation.astro` says a
    thank-you is optional, never required to ask, and never changes whether you
    get referred. That is the entire commercial surface.
-4. **The appreciation card may show example amounts** — it appears *inside* that
-   section and depicts the actual flow. Nowhere else. In that card, Skip is
-   given exactly the same width and weight as Send: a card where the way out is
+4. **The final beat of the story may show example amounts**, because it depicts
+   the actual flow at the point the flow reaches them. Nowhere else. Skip is one
+   of the three tiles at exactly the same size: a card where the way out is
    smaller than the way through would contradict the sentence beside it.
 5. **The FAQ may answer "is it free", in words, with no numbers.** Refusing to
    answer the most common question a visitor has reads as evasion, which costs
@@ -269,11 +265,22 @@ Two variants:
 
 ## 10. The scroll-driven stage
 
-`Lifecycle.astro` is the page's signature moment and the one place it asks for
+`ProductStory.astro` is the whole product, and the one place the page asks for
 a long scroll.
 
-The five steps scroll in one column and `RequestStage.astro` — one referral
-request as a glass card — sticks in the other. `stageController` in
+This was five sections: the three ways in, how it works, why it is safe, peer
+openings, and the thank-you. Each opened with its own eyebrow, heading and lede
+before saying anything, so a reader was asked to start over four times to learn
+one product, and the trust claims sat in a wall of their own where a claim is
+least believable.
+
+They were always one story. Six beats scroll in one column and
+`RequestStage.astro` sticks in the other, and the card lives a whole life
+across them: an opening that has found you becomes a request, becomes a
+referral with proof attached, becomes a decision, becomes an optional
+thank-you. Keeping it ONE object is the point. Each trust fact is stated inside
+the beat it belongs to, and what is left at the bottom is a one-line recap and
+the three ways in as links. `stageController` in
 `lib/motion.ts` watches which step is crossing the middle band of the viewport
 (`rootMargin: -45% 0 -45%`) and writes `data-active-step` on the stage; every
 transition in the card keys off that single attribute, and CSS does the rest.
@@ -309,9 +316,9 @@ queries only add layout changes upward.
 
 | Query | Change |
 |---|---|
-| `min-width: 48rem` (768px) | Trust exhibits go two-up; the footer goes three-up. |
+| `min-width: 48rem` (768px) | The footer goes three-up. |
 | `min-width: 62rem` (992px) | Header navigation appears. |
-| `min-width: 64rem` (1024px) | Hero splits two-column; the offerings frame goes three-up; the lifecycle, trust, peer-signal, appreciation and FAQ sections all split, alternating which side carries the picture. |
+| `min-width: 64rem` (1024px) | Hero splits two-column; the product story splits with the card on the right; the FAQ splits with its head on the left. |
 
 ### Verification matrix
 
@@ -359,17 +366,12 @@ band, and the eye reads the seams instead of the content. Alternating bands are
 not rhythm; they are noise with a rule attached.
 
 **Depth belongs to components, and rhythm belongs to layout.** What actually
-fixed the flatness was giving the content real structure and real variety of
-composition on one calm ground:
+fixed the flatness was giving the content real structure on one calm ground:
 
-- the offerings frame and the trust frame — bordered, shadowed containers of
-  `--color-surface` cells on the canvas;
-- the glass objects: the request stage, the signal cards, the appreciation card,
-  the quote cards;
+- the glass objects, above all the request card that carries the whole product
+  story;
 - the FAQ's ruled rows and the brand-panel stat card;
-- and the section rhythm itself, which alternates centred, split-with-picture-
-  right, and split-with-picture-left, so no two consecutive sections have the
-  same shape.
+- and the block rhythm itself: full-fold, split, centred, split, centred.
 
 **Corollary, and the tell that the banding was wrong: the primary CTA never
 changes appearance.** `.button-primary` is brand blue with a white label in
@@ -380,15 +382,23 @@ background forces a component to restyle itself, the background is wrong.
 
 ---
 
-## 14. Page order
+## 14. Five blocks, and no more
 
-Hero → companies → three doors → how it works → trust → beta quotes → peer
-openings → appreciation → questions → bookend.
+1. **Hero**, with the company marquee attached under it as one thin band.
+2. **The product**, as one scroll-driven story (§10).
+3. **Reviews**, the private-beta count and the quote marquee.
+4. **Questions**, the FAQ.
+5. **The way out**, the bookend and the footer.
 
-The order is the argument: what this is, how it works, why it is safe, who says
-so, then the two offerings that need their own demonstration, then the
-questions. Trust sits ahead of the beta quotes deliberately — a stranger's word
-is worth more once the mechanism behind it has been shown.
+There were nine. The rule that replaced them: a block exists because a reader
+has a distinct question, not because the product has a distinct feature. Ask
+what this is, how it works, who says so, what about my case, and where do I go
+now, and that is five.
+
+A new section is the most expensive thing that can be added to this page: it
+costs an eyebrow, a heading, a lede, a visual and a closing line before it has
+said anything at all. Before adding one, check whether it is a beat in the
+story that already exists.
 
 ---
 
@@ -431,7 +441,7 @@ there to describe the Q&A to AI search surfaces.
 
 ---
 
-## 16. Accent identity — resolved
+## 16. Accent identity, resolved
 
 An earlier version of this document recorded that `Offerings.astro` had to
 render all three doors in one accent, because in dark mode
@@ -448,8 +458,9 @@ and `progress` is a new teal family, so the doors now read:
 | Give a referral | `success` | The giver's side completes things. |
 | Hear about openings | `progress` | Something in flight, reaching you. |
 
-The trust exhibits use the same vocabulary: `primary`, `success`, `warning` for
-the window that is waiting on the reader, and `reward` for the one about money.
-The rule that produced the original problem still stands — never pick an accent
-because of how it looks, pick it because of what it already means in the
-product.
+The request card uses the same vocabulary as it moves through the story:
+`primary` while the opening is live and the request is out, `progress` while it
+is in somebody else's hands, `warning` at the beat that is waiting on the
+reader, `success` when it is done. The rule that produced the original problem
+still stands: never pick an accent because of how it looks, pick it because of
+what it already means in the product.

@@ -49,6 +49,18 @@ deploying; the `/_vercel/insights/*` routes are provided by Vercel, so a local
 | `npm run build` | Generate the production site in `dist/` |
 | `npm run preview` | Preview the production build |
 
+## Page structure
+
+Five blocks, and adding a sixth is a design decision, not a routine one. See
+`DESIGN_SYSTEM.md` §14.
+
+1. `Hero.astro` plus the company marquee, as one opening block.
+2. `ProductStory.astro`, the entire product as a six-beat scroll story with one
+   sticky card. This replaced five separate sections.
+3. `BetaProof.astro`, the private-beta count and the quote marquee.
+4. `Faq.astro`.
+5. `ClosingSection.astro`, the bookend and the footer.
+
 ## What this page ships
 
 - **No framework runtime.** The page is Astro plus roughly 7 KB of hand-written

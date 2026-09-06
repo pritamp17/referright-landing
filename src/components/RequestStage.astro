@@ -2,12 +2,17 @@
 import { LIFECYCLE } from '../lib/content';
 
 /*
- * One referral request, told as five states of a single card.
+ * One card, living a whole life.
  *
- * This replaces a 1280×680 film that was mostly empty bezel. Everything here
- * is ordinary DOM painted from tokens, so it re-themes with the page, stays
- * sharp at any zoom, weighs nothing, and — the reason it exists — is driven by
- * the reader's own scroll rather than a clock they cannot see.
+ * It starts as an opening that has found you, becomes a request, becomes a
+ * referral with proof attached, and ends as an optional thank-you. Keeping it
+ * ONE object through all six beats is the whole idea: the page used to make
+ * this argument across five separate sections, each with its own heading, its
+ * own artwork and its own paragraph, and a reader had to assemble the story
+ * themselves. Here it assembles itself while they scroll.
+ *
+ * Everything is ordinary DOM painted from tokens, so it re-themes with the
+ * page, stays sharp at any zoom and weighs nothing.
  *
  * The component itself is stateless. `stageController` in `lib/motion.ts`
  * writes `data-active-step` from whichever step is under the reader, and every
@@ -22,7 +27,7 @@ import { LIFECYCLE } from '../lib/content';
  * product's rule for exactly this reason.
  */
 
-const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
+const [surfaced, ask, claim, refer, confirm, thanks] = LIFECYCLE;
 ---
 
 <article class="stage glass" data-stage data-active-step="01" aria-hidden="true">
@@ -35,17 +40,28 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		</span>
 
 		<span class="stage-status">
-			<span data-for="01">Request sent</span>
-			<span data-for="02">Claimed</span>
-			<span data-for="03">Referral sent</span>
-			<span data-for="04">Needs you</span>
-			<span data-for="05">Complete</span>
+			<span data-for="01">Open</span>
+			<span data-for="02">Request sent</span>
+			<span data-for="03">Claimed</span>
+			<span data-for="04">Referral sent</span>
+			<span data-for="05">Needs you</span>
+			<span data-for="06">Complete</span>
 		</span>
 	</header>
 
 	<div class="stage-body">
-		{/* 01 — the request is assembled and goes out. */}
+		{/* 01 — the opening, before anybody has asked. */}
 		<div class="stage-layer" data-for="01">
+			<span class="stage-sonar" aria-hidden="true"><i></i><i></i><i></i></span>
+			<p class="stage-path">
+				<i aria-hidden="true"></i>
+				Referral path available
+			</p>
+			<p class="stage-note">Posted 18 minutes ago, while the window is still open.</p>
+		</div>
+
+		{/* 02 — the request is assembled and goes out. */}
+		<div class="stage-layer" data-for="02">
 			<ul class="stage-chips">
 				<li>
 					<svg viewBox="0 0 16 16"><path d="M4 2h5l3 3v9H4z" /><path d="M9 2v3h3" /></svg>
@@ -59,8 +75,8 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 			<p class="stage-note">Visible only to employees whose jobs at Microsoft are verified.</p>
 		</div>
 
-		{/* 02 — verified employees see it; exactly one takes it on. */}
-		<div class="stage-layer" data-for="02">
+		{/* 03 — verified employees see it; exactly one takes it on. */}
+		<div class="stage-layer" data-for="03">
 			<ul class="stage-people">
 				<li><span aria-hidden="true"></span></li>
 				<li class="is-claimer">
@@ -73,8 +89,8 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 			<p class="stage-note">One verified employee has taken it on. Nobody else can claim it now.</p>
 		</div>
 
-		{/* 03 — the proof, which is the whole trust argument in one object. */}
-		<div class="stage-layer" data-for="03">
+		{/* 04 — the proof, which is the whole trust argument in one object. */}
+		<div class="stage-layer" data-for="04">
 			<div class="stage-proof">
 				<span class="stage-proof-shot" aria-hidden="true">
 					<i></i><i></i><i></i>
@@ -84,8 +100,8 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 			<p class="stage-note">Submitted inside Microsoft's own system, with a timestamped screenshot.</p>
 		</div>
 
-		{/* 04 — the one step that is genuinely the reader's move. */}
-		<div class="stage-layer" data-for="04">
+		{/* 05 — the one step that is genuinely the reader's move. */}
+		<div class="stage-layer" data-for="05">
 			<div class="stage-choice">
 				<span class="stage-choice-primary">Confirm</span>
 				<span class="stage-choice-ghost">Dispute</span>
@@ -93,13 +109,22 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 			<p class="stage-note">Check the proof. A dispute is read by a person, never closed automatically.</p>
 		</div>
 
-		{/* 05 — optional, and said as such. */}
-		<div class="stage-layer" data-for="05">
-			<span class="stage-thanks">
-				<svg viewBox="0 0 16 16"><path d="M3 6h8v4a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" /><path d="M11 7h1.5a1.5 1.5 0 0 1 0 3H11" /></svg>
-				Send thanks
-				<em>optional</em>
-			</span>
+		{/* 06 — optional, and said as such. */}
+		<div class="stage-layer" data-for="06">
+			<ul class="stage-tiers">
+				<li class="is-selected">
+					<span>Coffee</span>
+					<em class="mono">₹100</em>
+				</li>
+				<li>
+					<span>Meal</span>
+					<em class="mono">₹500</em>
+				</li>
+				<li>
+					<span>Skip</span>
+					<em class="mono">free</em>
+				</li>
+			</ul>
 			<p class="stage-note">Referred, confirmed, and closed. A thank-you changes none of that.</p>
 		</div>
 	</div>
@@ -113,20 +138,22 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		</span>
 
 		<span class="stage-timing mono">
-			<span data-for="01">live now</span>
-			<span data-for="02">{claim.timing}</span>
-			<span data-for="03">{refer.timing}</span>
-			<span data-for="04">{confirm.timing}</span>
-			<span data-for="05">{thanks.timing}</span>
+			<span data-for="01">18m ago</span>
+			<span data-for="02">live now</span>
+			<span data-for="03">{claim.timing}</span>
+			<span data-for="04">{refer.timing}</span>
+			<span data-for="05">{confirm.timing}</span>
+			<span data-for="06">{thanks.timing}</span>
 		</span>
 
 		<span class="stage-step mono" aria-hidden="true">
-			<span data-for="01">{ask.index}</span>
-			<span data-for="02">{claim.index}</span>
-			<span data-for="03">{refer.index}</span>
-			<span data-for="04">{confirm.index}</span>
-			<span data-for="05">{thanks.index}</span>
-			<i>/ 05</i>
+			<span data-for="01">{surfaced.index}</span>
+			<span data-for="02">{ask.index}</span>
+			<span data-for="03">{claim.index}</span>
+			<span data-for="04">{refer.index}</span>
+			<span data-for="05">{confirm.index}</span>
+			<span data-for="06">{thanks.index}</span>
+			<i>/ 06</i>
 		</span>
 	</footer>
 </article>
@@ -143,29 +170,33 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		--ring: 0.08;
 	}
 
-	.stage[data-active-step='02'],
-	.stage[data-active-step='03'] {
+	.stage[data-active-step='02'] {
+		--ring: 0.2;
+	}
+
+	.stage[data-active-step='03'],
+	.stage[data-active-step='04'] {
 		--stage-accent: var(--color-progress);
 		--stage-accent-soft: var(--color-progress-soft);
 		--stage-accent-ink: var(--color-progress-ink);
 	}
 
-	.stage[data-active-step='02'] {
-		--ring: 0.34;
-	}
-
 	.stage[data-active-step='03'] {
-		--ring: 0.58;
+		--ring: 0.42;
 	}
 
 	.stage[data-active-step='04'] {
-		--stage-accent: var(--color-warning);
-		--stage-accent-soft: var(--color-warning-soft);
-		--stage-accent-ink: var(--color-warning-ink);
-		--ring: 0.82;
+		--ring: 0.64;
 	}
 
 	.stage[data-active-step='05'] {
+		--stage-accent: var(--color-warning);
+		--stage-accent-soft: var(--color-warning-soft);
+		--stage-accent-ink: var(--color-warning-ink);
+		--ring: 0.86;
+	}
+
+	.stage[data-active-step='06'] {
 		--stage-accent: var(--color-success);
 		--stage-accent-soft: var(--color-success-soft);
 		--stage-accent-ink: var(--color-success-ink);
@@ -271,7 +302,8 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 	.stage[data-active-step='02'] [data-for='02'],
 	.stage[data-active-step='03'] [data-for='03'],
 	.stage[data-active-step='04'] [data-for='04'],
-	.stage[data-active-step='05'] [data-for='05'] {
+	.stage[data-active-step='05'] [data-for='05'],
+	.stage[data-active-step='06'] [data-for='06'] {
 		opacity: 1;
 		transform: none;
 	}
@@ -285,10 +317,12 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 	}
 
 	.stage-layer {
+		position: relative;
 		display: grid;
 		gap: 1rem;
 		align-content: center;
 		grid-area: 1 / 1;
+		isolation: isolate;
 	}
 
 	.stage-note {
@@ -299,7 +333,93 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		line-height: 1.5;
 	}
 
-	/* ---- 01: chips ---- */
+	/* ---- 01: the opening ---- */
+
+	.stage-path {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0;
+		color: rgb(var(--color-progress-ink));
+		font-size: 0.9375rem;
+		font-weight: 650;
+	}
+
+	.stage-path i {
+		width: 0.4375rem;
+		height: 0.4375rem;
+		border-radius: 50%;
+		background: rgb(var(--color-progress));
+		box-shadow: 0 0 0 0.1875rem rgb(var(--color-progress) / 18%);
+	}
+
+	/* A ping behind the freshest thing on the card. It is the product's own
+	   loader motif, which is already what "this just arrived" looks like. */
+	.stage-sonar {
+		position: absolute;
+		z-index: -1;
+		top: 0.75rem;
+		left: 1.25rem;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.stage-sonar i {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 3.5rem;
+		height: 3.5rem;
+		border: 1px solid rgb(var(--color-sonar) / 40%);
+		border-radius: 50%;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.4);
+	}
+
+	/* ---- 06: the amounts ----
+	   DESIGN_SYSTEM.md §7 rule 4 permits example amounts inside the beat that
+	   depicts the flow they belong to, and nowhere else. Skip is one of the
+	   three, at the same size, because the sentence beside this says optional. */
+
+	.stage-tiers {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		list-style: none;
+	}
+
+	.stage-tiers li {
+		display: grid;
+		gap: 0.125rem;
+		justify-items: center;
+		padding: 0.625rem 0.5rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-2xl);
+		background: rgb(var(--color-surface) / 70%);
+		font-size: 0.8125rem;
+		font-weight: 650;
+	}
+
+	.stage-tiers em {
+		color: rgb(var(--color-muted));
+		font-style: normal;
+		font-weight: 500;
+	}
+
+	.stage-tiers .is-selected {
+		border-color: rgb(var(--color-reward) / 42%);
+		background: rgb(var(--color-reward-soft));
+		color: rgb(var(--color-reward-ink));
+	}
+
+	.stage-tiers .is-selected em {
+		color: rgb(var(--color-reward-ink) / 80%);
+	}
+
+	/* ---- 02: chips ---- */
 
 	.stage-chips {
 		display: flex;
@@ -446,39 +566,6 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		color: rgb(var(--color-muted));
 	}
 
-	/* ---- 05: thanks ---- */
-
-	.stage-thanks {
-		display: inline-flex;
-		width: fit-content;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.9375rem;
-		border: 1px solid rgb(var(--color-reward) / 32%);
-		border-radius: var(--radius-pill);
-		background: rgb(var(--color-reward-soft));
-		color: rgb(var(--color-reward-ink));
-		font-size: 0.875rem;
-		font-weight: 650;
-	}
-
-	.stage-thanks svg {
-		width: 1rem;
-		height: 1rem;
-		fill: none;
-		stroke: currentcolor;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-		stroke-width: 1.4;
-	}
-
-	.stage-thanks em {
-		color: rgb(var(--color-reward-ink) / 72%);
-		font-size: 0.75rem;
-		font-style: normal;
-		font-weight: 550;
-	}
-
 	/* ---- Foot ---- */
 
 	.stage-foot {
@@ -551,11 +638,41 @@ const [ask, claim, refer, confirm, thanks] = LIFECYCLE;
 		}
 	}
 
+	@media (prefers-reduced-motion: no-preference) {
+		.stage[data-active-step='01'] .stage-sonar i {
+			animation: stage-sonar 2400ms var(--ease-out) infinite backwards;
+		}
+
+		.stage-sonar i:nth-child(2) {
+			animation-delay: 800ms;
+		}
+
+		.stage-sonar i:nth-child(3) {
+			animation-delay: 1600ms;
+		}
+
+		@keyframes stage-sonar {
+			0% {
+				opacity: 0.8;
+				transform: translate(-50%, -50%) scale(0.35);
+			}
+			100% {
+				opacity: 0;
+				transform: translate(-50%, -50%) scale(2.2);
+			}
+		}
+	}
+
 	/* With motion reduced the controller pins the final state; nothing here
 	   should still be waiting on a transition. */
 	@media (prefers-reduced-motion: reduce) {
 		.stage [data-for] {
 			transform: none;
+		}
+
+		.stage-sonar i:first-child {
+			opacity: 0.3;
+			transform: translate(-50%, -50%) scale(1);
 		}
 	}
 </style>

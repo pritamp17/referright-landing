@@ -92,75 +92,80 @@ export interface LifecycleStep {
 	readonly timing: string | null;
 }
 
+/*
+ * Six beats, and the whole product.
+ *
+ * This list used to be five steps inside a "how it works" section, with the
+ * opening, the trust mechanisms and the thank-you living in three sections of
+ * their own. They are all here now, because they were always one story: an
+ * opening reaches you, you ask, somebody inside takes it on, it goes in with
+ * proof, you get a window to disagree, and then you can say thanks if you want
+ * to. Told once, in order, it needs a fraction of the words.
+ *
+ * Every line is one sentence. The trust facts are inside the beat they belong
+ * to rather than in a wall of claims further down the page.
+ */
 export const LIFECYCLE: readonly LifecycleStep[] = [
 	{
-		stage: LifecycleStage.Requested,
+		stage: LifecycleStage.Surfaced,
 		index: '01',
+		title: 'A role reaches you',
+		detail: 'Senior roles often get filled before they are ever posted. You see the role, never who asked.',
+		timing: null,
+	},
+	{
+		stage: LifecycleStage.Requested,
+		index: '02',
 		title: 'You ask',
-		detail: 'Share the role and a little context about your background.',
+		detail: 'Share the role and a little context. Asking is free and nothing is owed upfront.',
 		timing: null,
 	},
 	{
 		stage: LifecycleStage.Claimed,
-		index: '02',
-		title: 'An employee claims it',
-		detail: 'Verified employees of that company see the request. One takes it on.',
+		index: '03',
+		title: 'Someone inside claims it',
+		detail: `Employees whose jobs there are verified through LinkedIn see it, and one takes it on.`,
 		timing: `${POLICY.claimWindowHours}h window`,
 	},
 	{
 		stage: LifecycleStage.Referred,
-		index: '03',
+		index: '04',
 		title: 'The referral goes in',
-		detail: 'They submit it internally and attach a timestamped screenshot as proof.',
+		detail: 'Submitted inside the company\u2019s own system, with a timestamped screenshot you can see.',
 		timing: 'with proof',
 	},
 	{
 		stage: LifecycleStage.Confirmed,
-		index: '04',
+		index: '05',
 		title: 'You confirm, or dispute',
-		detail: 'Check the proof. Confirm it, or raise a dispute and we review it.',
+		detail: 'A dispute is read and decided by a person, never closed by a timer.',
 		timing: `${POLICY.confirmationWindowHours}h to review`,
 	},
 	{
 		stage: LifecycleStage.Paid,
-		index: '05',
-		title: 'You say thank you',
-		detail: 'Send a small token of appreciation if you would like to. Entirely optional.',
+		index: '06',
+		title: 'Say thanks, if you want',
+		detail: 'A coffee, and nothing more. It is optional, and it changes nothing.',
 		timing: 'your call',
 	},
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* Trust pillars                                                       */
+/* Proof line                                                          */
 /* ------------------------------------------------------------------ */
 
-export interface TrustPillar {
-	readonly title: string;
-	readonly detail: string;
-	readonly accent: Accent;
-}
-
-export const TRUST_PILLARS: readonly TrustPillar[] = [
-	{
-		title: 'LinkedIn-verified employment',
-		detail: `Re-checked every ${POLICY.employmentRecheckDays} days. Someone who has left stops receiving requests.`,
-		accent: Accent.Primary,
-	},
-	{
-		title: 'Every referral carries proof',
-		detail: 'A timestamped screenshot from the company\u2019s own system, shown to you.',
-		accent: Accent.Success,
-	},
-	{
-		title: 'A window to disagree',
-		detail: `${POLICY.confirmationWindowHours} hours to confirm or dispute. A person decides, never a timer.`,
-		accent: Accent.Warning,
-	},
-	{
-		title: 'Nothing is owed upfront',
-		detail: 'Asking is free. A thank-you only ever follows a confirmed referral.',
-		accent: Accent.Reward,
-	},
+/*
+ * What used to be four trust cards.
+ *
+ * Each fact is now stated inside the beat it belongs to, so this line is a
+ * recap rather than an argument: four short facts on one row, closing the
+ * story rather than opening a new section about it.
+ */
+export const PRODUCT_PROOF: readonly string[] = [
+	'LinkedIn-verified employment',
+	'Timestamped proof, shown to you',
+	`${POLICY.confirmationWindowHours}h to dispute, decided by a person`,
+	'Free to ask',
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -186,65 +191,6 @@ export const TRUST_STRIP: readonly TrustStripItem[] = [
 	{ value: 'Referrer Appreciation, Your Way', label: 'Add an optional thank-you amount.' },
 	{ value: '100% Free', label: 'No payment required' },
 	{ value: '2-Day Response', label: 'Get clarity, sooner. ' },
-] as const;
-
-/* ------------------------------------------------------------------ */
-/* Peer openings                                                       */
-/* ------------------------------------------------------------------ */
-
-/**
- * One opening as a member would meet it.
- *
- * These describe the ROLE and nothing else. A peer opening never carries the
- * identity of whoever asked about it (DESIGN_SYSTEM.md §8 rule 4), and
- * nothing here claims we are hiring at these employers or that a referral is
- * assured — `path` says a route exists, which is exactly what the product
- * checks.
- */
-export interface PeerSignal {
-	readonly role: string;
-	readonly company: string;
-	readonly location: string;
-	readonly posted: string;
-	readonly path: string;
-}
-
-export const PEER_SIGNALS: readonly PeerSignal[] = [
-	{
-		role: 'Product Manager',
-		company: 'Microsoft',
-		location: 'Bengaluru',
-		posted: '18 minutes ago',
-		path: 'Referral path available',
-	},
-	{
-		role: 'Senior Backend Engineer',
-		company: 'Atlassian',
-		location: 'Bengaluru',
-		posted: '40 minutes ago',
-		path: 'Referral path available',
-	},
-	{
-		role: 'Design Systems Lead',
-		company: 'Figma',
-		location: 'Remote, India',
-		posted: '1 hour ago',
-		path: 'Referral path available',
-	},
-	{
-		role: 'Staff Data Engineer',
-		company: 'Stripe',
-		location: 'Bengaluru',
-		posted: '2 hours ago',
-		path: 'Referral path available',
-	},
-	{
-		role: 'Engineering Manager',
-		company: 'Netflix',
-		location: 'Mumbai',
-		posted: '3 hours ago',
-		path: 'Referral path available',
-	},
 ] as const;
 
 /* ------------------------------------------------------------------ */

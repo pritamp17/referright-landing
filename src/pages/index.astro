@@ -1,19 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Appreciation from '../components/Appreciation.astro';
 import BetaProof from '../components/BetaProof.astro';
 import ClosingSection from '../components/ClosingSection.astro';
 import CompanyField from '../components/CompanyField.astro';
 import Faq from '../components/Faq.astro';
 import DesignLab from '../components/DesignLab.astro';
 import Hero from '../components/Hero.astro';
-import Lifecycle from '../components/Lifecycle.astro';
-import Offerings from '../components/Offerings.astro';
-import PeerSignalSection from '../components/PeerSignalSection.astro';
+import ProductStory from '../components/ProductStory.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { type Testimonial } from '../components/TestimonialStage.astro';
-import TrustSection from '../components/TrustSection.astro';
-import { Accent } from '../lib/constants';
+import { Accent, SectionId } from '../lib/constants';
 
 const pageTitle = 'RightRefer: Find your way in at the right time';
 const pageDescription =
@@ -75,9 +71,11 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 	<main id="main-content">
 		<Hero />
 
+		{/* Part of the opening block rather than a section of its own: one thin
+		    band of proof directly under the hero, with no heading. */}
 		<section
 			class="companies reveal"
-			id="value"
+			id={SectionId.Value}
 			aria-label="Companies people request referrals into"
 		>
 			<div class="shell">
@@ -87,20 +85,17 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 		</section>
 
 		{/*
-		  * The order is the argument: what this is, how it works, why it is
-		  * safe, who says so, then the two offerings that need their own
-		  * demonstration, then the questions. Trust sits ahead of the beta
-		  * quotes deliberately — a stranger's word is worth more once the
-		  * mechanism behind it has been shown.
+		  * Five blocks, and no more: the hero, the product, who says it works,
+		  * the questions, and the way out.
+		  *
+		  * There were nine. The five in the middle each opened with an eyebrow,
+		  * a heading and a lede before saying anything, which meant a reader
+		  * was asked to start over four times to learn one product. They are
+		  * one section now, told as one story.
 		  */}
-		<Offerings />
-		<Lifecycle />
-		<TrustSection />
+		<ProductStory />
 		<BetaProof batches={testimonialBatches} />
-		<PeerSignalSection />
-		<Appreciation />
 		<Faq />
-
 		<ClosingSection />
 	</main>
 

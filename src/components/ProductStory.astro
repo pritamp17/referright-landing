@@ -1,34 +1,43 @@
 ---
 import RequestStage from './RequestStage.astro';
-import { SectionId } from '../lib/constants';
-import { LIFECYCLE } from '../lib/content';
+import { OfferingKind, SectionId, TrackEvent } from '../lib/constants';
+import { LIFECYCLE, OFFERINGS, PRODUCT_PROOF } from '../lib/content';
+
+/** Analytics event per way in, resolved from the enum rather than inlined. */
+const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
+	[OfferingKind.AskForReferral]: TrackEvent.OfferingAsk,
+	[OfferingKind.GiveReferral]: TrackEvent.OfferingGive,
+	[OfferingKind.PeerSignal]: TrackEvent.OfferingPeer,
+};
 ---
 
 {/*
- * How it works, told at the reader's own pace.
+ * The product, in one section.
  *
- * This section used to be a five-dot rail above a 1280×680 film. The rail
- * spent a whole row on five words, and the film played on its own clock in a
- * frame that was mostly empty — so the two halves of the explanation never
- * met, and neither one held the eye.
+ * This was five: the three ways in, how it works, why it is safe, peer
+ * openings, and the thank-you. Each had its own heading, its own lede, its own
+ * artwork and its own closing line, and a reader had to hold five separate
+ * arguments in their head and assemble the product from them.
  *
- * Now they are one thing. The steps scroll; the request card stays. Whichever
- * step is under the reader is the state the card is in, so the explanation and
- * the thing being explained can never fall out of step, and the reader
- * controls the pace. `stageController` does the mapping and nothing else.
+ * They were always one story. An opening reaches you, you ask, somebody inside
+ * takes it on, it goes in with proof, you get a window to disagree, and then
+ * you can say thanks. Told once, in order, it is shorter than any two of the
+ * sections it replaces, and the reader is never asked to start again.
  *
- * The stage sticks on every width. On a phone it pins to the top and the steps
- * pass beneath it, which is the layout most of this traffic actually sees.
+ * The beats scroll; the card stays and changes with them. `stageController`
+ * maps whichever beat is under the reader onto the card and does nothing else,
+ * so the explanation and the thing being explained cannot fall out of step and
+ * the pace belongs to the reader.
+ *
+ * The trust claims live inside the beats they belong to. What is left at the
+ * bottom is a recap line and the three ways into the same network, as links
+ * rather than as three more cards.
  */}
 <section class="section lifecycle" id={SectionId.HowItWorks} aria-labelledby="lifecycle-title" data-lifecycle>
 	<div class="shell">
 		<div class="lifecycle-head reveal">
 			<p class="eyebrow">How it works</p>
-			<h2 class="display-2" id="lifecycle-title">Five steps, and a clock on every one.</h2>
-			<p class="lede">
-				Nothing sits in limbo. Each stage has a deadline, and both sides can see exactly where the
-				request stands.
-			</p>
+			<h2 class="display-2" id="lifecycle-title">From an opening to an introduction.</h2>
 		</div>
 
 		<div class="lifecycle-grid">
@@ -56,6 +65,27 @@ import { LIFECYCLE } from '../lib/content';
 				}
 			</ol>
 		</div>
+
+		<p class="proof-line reveal">
+			{PRODUCT_PROOF.map((fact) => <span>{fact}</span>)}
+		</p>
+
+		{/* The same network, entered from whichever side the reader is on. Three
+		    links, because three cards would restart the section. */}
+		<ul class="ways reveal">
+			{
+				OFFERINGS.map((offering) => (
+					<li>
+						<a class="text-link" href={offering.ctaHref} data-track={TRACK_BY_KIND[offering.kind]}>
+							{offering.ctaLabel}
+							<svg viewBox="0 0 16 16" aria-hidden="true">
+								<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
+							</svg>
+						</a>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </section>
 
@@ -76,10 +106,6 @@ import { LIFECYCLE } from '../lib/content';
 
 	.lifecycle-head {
 		max-width: 40rem;
-	}
-
-	.lifecycle-head .lede {
-		max-width: 34rem;
 	}
 
 	.lifecycle-grid {
@@ -209,6 +235,44 @@ import { LIFECYCLE } from '../lib/content';
 		.js .lifecycle-step.is-active {
 			opacity: 1;
 		}
+	}
+
+	/* ---- Close ----
+	   A recap and three doors, both as single rows. Anything with a box around
+	   it here would read as a sixth section starting. */
+
+	.proof-line {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.75rem;
+		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+		padding-top: 1.5rem;
+		border-top: 1px solid rgb(var(--color-border));
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+	}
+
+	.proof-line span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.proof-line span::before {
+		width: 0.3125rem;
+		height: 0.3125rem;
+		border-radius: 50%;
+		background: rgb(var(--color-primary) / 55%);
+		content: '';
+	}
+
+	.ways {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 2.25rem;
+		margin: 0.75rem 0 0;
+		padding: 0;
+		list-style: none;
 	}
 
 	/* ---- Responsive ---- */
