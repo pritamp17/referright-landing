@@ -90,9 +90,17 @@ it so a visitor's preference survives the hand-off into the app.
 - Resolved by an `is:inline` prepaint script in `BaseLayout.astro`, before first
   paint. Without it a returning dark-mode visitor gets a flash of the light
   canvas.
-- **Light is the default and the only first-visit theme.** `prefers-color-scheme`
-  is deliberately not consulted: this page is a first impression, and it should
-  be the same first impression for everyone. Dark is opt-in and remembered.
+- **A first visit follows the operating system.** Only an explicit choice from
+  the toggle is stored, and from then on it wins; until somebody makes that
+  choice the page tracks `prefers-color-scheme` live, so changing the OS theme
+  with the tab open moves the page with it.
+- **The product application still defaults to light** and shares this storage
+  key, so a visitor whose system is dark meets a dark landing page and a light
+  application until they touch the toggle. Closing that gap means changing the
+  application's default too.
+- **There is one theme control, and it is in the footer.** It is a preference,
+  not a call to action, and the header has room for exactly one thing the
+  visitor is meant to do.
 - The same script stamps `js` on `<html>`. Every scroll-reveal rule is gated
   behind that class, so a visitor whose bundle never loads reads a fully visible
   page rather than a blank one.
@@ -124,7 +132,7 @@ number in Louize must do the same.
 |---|---|
 | `Brand.astro` | Wordmark + mark. `onBrandSurface` for saturated panels. |
 | `ThemeToggle.astro` | Light/dark switch. |
-| `SiteHeader.astro` | Sticky header. Transparent over the hero; gains a translucent canvas, a heavier blur and a hairline on scroll. Marks the section being read. |
+| `SiteHeader.astro` | Sticky header: brand, three links, one call to action. Transparent over the hero; gains a translucent canvas, a heavier blur and a hairline on scroll. Marks the section being read. |
 | `DoorWall.astro` | The hand-inked wall of doors, as a token-painted alpha mask. `hero` and `bookend` variants. See §9. |
 | `Hero.astro` | Full-fold split: copy left, wall right, two glass proof cards in the quiet pockets. |
 | `CompanyField.astro` | Company logo marquee. Belongs to the hero block, not to a section of its own. Pauses offscreen and under the pointer. |

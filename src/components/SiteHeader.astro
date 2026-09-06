@@ -1,6 +1,5 @@
 ---
 import Brand from './Brand.astro';
-import ThemeToggle from './ThemeToggle.astro';
 import { SectionId, TrackEvent } from '../lib/constants';
 import { SIGNUP_URL } from '../lib/content';
 
@@ -26,8 +25,10 @@ const navItems: readonly NavItem[] = [
 			{navItems.map((item) => <a href={item.href}>{item.label}</a>)}
 		</nav>
 
+		{/* The theme control lives in the footer, not here. It is a preference,
+		    not a call to action, and the header has room for exactly one thing
+		    the visitor is meant to do. */}
 		<div class="header-actions">
-			<ThemeToggle />
 			<a class="button button-primary header-cta" href={SIGNUP_URL} data-track={TrackEvent.NavPrimary}>
 				Get started
 			</a>

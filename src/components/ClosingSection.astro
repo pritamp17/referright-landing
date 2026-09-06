@@ -78,10 +78,16 @@ const policyLinks = [
 			</nav>
 
 			<div class="footer-nav">
-				<p class="footer-heading mono">Company</p>
+				<p class="footer-heading mono">Support</p>
 				<ul>
 					<li>
-						<a href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.ContactEmail}>Support</a>
+						<a
+							class="footer-email"
+							href={`mailto:${CONTACT_EMAIL}`}
+							data-track={TrackEvent.ContactEmail}
+						>
+							{CONTACT_EMAIL}
+						</a>
 					</li>
 					{policyLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
 				</ul>
@@ -90,7 +96,6 @@ const policyLinks = [
 
 		<div class="shell footer-base">
 			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
-			<span class="footer-region mono">India</span>
 			<ThemeToggle />
 		</div>
 	</footer>
@@ -249,6 +254,18 @@ const policyLinks = [
 		color: rgb(var(--color-ink));
 	}
 
+	/* The address itself, not the word "Support". Somebody looking for a way to
+	   reach a person wants to see that a person is reachable. */
+	.footer-email {
+		color: rgb(var(--color-primary));
+		font-weight: 600;
+		word-break: break-word;
+	}
+
+	:global([data-theme='dark']) .footer-email {
+		color: rgb(var(--color-primary-strong));
+	}
+
 	/* ---- Base row ---- */
 
 	.footer-base {
@@ -265,14 +282,6 @@ const policyLinks = [
 		margin: 0;
 		color: rgb(var(--color-muted));
 		font-size: 0.8125rem;
-	}
-
-	.footer-region {
-		margin-inline-start: auto;
-		padding: 0.25rem 0.625rem;
-		border: 1px solid rgb(var(--color-border));
-		border-radius: var(--radius-pill);
-		color: rgb(var(--color-muted) / 85%);
 	}
 
 	/* ---- Responsive ---- */

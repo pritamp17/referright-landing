@@ -22,10 +22,14 @@ const socialImage = new URL('/og-image.png', canonicalUrl);
  * before hydration corrects it. Astro's `is:inline` keeps it out of the bundle
  * graph so it is not deferred.
  *
- * Light is the product's default and the only first-visit theme. The OS
- * `prefers-color-scheme` signal is deliberately NOT consulted here: this page is
- * a first impression, and it should be the same first impression for everyone.
- * Dark is opt-in via the toggle, and remembered from then on.
+ * A first visit follows the operating system. Only an explicit choice from the
+ * toggle is stored, and from then on it wins over the system setting; until
+ * somebody makes that choice the page tracks `prefers-color-scheme` live.
+ *
+ * Note that the product application still defaults to light on a first visit
+ * and shares this storage key, so a visitor whose system is dark sees a dark
+ * landing page and a light application until they touch the toggle. Closing
+ * that gap means changing the application's default too.
  *
  * The enum values are interpolated from `constants.ts` rather than hardcoded, so
  * the inline script cannot drift from the typed source.
@@ -36,9 +40,11 @@ const socialImage = new URL('/og-image.png', canonicalUrl);
  */
 const themePrepaint = `(function(){try{
 	var stored = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
-	var theme = (stored === ${JSON.stringify(ThemeMode.Dark)} || stored === ${JSON.stringify(ThemeMode.Light)})
+	var explicit = (stored === ${JSON.stringify(ThemeMode.Dark)} || stored === ${JSON.stringify(ThemeMode.Light)});
+	var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+	var theme = explicit
 		? stored
-		: ${JSON.stringify(ThemeMode.Light)};
+		: (prefersDark ? ${JSON.stringify(ThemeMode.Dark)} : ${JSON.stringify(ThemeMode.Light)});
 	document.documentElement.dataset.theme = theme;
 	document.documentElement.classList.add('js');
 	var meta = document.querySelector('meta[name="theme-color"]');
