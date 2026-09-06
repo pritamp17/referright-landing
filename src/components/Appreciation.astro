@@ -14,12 +14,12 @@ import { OUTCOME_DISCLAIMER, SectionId } from '../lib/constants';
  * The visual sits on the LEFT here, mirroring the peer-openings section above
  * it. Two split sections in a row with the picture on the same side reads as a
  * template; alternating reads as a page that was composed.
+ *
+ * There were three reassurance chips here saying optional, never required, and
+ * only afterwards. All three are the sentence above them, and the card beside
+ * them gives Skip the same weight as Send, which makes the point without
+ * words.
  */
-const reassurances: readonly string[] = [
-	'Optional, always',
-	'Never required to ask',
-	'Only after the referral lands',
-];
 ---
 
 <section class="section appreciation" id={SectionId.Appreciation} aria-labelledby="appreciation-title">
@@ -32,23 +32,8 @@ const reassurances: readonly string[] = [
 			<p class="eyebrow">Afterwards</p>
 			<h2 class="display-2" id="appreciation-title">Say thank you, only if you want to.</h2>
 			<p class="lede">
-				Referrals here come from people who chose to help. If it felt worth it, you can send a small
-				token of appreciation, a coffee and nothing more. It is entirely optional, and it never
-				changes whether you get referred.
+				If it felt worth it, send a coffee. It is optional, and it changes nothing.
 			</p>
-
-			<ul class="appreciation-chips">
-				{
-					reassurances.map((item) => (
-						<li>
-							<svg viewBox="0 0 16 16" aria-hidden="true">
-								<path d="M3.4 8.4l3 3 6.2-7" />
-							</svg>
-							{item}
-						</li>
-					))
-				}
-			</ul>
 
 			<p class="fine-print appreciation-note">{OUTCOME_DISCLAIMER}</p>
 		</div>
@@ -68,38 +53,6 @@ const reassurances: readonly string[] = [
 
 	.appreciation-copy .lede {
 		max-width: 32rem;
-	}
-
-	.appreciation-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.625rem;
-		margin: 1.75rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.appreciation-chips li {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4375rem;
-		padding: 0.5rem 0.875rem;
-		border: 1px solid rgb(var(--color-border));
-		border-radius: var(--radius-pill);
-		background: rgb(var(--color-surface));
-		color: rgb(var(--color-muted));
-		font-size: 0.8125rem;
-		font-weight: 500;
-	}
-
-	.appreciation-chips svg {
-		width: 0.875rem;
-		height: 0.875rem;
-		fill: none;
-		stroke: rgb(var(--color-success));
-		stroke-linecap: round;
-		stroke-linejoin: round;
-		stroke-width: 2;
 	}
 
 	.appreciation-note {

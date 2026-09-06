@@ -20,9 +20,12 @@ const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
  *
  * Each cell is a door, and the hover state is the thing that makes it one: a
  * wedge of light falls in from the left edge the way it does when a door opens
- * into a dark room, the icon well lights up, and the chapter numeral goes from
- * a ghost to the cell's own accent. `clip-path` and `opacity` do all of it —
- * no layout, no paint of anything but the beam.
+ * into a dark room, and the icon well lights up. `clip-path` and `opacity` do
+ * all of it, with no layout and no paint of anything but the beam.
+ *
+ * A cell carries four things and no more: the icon, the title, one line, one
+ * link. It had a chapter numeral and an accent rule as well, which is two more
+ * pieces of furniture than an idea this simple can justify.
  *
  * The three accents are back. They were surrendered once (DESIGN_SYSTEM.md §16)
  * because `--color-primary-soft` and `--color-reward-soft` were the same triple
@@ -47,9 +50,7 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 <section class="section offerings" id={SectionId.Offerings} aria-labelledby="offerings-title">
 	<div class="shell">
 		<SectionIntro
-			eyebrow="Three ways to use RightRefer"
 			title="One network. Three ways in."
-			copy="The same verified network, entered from whichever side you are on today. You can be on more than one."
 			headingId="offerings-title"
 			align="center"
 			class="reveal"
@@ -57,12 +58,8 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 
 		<ul class="doors reveal">
 			{
-				OFFERINGS.map((offering, index) => (
+				OFFERINGS.map((offering) => (
 					<li class:list={['door', `accent-${DOOR_ACCENT[offering.kind]}`]}>
-						<span class="door-index numeral" aria-hidden="true">
-							{String(index + 1).padStart(2, '0')}
-						</span>
-
 						<span class="door-icon" aria-hidden="true">
 							<svg viewBox="0 0 28 28">
 								<path d={ROLE_ICON[offering.kind]} />
@@ -72,7 +69,6 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 							</svg>
 						</span>
 
-						<span class="door-rule" aria-hidden="true" />
 						<h3 class="door-title">{offering.title}</h3>
 						<p class="door-line">{offering.line}</p>
 
@@ -127,8 +123,8 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 	.door {
 		position: relative;
 		display: grid;
-		min-height: 21rem;
-		grid-template-rows: auto auto auto auto 1fr auto;
+		min-height: 17rem;
+		grid-template-rows: auto auto auto 1fr auto;
 		align-content: start;
 		padding: clamp(1.75rem, 3vw, 2.25rem);
 		background: rgb(var(--color-surface));
@@ -170,23 +166,6 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 		opacity: 1;
 	}
 
-	/* The chapter numeral sits in the corner as a watermark and comes forward in
-	   the cell's own accent when the door opens. */
-	.door-index {
-		position: absolute;
-		z-index: 1;
-		top: clamp(1.25rem, 2.4vw, 1.75rem);
-		right: clamp(1.25rem, 2.4vw, 1.75rem);
-		color: rgb(var(--color-ink) / 11%);
-		font-size: 3.25rem;
-		transition: color var(--dur-slow) var(--ease-out);
-	}
-
-	.door:hover .door-index,
-	.door:focus-within .door-index {
-		color: rgb(var(--accent) / 62%);
-	}
-
 	.door-icon {
 		display: inline-grid;
 		width: 3.25rem;
@@ -213,23 +192,8 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 		stroke-width: 1.6;
 	}
 
-	.door-rule {
-		width: 2rem;
-		height: 2px;
-		margin-top: 1.5rem;
-		border-radius: var(--radius-pill);
-		background: rgb(var(--accent));
-		transform-origin: left center;
-		transition: transform var(--dur-slow) var(--ease-out);
-	}
-
-	.door:hover .door-rule,
-	.door:focus-within .door-rule {
-		transform: scaleX(1.9);
-	}
-
 	.door-title {
-		margin: 0.875rem 0 0;
+		margin: 1.5rem 0 0;
 		font-family: var(--font-display);
 		font-size: clamp(1.5rem, 2vw, 1.75rem);
 		font-weight: 400;
@@ -287,10 +251,6 @@ const ROLE_ICON: Readonly<Record<OfferingKind, string>> = {
 	@media (max-width: 63.999rem) {
 		.door {
 			min-height: 0;
-		}
-
-		.door-index {
-			font-size: 2.75rem;
 		}
 	}
 

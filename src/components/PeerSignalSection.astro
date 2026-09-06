@@ -21,14 +21,11 @@ const CADENCES: readonly string[] = ['Daily', 'Weekly', 'Highly relevant'];
 <section class="section peer-signal" id={SectionId.PeerSignal} aria-labelledby="peer-signal-title">
 	<div class="shell peer-signal-grid">
 		<div class="peer-signal-copy reveal">
-			<p class="eyebrow">Offering 03, in practice</p>
+			<p class="eyebrow">Peer openings</p>
 			<h2 class="display-2" id="peer-signal-title">
 				The role reaches you while the door is still open.
 			</h2>
-			<p class="lede">
-				Senior roles are often filled quietly, and only get posted once the internal search has
-				failed. Peer openings tell you a relevant role exists while that window is still open.
-			</p>
+			<p class="lede">Senior roles are often filled before they are ever posted.</p>
 
 			<a
 				class="button button-primary peer-signal-cta"
@@ -41,14 +38,14 @@ const CADENCES: readonly string[] = ['Daily', 'Weekly', 'Highly relevant'];
 				</svg>
 			</a>
 
-			<p class="fine-print peer-signal-note">
-				You are shown the opening, never the identity of whoever asked about it.
-			</p>
+			<p class="fine-print peer-signal-note">You see the role, never who asked.</p>
 		</div>
 
 		<div class="peer-signal-panel reveal">
 			<SignalStack />
 
+			{/* The control is the sentence: three named cadences say "you choose how
+			    often" better than a line of copy repeating it underneath. */}
 			<div class="cadence" role="group" aria-label="How often peer openings arrive">
 				<span class="cadence-label mono">Arrives</span>
 				<span class="cadence-options">
@@ -59,10 +56,6 @@ const CADENCES: readonly string[] = ['Daily', 'Weekly', 'Highly relevant'];
 					}
 				</span>
 			</div>
-
-			<p class="fine-print cadence-note">
-				You choose the cadence, and you can turn peer openings off at any time.
-			</p>
 		</div>
 	</div>
 </section>
@@ -133,10 +126,6 @@ const CADENCES: readonly string[] = ['Daily', 'Weekly', 'Highly relevant'];
 	.cadence-option.is-selected {
 		background: rgb(var(--color-progress-soft));
 		color: rgb(var(--color-progress-ink));
-	}
-
-	.cadence-note {
-		max-width: 26rem;
 	}
 
 	/* ---- Responsive ---- */

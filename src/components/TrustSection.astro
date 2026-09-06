@@ -28,10 +28,7 @@ const EXHIBIT_KINDS: readonly ExhibitKind[] = ['verified', 'proof', 'window', 'n
 			<div class="trust-head reveal">
 				<p class="eyebrow trust-eyebrow">Why this is safe to use</p>
 				<h2 class="display-2" id="trust-title">Trust here is a mechanism, not a slogan.</h2>
-				<p class="trust-lede">
-					Every claim on this page is backed by something the product actually does. Here is
-					exactly what protects both sides.
-				</p>
+				<p class="trust-lede">Every claim here is backed by something the product does.</p>
 
 				<p class="trust-disclaimer">
 					<svg viewBox="0 0 16 16" aria-hidden="true">
@@ -48,7 +45,6 @@ const EXHIBIT_KINDS: readonly ExhibitKind[] = ['verified', 'proof', 'window', 'n
 				TRUST_PILLARS.map((pillar, index) => (
 					<TrustExhibit
 						kind={EXHIBIT_KINDS[index]}
-						index={String(index + 1).padStart(2, '0')}
 						title={pillar.title}
 						detail={pillar.detail}
 						accent={pillar.accent}

@@ -128,7 +128,7 @@ number in Louize must do the same.
 | `DoorWall.astro` | The hand-inked wall of doors, as a token-painted alpha mask. `hero` and `bookend` variants. See §9. |
 | `Hero.astro` | Full-fold split: copy left, wall right, two glass proof cards in the quiet pockets. |
 | `CompanyField.astro` | Company logo marquee. Pauses offscreen and under the pointer. |
-| `Offerings.astro` | The three doors — three cells in one frame, one accent each. See §16. |
+| `Offerings.astro` | The three doors: three cells in one frame, one accent each. See §16. |
 | `Lifecycle.astro` + `RequestStage.astro` | How it works, as a scroll-driven story. See §10. |
 | `TrustSection.astro` + `TrustExhibit.astro` | Four mechanisms, each drawing its own evidence. |
 | `BetaProof.astro` + `TestimonialStage.astro` | Private-beta count and the quote marquee. |
@@ -167,6 +167,34 @@ signal stack. There is no animation library.
 styling. Use it where an element must stay painted — a cell in a shared frame,
 where fading the cell would show the frame's own gap colour through the hole —
 but something inside it still needs to start when it is read.
+
+---
+
+## 6A. Copy density
+
+**A section carries one idea, one object, and as few words as will hold it up.**
+This is a rule because the page broke it once: every section below the hero had
+an eyebrow, a heading, a two-sentence lede, a labelled artifact, a paragraph per
+item and a line of fine print underneath, and the result read as homework rather
+than as a product.
+
+What the rule means in practice:
+
+- **A supporting line is one sentence.** If it needs two, the heading is not
+  doing its job.
+- **An item's description is one short sentence.** The FAQ carries the detail;
+  a card carries the claim.
+- **Nothing is said twice on one screen.** An eyebrow that paraphrases its own
+  heading, a chip that repeats the sentence above it, and a note explaining a
+  control that already shows its own options were all deleted for this reason.
+- **A visible control beats a sentence describing it.** Three named cadences
+  say "you choose how often" better than a line of copy saying so.
+- **No internal vocabulary.** A visitor has not been told the product has
+  numbered offerings, so nothing on the page refers to "Offering 03".
+
+**No em dashes, en dashes or double hyphens in visible copy.** Rewrite the
+sentence instead. A dash almost always marks a clause that could have been its
+own short sentence, or one that could have been cut.
 
 ---
 

@@ -13,18 +13,15 @@ export type ExhibitKind = 'verified' | 'proof' | 'window' | 'nothing-owed';
 
 interface Props {
 	readonly kind: ExhibitKind;
-	readonly index: string;
 	readonly title: string;
 	readonly detail: string;
 	readonly accent: Accent;
 }
 
-const { kind, index, title, detail, accent } = Astro.props;
+const { kind, title, detail, accent } = Astro.props;
 ---
 
 <li class:list={['exhibit', `accent-${accent}`, `is-${kind}`]} data-reveal-mark>
-	<p class="exhibit-index mono">Mechanism {index}</p>
-
 	<div class="exhibit-art" aria-hidden="true">
 		{
 			kind === 'verified' && (
@@ -137,15 +134,8 @@ const { kind, index, title, detail, accent } = Astro.props;
 		opacity: 1;
 	}
 
-	.exhibit-index {
-		color: rgb(var(--color-muted) / 78%);
-		grid-row: 1;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
 	.exhibit-title {
-		margin: 0.75rem 0 0;
+		margin: 1.25rem 0 0;
 		color: rgb(var(--color-ink));
 		font-size: 1.1875rem;
 		font-weight: 650;
@@ -163,9 +153,8 @@ const { kind, index, title, detail, accent } = Astro.props;
 
 	.exhibit-art {
 		display: flex;
-		min-height: 5.5rem;
+		min-height: 4.5rem;
 		align-items: center;
-		margin-top: 0.75rem;
 	}
 
 	.art-ring-track,
