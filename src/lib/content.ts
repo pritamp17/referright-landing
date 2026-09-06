@@ -1,4 +1,4 @@
-import { Accent, LifecycleStage, OfferingKind, OUTCOME_DISCLAIMER, POLICY, SignUpIntent } from './constants';
+import { Accent, OfferingKind, OUTCOME_DISCLAIMER, POLICY, SignUpIntent } from './constants';
 
 /* ------------------------------------------------------------------ */
 /* Links                                                               */
@@ -80,73 +80,125 @@ export const OFFERINGS: readonly Offering[] = [
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* Lifecycle                                                           */
+/* The three paths                                                     */
 /* ------------------------------------------------------------------ */
 
-export interface LifecycleStep {
-	readonly stage: LifecycleStage;
+export interface PathStep {
 	readonly index: string;
 	readonly title: string;
+	/** One sentence. If it needs two, the title is not doing its job. */
 	readonly detail: string;
-	/** Short mono timing label, or null where no clock applies. */
-	readonly timing: string | null;
+}
+
+export interface ProductPath {
+	readonly kind: OfferingKind;
+	/** Short label for the switch. Two or three words. */
+	readonly tab: string;
+	readonly title: string;
+	readonly steps: readonly PathStep[];
+	readonly ctaLabel: string;
+	readonly ctaHref: string;
+	readonly accent: Accent;
 }
 
 /*
- * Six beats, and the whole product.
+ * The product has three core things a member can do, and they are parallel,
+ * not sequential: ask for a referral, give one, or hear about roles early.
  *
- * This list used to be five steps inside a "how it works" section, with the
- * opening, the trust mechanisms and the thank-you living in three sections of
- * their own. They are all here now, because they were always one story: an
- * opening reaches you, you ask, somebody inside takes it on, it goes in with
- * proof, you get a window to disagree, and then you can say thanks if you want
- * to. Told once, in order, it needs a fraction of the words.
+ * An earlier version told a single linear story from the seeker's side, which
+ * read well and was wrong about the product twice over. It buried giving and
+ * peer openings into two links at the bottom, and it put the thank-you at the
+ * very end, after the referral had landed. The thank-you is chosen on the
+ * request form, before anything is sent (PRD §5.2 step 7, §0.11), and getting
+ * that backwards misrepresents the one part of the flow involving money.
  *
- * Every line is one sentence. The trust facts are inside the beat they belong
- * to rather than in a wall of claims further down the page.
+ * Three parallel paths want a switch, not a scroll.
  */
-export const LIFECYCLE: readonly LifecycleStep[] = [
+export const PRODUCT_PATHS: readonly ProductPath[] = [
 	{
-		stage: LifecycleStage.Surfaced,
-		index: '01',
-		title: 'A role reaches you',
-		detail: 'Senior roles often get filled before they are ever posted. You see the role, never who asked.',
-		timing: null,
+		kind: OfferingKind.AskForReferral,
+		tab: 'Ask for a referral',
+		title: 'Ask someone on the inside.',
+		accent: Accent.Primary,
+		ctaLabel: 'Ask for a referral',
+		ctaHref: signUpWith(SignUpIntent.Seeker),
+		steps: [
+			{
+				index: '01',
+				title: 'Name the role',
+				detail: 'The company and the job you want, with your resume attached.',
+			},
+			{
+				index: '02',
+				title: 'Choose who sees it',
+				detail: 'Employees there whose jobs are verified through LinkedIn, and nobody else.',
+			},
+			{
+				index: '03',
+				title: 'Add a thank-you, or do not',
+				detail: 'You set an optional amount here, before you send. Zero is always allowed.',
+			},
+			{
+				index: '04',
+				title: 'Get proof, or get refunded',
+				detail: `A timestamped screenshot, and ${POLICY.confirmationWindowHours} hours to dispute it.`,
+			},
+		],
 	},
 	{
-		stage: LifecycleStage.Requested,
-		index: '02',
-		title: 'You ask',
-		detail: 'Share the role and a little context. Asking is free and nothing is owed upfront.',
-		timing: null,
+		kind: OfferingKind.GiveReferral,
+		tab: 'Give a referral',
+		title: 'Refer someone you can vouch for.',
+		accent: Accent.Success,
+		ctaLabel: 'Start referring',
+		ctaHref: signUpWith(SignUpIntent.Giver),
+		steps: [
+			{
+				index: '01',
+				title: 'See who is asking',
+				detail: 'Requests from people at companies where your job is verified.',
+			},
+			{
+				index: '02',
+				title: 'Claim one',
+				detail: 'It becomes yours alone, and nobody else can act on it.',
+			},
+			{
+				index: '03',
+				title: 'Submit it with proof',
+				detail: 'Refer them inside your own system and attach the screenshot.',
+			},
+			{
+				index: '04',
+				title: 'Get thanked',
+				detail: 'Whatever they chose to add is yours once the referral is confirmed.',
+			},
+		],
 	},
 	{
-		stage: LifecycleStage.Claimed,
-		index: '03',
-		title: 'Someone inside claims it',
-		detail: `Employees whose jobs there are verified through LinkedIn see it, and one takes it on.`,
-		timing: `${POLICY.claimWindowHours}h window`,
-	},
-	{
-		stage: LifecycleStage.Referred,
-		index: '04',
-		title: 'The referral goes in',
-		detail: 'Submitted inside the company\u2019s own system, with a timestamped screenshot you can see.',
-		timing: 'with proof',
-	},
-	{
-		stage: LifecycleStage.Confirmed,
-		index: '05',
-		title: 'You confirm, or dispute',
-		detail: 'A dispute is read and decided by a person, never closed by a timer.',
-		timing: `${POLICY.confirmationWindowHours}h to review`,
-	},
-	{
-		stage: LifecycleStage.Paid,
-		index: '06',
-		title: 'Say thanks, if you want',
-		detail: 'A coffee, and nothing more. It is optional, and it changes nothing.',
-		timing: 'your call',
+		kind: OfferingKind.PeerSignal,
+		tab: 'Hear about openings',
+		title: 'Hear about roles first.',
+		accent: Accent.Progress,
+		ctaLabel: 'Get peer openings',
+		ctaHref: signUpWith(SignUpIntent.Peer),
+		steps: [
+			{
+				index: '01',
+				title: 'Follow the companies you want',
+				detail: 'Tell us where you would like to work, and how often to write.',
+			},
+			{
+				index: '02',
+				title: 'Roles reach you early',
+				detail: 'Senior roles often get filled before they are ever posted.',
+			},
+			{
+				index: '03',
+				title: 'Ask in one step',
+				detail: 'The request opens already filled in. You review it and send.',
+			},
+		],
 	},
 ] as const;
 

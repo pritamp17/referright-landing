@@ -85,16 +85,17 @@ const testimonialBatches: readonly (readonly Testimonial[])[] = [
 		</section>
 
 		{/*
-		  * Five blocks, and no more: the hero, the product, who says it works,
-		  * the questions, and the way out.
+		  * Proof before mechanism.
 		  *
-		  * There were nine. The five in the middle each opened with an eyebrow,
-		  * a heading and a lede before saying anything, which meant a reader
-		  * was asked to start over four times to learn one product. They are
-		  * one section now, told as one story.
+		  * The companies band and the beta quotes are the two cheapest things
+		  * to read on the page and the two most likely to earn the next scroll,
+		  * so they come first. Only then is it worth spending a reader's
+		  * attention on how the thing works, and the questions land last,
+		  * where somebody who is nearly convinced goes looking for the one
+		  * detail that still bothers them.
 		  */}
-		<ProductStory />
 		<BetaProof batches={testimonialBatches} />
+		<ProductStory />
 		<Faq />
 		<ClosingSection />
 	</main>

@@ -128,7 +128,7 @@ number in Louize must do the same.
 | `DoorWall.astro` | The hand-inked wall of doors, as a token-painted alpha mask. `hero` and `bookend` variants. See §9. |
 | `Hero.astro` | Full-fold split: copy left, wall right, two glass proof cards in the quiet pockets. |
 | `CompanyField.astro` | Company logo marquee. Belongs to the hero block, not to a section of its own. Pauses offscreen and under the pointer. |
-| `ProductStory.astro` + `RequestStage.astro` | The entire product, as one scroll-driven story. See §10. |
+| `ProductStory.astro` + `PathCard.astro` | The three things the product does, as a switch. See §10. |
 | `BetaProof.astro` + `TestimonialStage.astro` | Private-beta count and the quote marquee. |
 | `Faq.astro` | Nine questions as native `<details>`. See §15. |
 | `ClosingSection.astro` | The bookend, the primary call to action, and the footer. |
@@ -209,10 +209,11 @@ the product, after someone has decided to take part.
 3. **One honest sentence, late in the page.** `Appreciation.astro` says a
    thank-you is optional, never required to ask, and never changes whether you
    get referred. That is the entire commercial surface.
-4. **The final beat of the story may show example amounts**, because it depicts
-   the actual flow at the point the flow reaches them. Nowhere else. Skip is one
-   of the three tiles at exactly the same size: a card where the way out is
-   smaller than the way through would contradict the sentence beside it.
+4. **The request card may show example amounts**, because that is where the
+   product asks for them. Nowhere else. `Nothing` is the first of the three
+   tiles at exactly the same size: zero is always allowed, and a card where the
+   free option is smaller than the paid ones would contradict the step beside
+   it.
 5. **The FAQ may answer "is it free", in words, with no numbers.** Refusing to
    answer the most common question a visitor has reads as evasion, which costs
    more trust than the restraint buys. `FAQ_ITEMS[0]` says plainly that asking
@@ -257,55 +258,48 @@ Two variants:
 
 - `hero` — right-hand side, wiping on left to right over 1500ms so the closed
   doors are established before the open one lights up.
-- `bookend` — centred, mirrored, linework dimmed to 20%, doorway light raised.
-  It lights as the closing section is reached rather than on load, so the page
-  ends on the image it opened with, from the other side of the door.
+- `bookend` — centred and mirrored, kept for reference and **not currently
+  used**. The closing block ran it behind its headline as a bookend, and at the
+  alphas that made the drawing read, the words in front of it did not. Line art
+  behind a headline is texture competing with letterforms, and the headline has
+  to win. Nothing goes behind display type on this page.
 
 ---
 
-## 10. The scroll-driven stage
+## 10. Three paths, one switch
 
-`ProductStory.astro` is the whole product, and the one place the page asks for
-a long scroll.
+`ProductStory.astro` is how the product explains itself, and it explains all
+three of the things the product does: ask for a referral, give one, hear about
+roles early.
 
-This was five sections: the three ways in, how it works, why it is safe, peer
-openings, and the thank-you. Each opened with its own eyebrow, heading and lede
-before saying anything, so a reader was asked to start over four times to learn
-one product, and the trust claims sat in a wall of their own where a claim is
-least believable.
+**Parallel choices want a switch, not a scroll.** Two earlier versions got this
+wrong in opposite directions. The first gave each path its own section, which
+made a reader start over three times. The second told one linear story from the
+seeker's side, which read beautifully and was wrong about the product twice: it
+demoted giving and peer openings to two links at the bottom, and it put the
+thank-you at the very end, after the referral had landed.
 
-They were always one story. Six beats scroll in one column and
-`RequestStage.astro` sticks in the other, and the card lives a whole life
-across them: an opening that has found you becomes a request, becomes a
-referral with proof attached, becomes a decision, becomes an optional
-thank-you. Keeping it ONE object is the point. Each trust fact is stated inside
-the beat it belongs to, and what is left at the bottom is a one-line recap and
-the three ways in as links. `stageController` in
-`lib/motion.ts` watches which step is crossing the middle band of the viewport
-(`rootMargin: -45% 0 -45%`) and writes `data-active-step` on the stage; every
-transition in the card keys off that single attribute, and CSS does the rest.
+**The thank-you is chosen on the request form, before anything is sent**
+(PRD §5.2 step 7, §0.11). It appears on the ASK card and nowhere else, with
+`Nothing` first and the same size as the amounts, because zero is a real option
+in the product and has to look like one here.
 
-Rules this section holds itself to:
+The section is a real `tablist`: one selected tab, roving tabindex so the group
+is a single tab stop, arrow keys plus Home and End, and every panel in the DOM
+at all times so find-on-page reaches a hidden step and printing carries all
+three. With the script absent the first panel is visible and the section is
+still readable.
 
-- **Emphasis, never visibility.** An unreached step is dimmed to 0.42 and no
-  further. The whole list is readable, selectable and searchable with the
-  script absent.
-- **The card's colours are the product's lifecycle presentation** (PRD §8.13),
-  expressed as a rail rather than a fill: open is primary, work in someone
-  else's hands is `progress`, something waiting on the reader is `warning`,
-  done is `success`.
-- **A step is at least 20rem tall on desktop.** Anything shorter lets two steps
-  share the middle band and the card flickers between them.
-- **On a phone the card pins to the top** and the steps pass beneath it. Because
-  the card is glass, the column it sits in takes an opaque ground that fades out
-  at the card's lower edge — otherwise two paragraphs read through each other.
-- **Under `prefers-reduced-motion` the stage is not sticky**: it becomes a plain
-  block above the list, showing the final state.
+Each panel is a numbered list on one side and `PathCard.astro` on the other:
+the request form with its optional thank-you, the incoming request a referrer
+can claim, the opening that arrives before the role is public. Below 64rem the
+card moves above the call to action, so the order is pick a path, see the
+thing, read how it goes.
 
 **A sticky element is never a grid item.** Measured in Chromium: a sticky grid
 item that may stretch over its (very tall) grid area is pushed down by its own
 `top` offset, and neither `align-self: start` nor `height: fit-content` fixes
-it. `TrustSection` and `Faq` therefore stick an element *inside* the grid item.
+it. `Faq` therefore sticks an element *inside* the grid item.
 
 ---
 
@@ -382,23 +376,28 @@ background forces a component to restyle itself, the background is wrong.
 
 ---
 
-## 14. Five blocks, and no more
+## 14. Five blocks, in this order
 
 1. **Hero**, with the company marquee attached under it as one thin band.
-2. **The product**, as one scroll-driven story (§10).
-3. **Reviews**, the private-beta count and the quote marquee.
+2. **Reviews**, the private-beta count and the quote marquee.
+3. **How it works**, the three paths (§10).
 4. **Questions**, the FAQ.
-5. **The way out**, the bookend and the footer.
+5. **The way out**, a plain call to action and the footer.
 
 There were nine. The rule that replaced them: a block exists because a reader
-has a distinct question, not because the product has a distinct feature. Ask
-what this is, how it works, who says so, what about my case, and where do I go
-now, and that is five.
+has a distinct question, not because the product has a distinct feature.
+
+**Proof comes before mechanism.** The companies band and the beta quotes are
+the two cheapest things on the page to read and the two most likely to earn the
+next scroll, so they sit directly under the hero. Only then is it worth spending
+a reader's attention on how the thing works, and the questions land last, where
+somebody who is nearly convinced goes looking for the one detail that still
+bothers them.
 
 A new section is the most expensive thing that can be added to this page: it
 costs an eyebrow, a heading, a lede, a visual and a closing line before it has
-said anything at all. Before adding one, check whether it is a beat in the
-story that already exists.
+said anything at all. Before adding one, check whether it is a panel or a step
+in something that already exists.
 
 ---
 

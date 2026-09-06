@@ -55,11 +55,11 @@ Five blocks, and adding a sixth is a design decision, not a routine one. See
 `DESIGN_SYSTEM.md` §14.
 
 1. `Hero.astro` plus the company marquee, as one opening block.
-2. `ProductStory.astro`, the entire product as a six-beat scroll story with one
-   sticky card. This replaced five separate sections.
-3. `BetaProof.astro`, the private-beta count and the quote marquee.
+2. `BetaProof.astro`, the private-beta count and the quote marquee. Proof comes
+   before mechanism.
+3. `ProductStory.astro`, all three things the product does, as a switch.
 4. `Faq.astro`.
-5. `ClosingSection.astro`, the bookend and the footer.
+5. `ClosingSection.astro`, a plain call to action and the footer.
 
 ## What this page ships
 

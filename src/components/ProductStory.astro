@@ -1,9 +1,9 @@
 ---
-import RequestStage from './RequestStage.astro';
+import PathCard from './PathCard.astro';
 import { OfferingKind, SectionId, TrackEvent } from '../lib/constants';
-import { LIFECYCLE, OFFERINGS, PRODUCT_PROOF } from '../lib/content';
+import { PRODUCT_PATHS, PRODUCT_PROOF } from '../lib/content';
 
-/** Analytics event per way in, resolved from the enum rather than inlined. */
+/** Analytics event per path, resolved from the enum rather than inlined. */
 const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
 	[OfferingKind.AskForReferral]: TrackEvent.OfferingAsk,
 	[OfferingKind.GiveReferral]: TrackEvent.OfferingGive,
@@ -12,234 +12,260 @@ const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
 ---
 
 {/*
- * The product, in one section.
+ * How it works, for all three of the things this product does.
  *
- * This was five: the three ways in, how it works, why it is safe, peer
- * openings, and the thank-you. Each had its own heading, its own lede, its own
- * artwork and its own closing line, and a reader had to hold five separate
- * arguments in their head and assemble the product from them.
+ * Asking for a referral, giving one, and hearing about roles early are
+ * parallel choices, not stages of one journey, and a reader arrives already
+ * knowing which one they are. A switch is the honest control for that: it puts
+ * the three side by side, admits nothing, and shows one at a time.
  *
- * They were always one story. An opening reaches you, you ask, somebody inside
- * takes it on, it goes in with proof, you get a window to disagree, and then
- * you can say thanks. Told once, in order, it is shorter than any two of the
- * sections it replaces, and the reader is never asked to start again.
- *
- * The beats scroll; the card stays and changes with them. `stageController`
- * maps whichever beat is under the reader onto the card and does nothing else,
- * so the explanation and the thing being explained cannot fall out of step and
- * the pace belongs to the reader.
- *
- * The trust claims live inside the beats they belong to. What is left at the
- * bottom is a recap line and the three ways into the same network, as links
- * rather than as three more cards.
+ * A real tablist, so the arrow keys work and the panel is announced. Every
+ * panel is in the DOM at all times, so find-on-page reaches a hidden step and
+ * a printed page carries all three.
  */}
-<section class="section lifecycle" id={SectionId.HowItWorks} aria-labelledby="lifecycle-title" data-lifecycle>
+<section class="section paths" id={SectionId.HowItWorks} aria-labelledby="paths-title">
 	<div class="shell">
-		<div class="lifecycle-head reveal">
+		<div class="paths-head reveal">
 			<p class="eyebrow">How it works</p>
-			<h2 class="display-2" id="lifecycle-title">From an opening to an introduction.</h2>
+			<h2 class="display-2" id="paths-title">Three ways to use one network.</h2>
 		</div>
 
-		<div class="lifecycle-grid">
-			<div class="lifecycle-stage">
-				<RequestStage />
-			</div>
-
-			{/*
-			 * The list stays a real ordered list, fully readable with no
-			 * script and no scrolling: the active-step styling only ever
-			 * changes emphasis, never visibility.
-			 */}
-			<ol class="lifecycle-steps">
-				{
-					LIFECYCLE.map((step) => (
-						<li class="lifecycle-step" data-step={step.index}>
-							<span class="lifecycle-index numeral" aria-hidden="true">
-								{step.index}
-							</span>
-							<h3 class="lifecycle-title">{step.title}</h3>
-							<p class="lifecycle-detail">{step.detail}</p>
-							{step.timing && <span class="lifecycle-timing mono">{step.timing}</span>}
-						</li>
-					))
-				}
-			</ol>
+		<div class="paths-switch reveal" role="tablist" aria-label="What you want to do" data-paths>
+			{
+				PRODUCT_PATHS.map((path, index) => (
+					<button
+						class:list={['paths-tab', `accent-${path.accent}`, index === 0 && 'is-active']}
+						type="button"
+						role="tab"
+						id={`path-tab-${path.kind}`}
+						aria-controls={`path-panel-${path.kind}`}
+						aria-selected={index === 0 ? 'true' : 'false'}
+						tabindex={index === 0 ? 0 : -1}
+					>
+						{path.tab}
+					</button>
+				))
+			}
 		</div>
+
+		{
+			PRODUCT_PATHS.map((path, index) => (
+				<div
+					class:list={['paths-panel', `accent-${path.accent}`]}
+					id={`path-panel-${path.kind}`}
+					role="tabpanel"
+					aria-labelledby={`path-tab-${path.kind}`}
+					hidden={index !== 0}
+				>
+					<div class="paths-grid">
+						<div class="paths-copy">
+							{/* No heading here. The selected tab already names the path, and a
+							    second line of display type 200px under the section heading is
+							    the section saying its own name twice. */}
+							<h3 class="paths-title">{path.title}</h3>
+
+							<ol class="paths-steps">
+								{path.steps.map((step) => (
+									<li>
+										<span class="paths-index mono">{step.index}</span>
+										<strong>{step.title}</strong>
+										<span class="paths-detail">{step.detail}</span>
+									</li>
+								))}
+							</ol>
+
+							<a
+								class="button button-primary paths-cta"
+								href={path.ctaHref}
+								data-track={TRACK_BY_KIND[path.kind]}
+							>
+								<span>{path.ctaLabel}</span>
+								<svg viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
+								</svg>
+							</a>
+						</div>
+
+						<div class="paths-visual">
+							<PathCard kind={path.kind} />
+						</div>
+					</div>
+				</div>
+			))
+		}
 
 		<p class="proof-line reveal">
 			{PRODUCT_PROOF.map((fact) => <span>{fact}</span>)}
 		</p>
-
-		{/* The same network, entered from whichever side the reader is on. Three
-		    links, because three cards would restart the section. */}
-		<ul class="ways reveal">
-			{
-				OFFERINGS.map((offering) => (
-					<li>
-						<a class="text-link" href={offering.ctaHref} data-track={TRACK_BY_KIND[offering.kind]}>
-							{offering.ctaLabel}
-							<svg viewBox="0 0 16 16" aria-hidden="true">
-								<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
-							</svg>
-						</a>
-					</li>
-				))
-			}
-		</ul>
 	</div>
 </section>
 
 <script>
-	import { stageController } from '../lib/motion';
+	/*
+	 * Tab behaviour the markup cannot express: one selected tab, roving
+	 * tabindex so the group is a single stop, and arrow keys within it. With
+	 * this script absent every panel is still in the DOM and the first is
+	 * visible, so the section never becomes unreadable.
+	 */
+	const group = document.querySelector<HTMLElement>('[data-paths]');
 
-	const section = document.querySelector<HTMLElement>('[data-lifecycle]');
-	if (section) stageController(section);
+	if (group) {
+		const tabs = Array.from(group.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+
+		const select = (next: HTMLButtonElement, moveFocus: boolean): void => {
+			for (const tab of tabs) {
+				const active = tab === next;
+				tab.setAttribute('aria-selected', String(active));
+				tab.tabIndex = active ? 0 : -1;
+				tab.classList.toggle('is-active', active);
+
+				const panel = document.getElementById(tab.getAttribute('aria-controls') ?? '');
+				if (panel) panel.hidden = !active;
+			}
+			if (moveFocus) next.focus();
+		};
+
+		group.addEventListener('click', (event) => {
+			const tab = (event.target as HTMLElement).closest<HTMLButtonElement>('[role="tab"]');
+			if (tab) select(tab, false);
+		});
+
+		group.addEventListener('keydown', (event) => {
+			const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+			if (current < 0) return;
+
+			const step =
+				event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+			if (step === 0 && event.key !== 'Home' && event.key !== 'End') return;
+
+			event.preventDefault();
+			const next =
+				event.key === 'Home'
+					? 0
+					: event.key === 'End'
+						? tabs.length - 1
+						: (current + step + tabs.length) % tabs.length;
+			select(tabs[next], true);
+		});
+	}
 </script>
 
 <style>
-	.lifecycle {
+	.paths {
 		border-top: 1px solid rgb(var(--color-border));
 		background:
 			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
 			rgb(var(--color-canvas));
 	}
 
-	.lifecycle-head {
+	.paths-head {
 		max-width: 40rem;
 	}
 
-	.lifecycle-grid {
-		display: grid;
-		gap: clamp(1.75rem, 4vw, 2.5rem);
-		margin-top: clamp(2.5rem, 5vw, 3.5rem);
+	/* ---- The switch ---- */
+
+	.paths-switch {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		width: fit-content;
+		margin: clamp(2rem, 4vw, 2.75rem) 0 clamp(2rem, 4vw, 3rem);
+		padding: 0.3125rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface) / 70%);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 	}
 
-	/* ---- The stage ----
-	   Sticky at both layouts. Below 64rem it pins under the header and the
-	   steps pass beneath it; from 64rem it holds the right column. */
-
-	.lifecycle-stage {
-		position: sticky;
-		z-index: 2;
-		/* Exactly the header's height, so the opaque ground below picks up
-		   where the header's own band leaves off and nothing shows in between. */
-		top: 4.5rem;
-		align-self: start;
+	.paths-tab {
+		min-height: 2.75rem;
+		padding-inline: 1.125rem;
+		border: 1px solid transparent;
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		font-weight: 650;
+		white-space: nowrap;
+		cursor: pointer;
+		transition:
+			background-color var(--dur-mid) var(--ease-out),
+			color var(--dur-mid) var(--ease-out);
 	}
 
-	/* ---- The steps ---- */
+	.paths-tab:hover {
+		color: rgb(var(--color-ink));
+	}
 
-	.lifecycle-steps {
+	/* The selected tab takes its own path's accent, so the switch tells you
+	   which colour the panel below is about to be. */
+	.paths-tab.is-active {
+		border-color: rgb(var(--accent) / 34%);
+		background: rgb(var(--accent-soft));
+		color: rgb(var(--accent-ink));
+	}
+
+	/* ---- Panel ---- */
+
+	.paths-grid {
 		display: grid;
+		gap: clamp(2rem, 5vw, 4rem);
+		align-items: center;
+	}
+
+	/* Kept in the markup for screen readers and for the document outline, which
+	   would otherwise jump from the section heading straight to a list. */
+	.paths-title {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* ---- Steps ---- */
+
+	.paths-steps {
+		display: grid;
+		gap: 1.5rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	/*
-	 * A step is tall enough that exactly one of them occupies the middle band
-	 * of the viewport at a time — that band is what the controller reads. The
-	 * left rule is the spine the whole column hangs from; the active step lights its
-	 * own segment of it.
-	 */
-	.lifecycle-step {
-		position: relative;
+	.paths-steps li {
 		display: grid;
-		/* `start`, not the default stretch: a step with no timing pill has one
-		   row fewer to fill the min-height with, and its rows would drift
-		   apart from every other step's. */
-		align-content: start;
-		gap: 0.375rem;
-		padding: 2rem 0 2rem 1.5rem;
-		border-left: 1px solid rgb(var(--color-border));
+		gap: 0.1875rem;
+		padding-left: 2.75rem;
 	}
 
-	.lifecycle-step::before {
+	.paths-index {
 		position: absolute;
-		top: 2.35rem;
-		left: -0.3125rem;
-		width: 0.5625rem;
-		height: 0.5625rem;
-		border-radius: 50%;
-		background: rgb(var(--color-border-strong));
-		content: '';
-		transition:
-			background-color var(--dur-slow) var(--ease-out),
-			box-shadow var(--dur-slow) var(--ease-out);
+		margin-left: -2.75rem;
+		color: rgb(var(--accent-ink));
+		font-weight: 650;
 	}
 
-	.lifecycle-step.is-active::before {
-		background: rgb(var(--color-primary));
-		box-shadow: 0 0 0 0.3125rem rgb(var(--color-primary) / 16%);
+	.paths-steps strong {
+		font-size: 1.0625rem;
+		font-weight: 650;
+		letter-spacing: -0.015em;
 	}
 
-	:global([data-theme='dark']) .lifecycle-step.is-active::before {
-		background: rgb(var(--color-primary-strong));
-		box-shadow: 0 0 0 0.3125rem rgb(var(--color-primary-strong) / 18%);
-	}
-
-	.lifecycle-index {
-		color: rgb(var(--color-muted) / 55%);
-		font-size: 1.5rem;
-		transition: color var(--dur-slow) var(--ease-out);
-	}
-
-	.lifecycle-step.is-active .lifecycle-index {
-		color: rgb(var(--color-primary));
-	}
-
-	:global([data-theme='dark']) .lifecycle-step.is-active .lifecycle-index {
-		color: rgb(var(--color-primary-strong));
-	}
-
-	.lifecycle-title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(1.5rem, 2.1vw, 1.875rem);
-		font-weight: 400;
-		letter-spacing: -0.03em;
-		line-height: 1.15;
-	}
-
-	.lifecycle-detail {
-		margin: 0;
-		max-width: 30rem;
+	.paths-detail {
+		max-width: 34ch;
 		color: rgb(var(--color-muted));
-		font-size: 1rem;
-		line-height: 1.6;
+		font-size: 0.9375rem;
+		line-height: 1.55;
 	}
 
-	.lifecycle-timing {
-		justify-self: start;
-		margin-top: 0.5rem;
-		padding: 0.3125rem 0.625rem;
-		border: 1px solid rgb(var(--color-primary) / 24%);
-		border-radius: var(--radius-pill);
-		background: rgb(var(--color-primary-soft));
-		color: rgb(var(--color-primary-strong));
-		font-weight: 600;
+	.paths-cta {
+		margin-top: clamp(1.75rem, 3vw, 2.25rem);
 	}
 
-	/*
-	 * Emphasis, never visibility. A step the reader has not reached is dimmed
-	 * to the point of being clearly secondary and no further — the whole list
-	 * stays readable if the script never runs, and stays selectable and
-	 * searchable either way.
-	 */
-	@media (prefers-reduced-motion: no-preference) {
-		.js .lifecycle-step {
-			opacity: 0.42;
-			transition: opacity var(--dur-slow) var(--ease-out);
-		}
-
-		.js .lifecycle-step.is-active {
-			opacity: 1;
-		}
-	}
-
-	/* ---- Close ----
-	   A recap and three doors, both as single rows. Anything with a box around
-	   it here would read as a sixth section starting. */
+	/* ---- Close ---- */
 
 	.proof-line {
 		display: flex;
@@ -266,98 +292,62 @@ const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
 		content: '';
 	}
 
-	.ways {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem 2.25rem;
-		margin: 0.75rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
 	/* ---- Responsive ---- */
 
-	@media (max-width: 63.999rem) {
-		/*
-		 * Pinned at the top of a phone, the card has the steps travelling
-		 * directly behind it — and glass is transparent, so two paragraphs
-		 * read through each other. The column gets an opaque ground that
-		 * fades out at the card's lower edge, so a step dissolves under the
-		 * card rather than showing through it. The card itself stays glass.
-		 */
-		.lifecycle-stage {
-			padding-block: 0.75rem 1.75rem;
-			/* The step markers hang a few pixels outside the shell, so the
-			   ground has to reach past it or a dot shows beside the card. */
-			margin-inline: -0.75rem;
-			padding-inline: 0.75rem;
-			/* Solid everywhere the card actually is; the fade is the padding
-			   below it, stated as a length so it cannot creep up over the
-			   card as the card's own height changes. */
-			background: linear-gradient(
-				to bottom,
-				rgb(var(--color-canvas)) 0,
-				rgb(var(--color-canvas)) calc(100% - 1.75rem),
-				rgb(var(--color-canvas) / 0%) 100%
-			);
+	/*
+	 * Three pills do not fit one phone line, and wrapping them leaves a lone
+	 * tab on a second row inside a pill-shaped container, which reads as a
+	 * mistake. They scroll sideways instead, which is what a switch that is
+	 * wider than its screen is supposed to do.
+	 */
+	@media (max-width: 47.999rem) {
+		.paths-switch {
+			width: auto;
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			scrollbar-width: none;
+			scroll-snap-type: x proximity;
+			-webkit-overflow-scrolling: touch;
 		}
 
-		.lifecycle-step {
-			padding-block: 1.5rem;
+		.paths-switch::-webkit-scrollbar {
+			display: none;
 		}
 
-		.lifecycle-step::before {
-			top: 1.85rem;
+		.paths-tab {
+			flex: 0 0 auto;
+			scroll-snap-align: center;
 		}
 	}
 
 	@media (min-width: 64rem) {
-		.lifecycle-grid {
-			align-items: start;
-			gap: clamp(2.5rem, 6vw, 5rem);
+		.paths-grid {
+			gap: clamp(3rem, 7vw, 6rem);
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		}
-
-		/* Source order puts the stage first so it pins correctly on a phone;
-		   at this width it moves to the right column, where the eye lands
-		   after reading the step beside it. */
-		.lifecycle-stage {
-			top: 7.5rem;
-			order: 2;
-		}
-
-		.lifecycle-steps {
-			order: 1;
-		}
-
-		.lifecycle-step {
-			padding-block: 3.25rem;
-			/* One step, one middle band. Anything shorter lets two steps share
-			   the band and the card flickers between them. */
-			min-height: 20rem;
-		}
-
-		.lifecycle-step:first-child {
-			padding-top: 0.5rem;
-		}
-
-		.lifecycle-step::before {
-			top: 3.6rem;
-		}
-
-		.lifecycle-step:first-child::before {
-			top: 0.85rem;
 		}
 	}
 
-	/* Sticky positioning plus a reader who has asked for less movement is a bad
-	   pairing: the card would still travel the whole section. It becomes a
-	   plain block above the list, showing the final state. */
-	@media (prefers-reduced-motion: reduce) {
-		.lifecycle-stage {
-			position: static;
-			max-height: none;
-			margin-bottom: 2rem;
+	/* Switching panels is a change of subject, so the new one arrives rather
+	   than simply appearing. */
+	@media (prefers-reduced-motion: no-preference) {
+		.paths-panel:not([hidden]) .paths-copy,
+		.paths-panel:not([hidden]) .paths-visual {
+			animation: panel-in 520ms var(--ease-out) both;
+		}
+
+		.paths-panel:not([hidden]) .paths-visual {
+			animation-delay: 80ms;
+		}
+
+		@keyframes panel-in {
+			from {
+				opacity: 0;
+				transform: translateY(0.625rem);
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
 		}
 	}
 </style>

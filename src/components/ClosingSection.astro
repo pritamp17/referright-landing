@@ -1,6 +1,5 @@
 ---
 import Brand from './Brand.astro';
-import DoorWall from './DoorWall.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { OUTCOME_DISCLAIMER, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
 import { CONTACT_EMAIL, PRIVACY_URL, TERMS_URL, signUpWith } from '../lib/content';
@@ -8,13 +7,16 @@ import { CONTACT_EMAIL, PRIVACY_URL, TERMS_URL, signUpWith } from '../lib/conten
 const year = new Date().getFullYear();
 
 /*
- * The bookend.
+ * The last thing on the page, and the least decorated.
  *
- * The page opens on a wall of closed doors with one of them opening from the
- * inside, and it ends on the same wall — mirrored, dimmed, and with the light
- * already on. That is the argument closing: the first screen asks you to
- * believe somebody inside will open it, and by this point the page has spent
- * eight sections showing how.
+ * This block used to repeat the hero's wall of doors behind its headline,
+ * mirrored and lit, as a bookend. It was the prettiest idea on the page and it
+ * cost the one thing this block cannot afford: at the sizes and alphas that
+ * made the drawing read, the words in front of it did not. Line art behind a
+ * headline is texture competing with letterforms, and the headline has to win.
+ *
+ * So there is nothing behind the words now. Depth comes from a wash at the
+ * edges of the block, well clear of the type.
  *
  * The primary call to action does not change appearance here, which is why the
  * section is not a deep blue panel: it was one once, and a blue panel forces a
@@ -24,8 +26,8 @@ const year = new Date().getFullYear();
 const headline: readonly string[] = ['Somebody', 'inside', 'is', 'willing', 'to', 'help.'];
 
 const productLinks = [
-	{ label: 'How it works', href: `#${SectionId.HowItWorks}` },
 	{ label: 'Reviews', href: `#${SectionId.Stories}` },
+	{ label: 'How it works', href: `#${SectionId.HowItWorks}` },
 	{ label: 'Questions', href: `#${SectionId.Faq}` },
 ] as const;
 
@@ -36,11 +38,8 @@ const policyLinks = [
 ---
 
 <section class="closing" id={SectionId.Contact} aria-labelledby="closing-title" data-closing>
-	{/* The wall is bounded to this block so the doorway lands behind the
-	    headline and the call to action, not behind the footer. */}
 	<div class="closing-stage">
-		<DoorWall variant="bookend" class="closing-wall" />
-		<div class="grid-texture" aria-hidden="true"></div>
+		<div class="closing-wash" aria-hidden="true"></div>
 
 		<div class="shell closing-inner reveal">
 			<h2 class="display-2 closing-title" id="closing-title">
@@ -135,8 +134,21 @@ const policyLinks = [
 		isolation: isolate;
 	}
 
-	.closing-stage :global(.closing-wall) {
+	/* Light at the edges of the block, never under the type. */
+	.closing-wash {
+		position: absolute;
 		z-index: 0;
+		inset: 0;
+		background:
+			radial-gradient(42rem 22rem at 12% 110%, rgb(var(--color-primary) / 12%), transparent 70%),
+			radial-gradient(38rem 20rem at 88% -10%, rgb(var(--color-reward) / 9%), transparent 70%);
+		pointer-events: none;
+	}
+
+	:global([data-theme='dark']) .closing-wash {
+		background:
+			radial-gradient(42rem 22rem at 12% 110%, rgb(var(--color-primary) / 26%), transparent 70%),
+			radial-gradient(38rem 20rem at 88% -10%, rgb(var(--color-reward) / 16%), transparent 70%);
 	}
 
 	.closing-inner {
@@ -144,17 +156,16 @@ const policyLinks = [
 		z-index: 1;
 		display: grid;
 		justify-items: center;
-		padding-block: clamp(5.5rem, 11vw, 10rem);
+		padding-block: clamp(4.5rem, 8vw, 7rem);
 		text-align: center;
 	}
 
-	/* The one place on the page where display type gets hero scale outside the
-	   hero. It is answering the hero, so it is set at the hero's size. */
 	.closing-title {
-		max-width: 20ch;
-		font-size: clamp(2.5rem, 5vw, 4rem);
-		line-height: 1.04;
-		letter-spacing: -0.04em;
+		max-width: 18ch;
+		color: rgb(var(--color-ink));
+		font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+		line-height: 1.06;
+		letter-spacing: -0.038em;
 	}
 
 	.closing-title span {
@@ -170,7 +181,7 @@ const policyLinks = [
 
 	.closing-lede {
 		max-width: 30rem;
-		margin: 1.25rem 0 2.25rem;
+		margin: 1.125rem 0 2rem;
 		color: rgb(var(--color-muted));
 		font-size: 1.125rem;
 		line-height: 1.6;
