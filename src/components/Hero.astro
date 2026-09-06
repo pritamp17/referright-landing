@@ -122,6 +122,12 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 	 * Two soft washes, not three drifting blobs. The drawing is the subject
 	 * now, and an animated aurora behind line art just makes the lines look
 	 * like they are floating on someone else's background.
+	 *
+	 * Both washes are the brand blue. The lower one used to be `reward`, which
+	 * was a second blue when it was written and became violet when the palette
+	 * was re-synced with the product, putting a colour the hero has no use for
+	 * across the bottom of the first screen. `reward` means money here, and
+	 * money is not what this section is about.
 	 */
 	.hero-wash {
 		position: absolute;
@@ -129,14 +135,14 @@ import { TRUST_STRIP, signUpWith } from '../lib/content';
 		inset: 0;
 		background:
 			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 10%), transparent 68%),
-			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 7%), transparent 70%);
+			radial-gradient(52rem 38rem at 6% 90%, rgb(var(--color-primary) / 5%), transparent 70%);
 		pointer-events: none;
 	}
 
 	:global([data-theme='dark']) .hero-wash {
 		background:
 			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 26%), transparent 68%),
-			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 12%), transparent 70%);
+			radial-gradient(52rem 38rem at 6% 90%, rgb(var(--color-primary) / 10%), transparent 70%);
 	}
 
 	.hero-grid {
