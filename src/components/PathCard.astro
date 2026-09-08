@@ -1,311 +1,1316 @@
 ---
-import { OfferingKind } from '../lib/constants';
+import { OfferingKind, POLICY } from '../lib/constants';
 
 /*
  * The artifact for one path, as the member would actually meet it.
  *
- * Three cards, one per core thing the product does. Each shows the single
- * moment that path turns on: the request form with its optional thank-you
- * already visible, the incoming request a referrer can claim, and the opening
- * that arrives before the role is public.
+ * Three cards, one per core thing the product does, each showing the single
+ * moment that path turns on — and each of them works. The two that carry a
+ * decision can be pressed: the request sends, the claim completes, and the card
+ * moves to the state the application would move it to, using the application's
+ * own words for that state.
  *
- * The thank-you sits on the ASK card and nowhere else, because that is where
- * the product puts it. An earlier version showed it at the end of the flow,
- * after the referral had landed, which misrepresented the one part of this
- * product that involves money.
+ * The window and the surface inside it are two different objects on purpose.
+ * The window is the landing page's glass, given the chrome of a maximised
+ * desktop application: three lights, a segmented toolbar naming the section
+ * being viewed, and one icon button. Everything below that hairline is the
+ * signed-in application's vocabulary, rebuilt from the tokens both codebases
+ * share: the accent rail of `Surface`, the uppercase pill of `StatusBadge`, the
+ * sentence-case `Chip`, the person line and lifecycle sentence of
+ * `RequestCard`, the marker row of `StageBar`, the pill track of
+ * `SegmentedControl`, the live pill of `DeadlineCountdown`, the hero figure of
+ * `MoneyValue` and the pill of `Button`.
+ *
+ * A window is wider than it is tall, so from the split up the body is two
+ * columns and the action bar runs along the floor. A portrait card beside a
+ * column of text read as a phone, which is the one shape this product is not.
+ *
+ * The card stays `aria-hidden`, and its controls are deliberately not tabbable.
+ * Everything they demonstrate is already stated in the numbered list beside
+ * them, so a reader who cannot see the card is told the same thing once rather
+ * than twice, and the switch above stays a single tab stop.
  */
 interface Props {
 	readonly kind: OfferingKind;
 }
 
 const { kind } = Astro.props;
+
+/**
+ * The two sections of the application this path lives between, as the toolbar
+ * would show them: the one being viewed, then its neighbour.
+ */
+const SECTIONS: Readonly<Record<OfferingKind, readonly [string, string]>> = {
+	[OfferingKind.AskForReferral]: ['Requests', 'Drafts'],
+	[OfferingKind.GiveReferral]: ['Inbox', 'Claimed'],
+	[OfferingKind.PeerSignal]: ['Openings', 'Feed'],
+};
+
+const [currentSection, otherSection] = SECTIONS[kind];
+
+/*
+ * The openings feed, as a list rather than a single card.
+ *
+ * One opening said the product mails you a job. Four, each with the same two
+ * actions, say what the feed actually is: a queue you work through, where
+ * asking is one press from reading.
+ */
+const OPENINGS: readonly Readonly<{
+	role: string;
+	company: string;
+	meta: string;
+	age: string;
+}>[] = [
+	{
+		role: 'Staff Data Engineer',
+		company: 'Stripe',
+		meta: 'Bengaluru · Not posted publicly yet',
+		age: '18m',
+	},
+	{
+		role: 'Senior Product Manager',
+		company: 'Atlassian',
+		meta: 'Bengaluru · Two referral paths open',
+		age: '2h',
+	},
+	{
+		role: 'Backend Engineer II',
+		company: 'Razorpay',
+		meta: 'Remote, India · Team is hiring two',
+		age: '5h',
+	},
+];
 ---
 
 <div class="path-card glass" aria-hidden="true">
-	{
-		kind === OfferingKind.AskForReferral && (
-			<div class="pc-body">
-				<header class="pc-head">
-					<span class="pc-label mono">New request</span>
-					<span class="pc-pill">Free to send</span>
-				</header>
+	{/*
+	 * Window chrome. Three lights in the semantic danger, warning and success
+	 * tokens rather than the desktop's own reds and greens, so the frame reads
+	 * as macOS without introducing three colours the palette does not have.
+	 */}
+	<div class="pc-chrome">
+		<span class="pc-lights"><i></i><i></i><i></i></span>
 
-				<p class="pc-role">Product Manager</p>
-				<p class="pc-meta">Microsoft &middot; Bengaluru</p>
+		<div class="pc-toolbar">
+			<span class="pc-tool is-active">{currentSection}</span>
+			<span class="pc-tool">{otherSection}</span>
+		</div>
 
-				<ul class="pc-rows">
-					<li>
-						<span>Resume</span>
-						<em>Attached</em>
-					</li>
-					<li>
-						<span>Who sees it</span>
-						<em>3 verified employees</em>
-					</li>
-				</ul>
+		<span class="pc-tool pc-tool-icon">
+			<svg viewBox="0 0 16 16">
+				<circle cx="7" cy="7" r="4.25"></circle>
+				<path d="m10.25 10.25 3 3"></path>
+			</svg>
+		</span>
+	</div>
 
-				<div class="pc-tip">
-					<div class="pc-tip-head">
-						<span>Say thank you</span>
-						<em>optional</em>
+	<div class="pc-window-body">
+		<article class="pc-surface" data-demo-card>
+			{
+				kind === OfferingKind.AskForReferral && (
+					<div class="pc-body">
+						<header class="pc-head">
+							<span class="pc-badge" data-when="open">
+								New request
+							</span>
+							<span class="pc-badge pc-badge-done" data-when="done" hidden>
+								Request raised
+							</span>
+							<span class="pc-chip" data-when="open">
+								Free to send
+							</span>
+							<span class="pc-chip pc-chip-success" data-when="done" hidden>
+								With 3 employees
+							</span>
+						</header>
+
+						<div class="pc-main">
+							<h4 class="pc-title">
+								Product Manager <span>&middot; Microsoft</span>
+							</h4>
+
+							<p class="pc-next" data-when="open">
+								Your resume goes only to verified employees there.
+							</p>
+							<p class="pc-next" data-when="done" hidden>
+								Sent. You will hear back inside the {POLICY.claimWindowHours}-hour claim
+								window.
+							</p>
+
+							<dl class="pc-defs">
+								<div>
+									<dt>Resume</dt>
+									<dd>Attached</dd>
+								</div>
+								<div>
+									<dt>Who sees it</dt>
+									<dd>3 verified employees</dd>
+								</div>
+							</dl>
+						</div>
+
+					<div class="pc-side">
+						{/*
+						 * `AppreciationSection`, as the product builds it: a row
+						 * of preset tiles, emoji over amount over label, with
+						 * the chosen one filled. It was a segmented track here,
+						 * which is the wrong control for this — three money
+						 * labels cannot shrink to fit a narrow column, so the
+						 * track either wrapped into something that no longer
+						 * read as one switch or overflowed its own pill.
+						 */}
+						<section class="pc-inset" data-when="open">
+							<div class="pc-inset-head">
+								<span>Say thank you</span>
+								<span class="pc-chip pc-chip-reward">Optional</span>
+							</div>
+							<div class="pc-tiers">
+								<span class="pc-tier">
+									<i>&#128578;</i>
+									<b>&#8377;0</b>
+									<em>No tip</em>
+								</span>
+								<span class="pc-tier is-selected">
+									<i>&#9749;</i>
+									<b>&#8377;100</b>
+									<em>Coffee</em>
+								</span>
+								<span class="pc-tier">
+									<i>&#127860;</i>
+									<b>&#8377;500</b>
+									<em>Dinner</em>
+								</span>
+							</div>
+						</section>
+
+						{/* The picker has done its job, so the column carries the
+						    thing a sent request actually has: a lifecycle. */}
+						<section class="pc-inset" data-when="done" hidden>
+							<div class="pc-inset-head">
+								<span>Where it is</span>
+								<span class="pc-chip pc-chip-success">Live</span>
+							</div>
+							<div class="pc-stage">
+								<span class="pc-stage-count">1/4</span>
+								<span class="pc-stage-label">Requested</span>
+								<span class="pc-stage-track">
+									<i class="is-on" />
+									<i />
+									<i />
+									<i />
+								</span>
+							</div>
+						</section>
 					</div>
-					<ul class="pc-tiers">
-						<li>Nothing</li>
-						<li class="is-selected">Coffee &middot; &#8377;100</li>
-						<li>Meal &middot; &#8377;500</li>
-					</ul>
-				</div>
 
-				<span class="pc-action">Send request</span>
-			</div>
-		)
-	}
+						<footer class="pc-foot">
+							<button
+								class="pc-action"
+								type="button"
+								tabindex="-1"
+								data-demo-action
+								data-done="Request raised"
+							>
+								<span class="pc-sheen">
+									<i />
+								</span>
+								<svg class="pc-check" viewBox="0 0 20 20">
+									<path d="m4.5 10.5 3.75 3.75L15.5 7" />
+								</svg>
+								<span data-demo-label>Send request</span>
+								<svg class="pc-arrow" viewBox="0 0 16 16">
+									<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />
+								</svg>
+							</button>
+							<span class="pc-note" data-when="open">
+								Held until proof lands
+							</span>
+							<span class="pc-note" data-when="done" hidden>
+								Nothing leaves your account until you confirm
+							</span>
+						</footer>
+					</div>
+				)
+			}
 
-	{
-		kind === OfferingKind.GiveReferral && (
-			<div class="pc-body">
-				<header class="pc-head">
-					<span class="pc-label mono">Someone is asking</span>
-					<span class="pc-pill">48h to act</span>
-				</header>
+			{
+				kind === OfferingKind.GiveReferral && (
+					<div class="pc-body">
+						<header class="pc-head">
+							<span class="pc-badge" data-when="open">
+								Someone is asking
+							</span>
+							<span class="pc-badge pc-badge-done" data-when="done" hidden>
+								Complete
+							</span>
 
-				<p class="pc-role">Product Manager</p>
-				<p class="pc-meta">6 years, fintech and payments</p>
+							{/*
+							 * `DeadlineCountdown`, ticking. The window is the real
+							 * one from the policy, it counts down from the moment
+							 * the request goes live, and it survives a refresh
+							 * because what is stored is the deadline rather than
+							 * the time left. The server renders the full window,
+							 * which is what a reader without the script sees.
+							 */}
+							<span class="pc-countdown" data-when="open" data-countdown>
+								<svg viewBox="0 0 16 16" class="pc-countdown-icon">
+									<circle cx="8" cy="9" r="5.25" />
+									<path d="M8 6.5V9l1.75 1" />
+									<path d="M3 3.25 4.75 2M13 3.25 11.25 2" />
+								</svg>
+								<span data-countdown-text>{POLICY.claimWindowHours}h 0m to act</span>
+							</span>
+						</header>
 
-				<ul class="pc-rows">
-					<li>
-						<span>Their resume</span>
-						<em>Visible once claimed</em>
-					</li>
-					<li>
-						<span>Proof needed</span>
-						<em>One screenshot</em>
-					</li>
-				</ul>
+						<div class="pc-main">
+							<h4 class="pc-title">
+								Software Engineer <span>&middot; Microsoft</span>
+							</h4>
+							<p class="pc-person">
+								<strong>Neha Gupta</strong> &middot; Tournahub
+							</p>
 
-				<div class="pc-proof">
-					<span class="pc-shot"><i /><i /><i /></span>
-					<span class="pc-stamp mono">14:32</span>
-				</div>
+							<p class="pc-next" data-when="open">
+								Neha is asking for a referral.
+							</p>
+							<p class="pc-next" data-when="done" hidden>
+								The referral was submitted. Neha has {POLICY.confirmationWindowHours} hours
+								to confirm or dispute it.
+							</p>
 
-				<span class="pc-action">Claim request</span>
-			</div>
-		)
-	}
+							<div class="pc-stage">
+								<span class="pc-stage-count" data-when="open">
+									1/4
+								</span>
+								<span class="pc-stage-count" data-when="done" hidden>
+									4/4
+								</span>
+								<span class="pc-stage-label" data-when="open">
+									Requested
+								</span>
+								<span class="pc-stage-label" data-when="done" hidden>
+									Complete
+								</span>
+								<span class="pc-stage-track" data-when="open">
+									<i class="is-on" />
+									<i />
+									<i />
+									<i />
+								</span>
+								<span class="pc-stage-track pc-stage-track-full" data-when="done" hidden>
+									<i />
+									<i />
+									<i />
+									<i />
+								</span>
+							</div>
 
-	{
-		kind === OfferingKind.PeerSignal && (
-			<div class="pc-body">
-				<span class="pc-sonar"><i /><i /><i /></span>
+							<p class="pc-meta" data-when="open">
+								0&ndash;3 yrs experience &middot; Asked 18m ago
+							</p>
+							<p class="pc-meta" data-when="done" hidden>
+								0&ndash;3 yrs experience &middot; you own this request
+							</p>
+						</div>
 
-				<header class="pc-head">
-					<span class="pc-label mono">New opening</span>
-					<span class="pc-pill">18m ago</span>
-				</header>
+						<div class="pc-side">
+							{/* `GiverEarningsPanel`: the label small and quiet, the
+							    figure at hero size, because it is the one number
+							    this side of the request is about. */}
+							<section class="pc-earn">
+								<p class="pc-earn-label">You earn</p>
+								<p class="pc-earn-value">
+									&#8377;100 <span>appreciation</span>
+								</p>
+								<p class="pc-earn-note" data-when="open">
+									Paid once Neha confirms
+								</p>
+								<p class="pc-earn-note" data-when="done" hidden>
+									Clears after the dispute window
+								</p>
+							</section>
+						</div>
 
-				<p class="pc-role">Staff Data Engineer</p>
-				<p class="pc-meta">Stripe &middot; Bengaluru</p>
+						<footer class="pc-foot">
+							<button
+								class="pc-action"
+								type="button"
+								tabindex="-1"
+								data-demo-action
+								data-done="Referral submitted"
+							>
+								<span class="pc-sheen">
+									<i />
+								</span>
+								<svg class="pc-check" viewBox="0 0 20 20">
+									<path d="m4.5 10.5 3.75 3.75L15.5 7" />
+								</svg>
+								<span data-demo-label>Claim request</span>
+								<svg class="pc-arrow" viewBox="0 0 16 16">
+									<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />
+								</svg>
+							</button>
+							<span class="pc-action-quiet">View profile</span>
+						</footer>
+					</div>
+				)
+			}
 
-				<ul class="pc-rows">
-					<li>
-						<span>Status</span>
-						<em>Not posted publicly yet</em>
-					</li>
-					<li>
-						<span>Referral path</span>
-						<em>Available</em>
-					</li>
-				</ul>
+			{
+				kind === OfferingKind.PeerSignal && (
+					<div class="pc-body pc-body-feed">
+						<span class="pc-sonar">
+							<i />
+							<i />
+							<i />
+						</span>
 
-				<span class="pc-action">Ask for a referral</span>
-			</div>
-		)
-	}
+						<header class="pc-head">
+							<span class="pc-badge">New openings</span>
+							<span class="pc-chip">Updated 18m ago</span>
+						</header>
+
+						<ul class="pc-list">
+							{OPENINGS.map((opening) => (
+								<li class="pc-open">
+									<div class="pc-open-head">
+										<p class="pc-open-role">
+											{opening.role} <span>&middot; {opening.company}</span>
+										</p>
+										<span class="pc-open-age mono">{opening.age}</span>
+									</div>
+									<div class="pc-open-foot">
+										<p class="pc-open-meta">{opening.meta}</p>
+										<div class="pc-open-actions">
+											<button
+												class="pc-action pc-action-sm"
+												type="button"
+												tabindex="-1"
+												data-demo-row
+												data-done="Request opened"
+											>
+												<span class="pc-sheen">
+													<i />
+												</span>
+												<svg class="pc-check" viewBox="0 0 20 20">
+													<path d="m4.5 10.5 3.75 3.75L15.5 7" />
+												</svg>
+												<span data-demo-label>Ask for a referral</span>
+											</button>
+											<span class="pc-action-quiet">View details</span>
+										</div>
+									</div>
+								</li>
+							))}
+						</ul>
+
+						<footer class="pc-foot">
+							<span class="pc-note">Each one opens a request already filled in</span>
+						</footer>
+					</div>
+				)
+			}
+		</article>
+	</div>
 </div>
 
+<script>
+	import { POLICY } from '../lib/constants';
+
+	/* ---------------------------------------------------------------- */
+	/* The claim countdown                                               */
+	/* ---------------------------------------------------------------- */
+
+	/*
+	 * The card quotes a real forty-eight-hour window, so it has to behave like
+	 * one: it counts down while the page is open and it carries on across a
+	 * refresh. What is stored is the deadline, never the time left — storing
+	 * the remainder is what makes a countdown restart at forty-eight hours
+	 * every time the page is opened.
+	 *
+	 * A stored deadline in the past means a visitor came back days later, not
+	 * that a request expired. This card is a demonstration and has to keep
+	 * demonstrating, so the window restarts rather than reading "passed".
+	 *
+	 * Whole minutes only, so a thirty-second tick is enough. Hours are not
+	 * rolled up into days the way the application's own formatter does past
+	 * twenty-four: the window this counts is quoted in hours everywhere else on
+	 * the page, and "2d 0h" would be the one place it is not.
+	 */
+	const HOUR_MS = 3_600_000;
+	const WINDOW_MS = POLICY.claimWindowHours * HOUR_MS;
+	const KEY = 'rr:demo:claim-deadline';
+
+	const pill = document.querySelector<HTMLElement>('[data-countdown]');
+	const text = pill?.querySelector<HTMLElement>('[data-countdown-text]');
+
+	if (pill && text) {
+		// Storage throws outright in some privacy modes, so every access is
+		// guarded and the countdown simply becomes per-visit if it is denied.
+		const read = (): number | undefined => {
+			try {
+				const stored = Number(window.localStorage.getItem(KEY));
+				return Number.isFinite(stored) && stored > 0 ? stored : undefined;
+			} catch {
+				return undefined;
+			}
+		};
+
+		const write = (value: number): void => {
+			try {
+				window.localStorage.setItem(KEY, String(value));
+			} catch {
+				/* Nothing to do: the countdown still runs for this visit. */
+			}
+		};
+
+		let deadline = read() ?? 0;
+
+		const start = (): void => {
+			deadline = Date.now() + WINDOW_MS;
+			write(deadline);
+		};
+
+		if (deadline <= Date.now()) start();
+
+		const render = (): void => {
+			let remaining = deadline - Date.now();
+			if (remaining <= 0) {
+				start();
+				remaining = WINDOW_MS;
+			}
+
+			const minutes = Math.floor(remaining / 60_000);
+			const hours = Math.floor(minutes / 60);
+			text.textContent = hours > 0 ? `${hours}h ${minutes % 60}m to act` : `${minutes}m to act`;
+
+			// The application's own urgency ladder: quiet above twelve hours,
+			// amber inside it, red inside two.
+			pill.classList.toggle('is-soon', remaining <= 12 * HOUR_MS && remaining > 2 * HOUR_MS);
+			pill.classList.toggle('is-critical', remaining <= 2 * HOUR_MS);
+		};
+
+		render();
+		setInterval(render, 30_000);
+
+		// A laptop that was asleep wakes with a stale pill, and the interval
+		// alone would leave it stale for up to another half minute.
+		document.addEventListener('visibilitychange', () => {
+			if (!document.hidden) render();
+		});
+	}
+
+	/* ---------------------------------------------------------------- */
+	/* The two decisions                                                 */
+	/* ---------------------------------------------------------------- */
+
+	/*
+	 * Pressing the action does what the application does: the button confirms
+	 * itself with a check, and a moment later the card is in its next state —
+	 * the request raised, or the referral complete with the stage bar full and
+	 * the closing sentence the product writes. Both states ship in the markup
+	 * and one of them is hidden, so nothing is assembled from strings here and
+	 * a card without this script is simply the state it starts in.
+	 *
+	 * The delay is the point. Confirm the press first, change the subject
+	 * second: doing both in the same frame reads as a page swap rather than as
+	 * something the press caused.
+	 */
+	const confirm = (button: HTMLElement): void => {
+		button.classList.add('is-done');
+		const label = button.querySelector<HTMLElement>('[data-demo-label]');
+		const done = button.getAttribute('data-done');
+		if (label && done) label.textContent = done;
+	};
+
+	for (const card of document.querySelectorAll<HTMLElement>('[data-demo-card]')) {
+		const action = card.querySelector<HTMLElement>('[data-demo-action]');
+		if (!action) continue;
+
+		action.addEventListener(
+			'click',
+			() => {
+				confirm(action);
+				window.setTimeout(() => {
+					card.classList.add('is-done');
+					for (const node of card.querySelectorAll<HTMLElement>('[data-when="open"]')) {
+						node.hidden = true;
+					}
+					for (const node of card.querySelectorAll<HTMLElement>('[data-when="done"]')) {
+						node.hidden = false;
+					}
+				}, 640);
+			},
+			{ once: true },
+		);
+	}
+
+	// A row in the feed confirms itself and nothing else: asking about one
+	// opening does not change what the other three are.
+	for (const row of document.querySelectorAll<HTMLElement>('[data-demo-row]')) {
+		row.addEventListener('click', () => confirm(row), { once: true });
+	}
+</script>
+
 <style>
+	/* Both states of a card ship in the markup, and several of the elements
+	   that swap are flex or grid containers whose own `display` would otherwise
+	   win against the hidden attribute. */
+	[hidden] {
+		display: none !important;
+	}
+
+	/* ---- The window ---- */
+
+	/*
+	 * The glass is the window, and the toolbar is the only part of it that
+	 * shows: a full-bleed strip under a hairline, with the application's own
+	 * surface below. Maximised, so the toolbar runs the whole width and nothing
+	 * inside it is centred by accident.
+	 *
+	 * `--path-card-min` is published by the section once it has measured all
+	 * three panels, so the window is one size whichever tab is selected.
+	 */
 	.path-card {
-		display: grid;
-		padding: clamp(1.5rem, 2.6vw, 1.875rem);
+		display: flex;
+		container-type: inline-size;
+		overflow: hidden;
+		min-height: var(--path-card-min, auto);
+		flex-direction: column;
 		border-radius: var(--radius-lg);
+	}
+
+	.pc-chrome {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		border-bottom: 1px solid rgb(var(--color-border) / 55%);
+		background: linear-gradient(rgb(var(--color-surface) / 42%), transparent);
+	}
+
+	.pc-lights {
+		display: flex;
+		flex-shrink: 0;
+		gap: 0.375rem;
+	}
+
+	.pc-lights i {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+	}
+
+	.pc-lights i:nth-child(1) {
+		background: rgb(var(--color-danger) / 78%);
+	}
+
+	.pc-lights i:nth-child(2) {
+		background: rgb(var(--color-warning) / 78%);
+	}
+
+	.pc-lights i:nth-child(3) {
+		background: rgb(var(--color-success) / 78%);
+	}
+
+	/* Toolbar buttons: compact, quiet until they are the thing you are looking
+	   at, and then a lifted surface rather than a colour. */
+	.pc-toolbar {
+		display: flex;
+		min-width: 0;
+		gap: 0.125rem;
+		margin-right: auto;
+	}
+
+	.pc-tool {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.25rem 0.625rem;
+		border-radius: 0.4375rem;
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: -0.005em;
+		white-space: nowrap;
+	}
+
+	.pc-tool.is-active {
+		background: rgb(var(--color-surface) / 92%);
+		box-shadow:
+			inset 0 0 0 1px rgb(var(--color-border) / 70%),
+			0 1px 1px rgb(var(--color-ink) / 6%);
+		color: rgb(var(--color-ink));
+	}
+
+	.pc-tool-icon {
+		flex-shrink: 0;
+		padding: 0.25rem;
+	}
+
+	.pc-tool-icon svg {
+		width: 0.875rem;
+		height: 0.875rem;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-width: 1.6;
+	}
+
+	.pc-window-body {
+		display: flex;
+		flex: 1 1 auto;
+		padding: 0.5rem;
+	}
+
+	/* ---- The application surface ---- */
+
+	/*
+	 * `Surface`, with its accent rail: a bar across the top while the card is
+	 * narrow, a spine down the left once there is width for one. Same reasoning
+	 * as the product — at phone width a four-pixel left rail eats measure, and
+	 * the eye reads a top bar as the card's own heading rule.
+	 */
+	.pc-surface {
+		position: relative;
+		display: flex;
+		overflow: hidden;
+		flex: 1 1 auto;
+		flex-direction: column;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-2xl);
+		background: rgb(var(--color-surface));
+		box-shadow: var(--shadow-card);
+	}
+
+	.pc-surface::before {
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		right: 0;
+		left: 0;
+		height: 0.25rem;
+		background: rgb(var(--accent));
+		content: '';
+		pointer-events: none;
+	}
+
+	/* The rail is the card's state, and the state changed. */
+	.pc-surface.is-done::before {
+		background: rgb(var(--color-success));
 	}
 
 	.pc-body {
 		position: relative;
-		display: grid;
-		gap: 0.875rem;
-		align-content: start;
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: clamp(1.125rem, 2.2vw, 1.375rem);
 		isolation: isolate;
 	}
 
+	.pc-main,
+	.pc-side {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	/* ---- Head ---- */
+
 	.pc-head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
+		gap: 0.5rem;
 	}
 
-	.pc-label {
-		color: rgb(var(--accent-ink));
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
-	.pc-pill {
-		padding: 0.3125rem 0.625rem;
-		border: 1px solid rgb(var(--accent) / 30%);
+	/* `StatusBadge`: uppercase and tracked, on a soft ground with ink from the
+	   same family. */
+	.pc-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.25rem 0.75rem;
 		border-radius: var(--radius-pill);
 		background: rgb(var(--accent-soft));
 		color: rgb(var(--accent-ink));
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		line-height: 1.25rem;
+		text-transform: uppercase;
+	}
+
+	.pc-badge-done {
+		background: rgb(var(--color-success-soft));
+		color: rgb(var(--color-success-ink));
+	}
+
+	/* `Chip`: sentence case, never uppercase, so it sits below the badge in
+	   weight instead of shouting at the same volume. */
+	.pc-chip {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.125rem 0.5rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-elevated));
+		color: rgb(var(--color-muted));
 		font-size: 0.75rem;
+		font-weight: 500;
+		line-height: 1.25rem;
+	}
+
+	.pc-chip-reward {
+		background: rgb(var(--color-reward-soft));
+		color: rgb(var(--color-reward-ink));
+	}
+
+	.pc-chip-success {
+		background: rgb(var(--color-success-soft));
+		color: rgb(var(--color-success-ink));
+	}
+
+	/* ---- Countdown ---- */
+
+	/* `DeadlineCountdown`: one pill, an alarm, and the same three-step urgency
+	   ladder the application uses. */
+	.pc-countdown {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.25rem 0.75rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-elevated));
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		line-height: 1.25rem;
+	}
+
+	.pc-countdown.is-soon {
+		background: rgb(var(--color-warning-soft));
+		color: rgb(var(--color-warning-ink));
+	}
+
+	.pc-countdown.is-critical {
+		background: rgb(var(--color-danger-soft));
+		color: rgb(var(--color-danger-ink));
+	}
+
+	.pc-countdown-icon {
+		width: 0.875rem;
+		height: 0.875rem;
+		flex-shrink: 0;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.4;
+	}
+
+	/* ---- Identity ---- */
+
+	/* Inter, not Louize: this is product UI, and the display face is banned
+	   inside the application. */
+	.pc-title {
+		margin: 0;
+		color: rgb(var(--color-ink));
+		font-size: 1.125rem;
 		font-weight: 650;
-		white-space: nowrap;
+		letter-spacing: -0.012em;
+		line-height: 1.6rem;
 	}
 
-	.pc-role {
-		margin: 0.25rem 0 0;
-		font-family: var(--font-display);
-		font-size: 1.5rem;
+	.pc-title span {
+		color: rgb(var(--color-muted));
 		font-weight: 400;
-		letter-spacing: -0.03em;
-		line-height: 1.1;
 	}
 
-	.pc-meta {
+	/* The asker, named on the row. A referral is made in the giver's own name,
+	   so who is asking is the fact the decision turns on. */
+	.pc-person {
 		margin: -0.5rem 0 0;
 		color: rgb(var(--color-muted));
 		font-size: 0.875rem;
+		line-height: 1.375rem;
 	}
 
-	/* ---- Rows ---- */
-
-	.pc-rows {
-		display: grid;
-		gap: 0;
-		margin: 0.25rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.pc-rows li {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-block: 0.625rem;
-		border-top: 1px solid rgb(var(--color-border) / 70%);
-		font-size: 0.875rem;
-	}
-
-	.pc-rows li:last-child {
-		border-bottom: 1px solid rgb(var(--color-border) / 70%);
-	}
-
-	.pc-rows span {
-		color: rgb(var(--color-muted));
-	}
-
-	.pc-rows em {
-		font-style: normal;
-		font-weight: 600;
-	}
-
-	/* ---- The thank-you, on the request form where it belongs ---- */
-
-	.pc-tip {
-		display: grid;
-		gap: 0.5rem;
-		padding: 0.875rem;
-		border: 1px solid rgb(var(--color-reward) / 26%);
-		border-radius: var(--radius-2xl);
-		background: rgb(var(--color-reward-soft) / 55%);
-	}
-
-	.pc-tip-head {
-		display: flex;
-		align-items: baseline;
-		gap: 0.5rem;
-		font-size: 0.875rem;
+	.pc-person strong {
 		font-weight: 650;
 	}
 
-	.pc-tip-head em {
-		color: rgb(var(--color-reward-ink));
+	/* The lifecycle sentence: what is true now, in the product's words. */
+	.pc-next {
+		margin: 0;
+		max-width: 34ch;
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		line-height: 1.375rem;
+	}
+
+	.is-done .pc-next {
+		color: rgb(var(--color-ink));
+	}
+
+	.pc-meta {
+		margin: auto 0 0;
+		color: rgb(var(--color-muted));
 		font-size: 0.75rem;
-		font-style: normal;
+		line-height: 1.125rem;
+	}
+
+	/* ---- Definition rows ---- */
+
+	.pc-defs {
+		display: grid;
+		gap: 0.75rem 1rem;
+		margin: auto 0 0;
+		padding-top: 0.875rem;
+		border-top: 1px solid rgb(var(--color-hairline));
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.pc-defs dt {
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.pc-defs dd {
+		margin: 0.25rem 0 0;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.25rem;
+	}
+
+	/* ---- Stage bar, row density ---- */
+
+	.pc-stage {
+		display: flex;
+		min-width: 0;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.pc-stage-count {
+		font-size: 0.75rem;
+		font-variant-numeric: tabular-nums;
 		font-weight: 600;
 	}
 
-	.pc-tiers {
+	.pc-stage-label {
+		overflow: hidden;
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.pc-stage-track {
 		display: flex;
-		flex-wrap: wrap;
+		flex-shrink: 0;
+		gap: 0.25rem;
+		margin-left: auto;
+	}
+
+	.pc-stage-track i {
+		width: 1.25rem;
+		height: 0.375rem;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-border));
+	}
+
+	.pc-stage-track i.is-on {
+		background: rgb(var(--accent));
+	}
+
+	/* Complete fills the bar in the success family, the same way the product
+	   repaints a settled request. */
+	.pc-stage-track-full i {
+		background: rgb(var(--color-success));
+	}
+
+	/* ---- Inset surfaces ---- */
+
+	/* `Surface` at the inset level: nested inside a card, and deliberately not
+	   a second card. Hairline, sunk ground, one step tighter radius. */
+	.pc-inset {
+		display: grid;
+		gap: 0.625rem;
+		align-content: start;
+		padding: 0.75rem;
+		border: 1px solid rgb(var(--color-hairline));
+		border-radius: var(--radius-xl);
+		background: rgb(var(--color-elevated));
+	}
+
+	.pc-inset-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	/*
+	 * `AppreciationSection`: preset tiles, not a segmented track. Emoji over
+	 * amount over label, the chosen one filled. Three money labels on one line
+	 * cannot shrink — the track they used to sit in either wrapped into
+	 * something that no longer read as one switch, or overflowed its own pill
+	 * in the narrow column this lives in.
+	 *
+	 * The fill is the reward family rather than the product's primary: on this
+	 * page violet is money, and a second blue beside the blue action would be
+	 * two different things asking for the same attention.
+	 */
+	.pc-tiers {
+		display: grid;
 		gap: 0.375rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.pc-tier {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.125rem;
+		padding: 0.5rem 0.25rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-xl);
+		background: rgb(var(--color-surface));
+		text-align: center;
+	}
+
+	.pc-tier i {
+		font-size: 1rem;
+		font-style: normal;
+		line-height: 1.25rem;
+	}
+
+	.pc-tier b {
+		color: rgb(var(--color-ink));
+		font-size: 0.8125rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 650;
+		line-height: 1.125rem;
+	}
+
+	.pc-tier em {
+		overflow: hidden;
+		max-width: 100%;
+		color: rgb(var(--color-muted));
+		font-size: 0.6875rem;
+		font-style: normal;
+		line-height: 1rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.pc-tier.is-selected {
+		border-color: rgb(var(--color-reward) / 45%);
+		background: rgb(var(--color-reward-soft));
+		box-shadow: var(--shadow-card);
+	}
+
+	.pc-tier.is-selected b,
+	.pc-tier.is-selected em {
+		color: rgb(var(--color-reward-ink));
+	}
+
+	/* ---- Earnings ---- */
+
+	/* Money is violet in this product, and the figure is the largest thing on
+	   the card because it is the one number this side of the request is about. */
+	.pc-earn {
+		display: grid;
+		align-content: start;
+		gap: 0.125rem;
+		padding: 0.875rem 1rem;
+		border: 1px solid rgb(var(--color-reward) / 26%);
+		border-radius: var(--radius-xl);
+		background: rgb(var(--color-reward-soft) / 55%);
+	}
+
+	.pc-earn-label {
+		margin: 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.25rem;
+	}
+
+	.pc-earn-value {
+		margin: 0;
+		color: rgb(var(--color-reward-ink));
+		font-size: 1.75rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 650;
+		letter-spacing: -0.02em;
+		line-height: 2.25rem;
+	}
+
+	.pc-earn-value span {
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: normal;
+	}
+
+	.pc-earn-note {
+		margin: 0.25rem 0 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
+		line-height: 1.125rem;
+	}
+
+	/* ---- Openings feed ---- */
+
+	.pc-list {
+		display: grid;
+		gap: 0.5rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	/* "Nothing" is first and the same size as the amounts, because zero is a
-	   real option in the product and has to look like one here. */
-	.pc-tiers li {
-		padding: 0.3125rem 0.625rem;
+	/* A row is two lines: what the opening is, then what you can do about it.
+	   Three lines made the feed panel half again taller than the other two
+	   paths, and the window is sized to the tallest of them. */
+	.pc-open {
+		display: grid;
+		align-content: start;
+		gap: 0.25rem;
+		padding: 0.625rem 0.75rem;
+		border: 1px solid rgb(var(--color-hairline));
+		border-radius: var(--radius-xl);
+		background: rgb(var(--color-elevated));
+	}
+
+	.pc-open-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.625rem;
+	}
+
+	.pc-open-foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.375rem 0.75rem;
+	}
+
+	.pc-open-role {
+		margin: 0;
+		min-width: 0;
+		font-size: 0.9375rem;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+		line-height: 1.375rem;
+	}
+
+	.pc-open-role span {
+		color: rgb(var(--color-muted));
+		font-weight: 400;
+	}
+
+	.pc-open-age {
+		flex-shrink: 0;
+		margin-left: auto;
+		color: rgb(var(--color-muted));
+		font-size: 0.6875rem;
+	}
+
+	.pc-open-meta {
+		margin: 0;
+		min-width: 0;
+		flex: 1 1 9rem;
+		color: rgb(var(--color-muted));
+		font-size: 0.8125rem;
+		line-height: 1.125rem;
+	}
+
+	.pc-open-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin-left: auto;
+	}
+
+	/* ---- Actions ---- */
+
+	/* Always the last thing in the window, and always against its floor: the
+	   three panels are different lengths, and an action that moved up and down
+	   as you switched tabs would be the one control on the card you had to look
+	   for twice. */
+	.pc-foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		margin-top: auto;
+		gap: 0.625rem 0.875rem;
+		padding-top: 0.875rem;
+		border-top: 1px solid rgb(var(--color-hairline));
+	}
+
+	/* `Button`, primary variant. Blue on every card: the accent says what state
+	   this is, the fill says what you can do about it. */
+	.pc-action {
+		position: relative;
+		display: inline-flex;
+		min-height: 2.75rem;
+		align-items: center;
+		justify-content: center;
+		gap: 0.375rem;
+		padding-inline: 1.25rem;
+		border: 1px solid transparent;
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-primary));
+		box-shadow: 0 0.5rem 1.25rem rgb(var(--color-primary) / 24%);
+		color: rgb(var(--color-primary-ink));
+		font-family: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.pc-action:hover {
+		background: rgb(var(--color-primary-hover));
+		box-shadow: 0 0.75rem 1.75rem rgb(var(--color-primary) / 34%);
+	}
+
+	.pc-action:active {
+		transform: translateY(0) scale(0.98);
+	}
+
+	/*
+	 * The sheen, clipped by its own frame rather than by the button: the ring
+	 * that leaves the button has to escape those same bounds, and one element
+	 * cannot both clip its children and let a pseudo-element out.
+	 */
+	.pc-sheen {
+		position: absolute;
+		overflow: hidden;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.pc-sheen i {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			115deg,
+			transparent 34%,
+			rgb(var(--color-primary-ink) / 26%) 50%,
+			transparent 66%
+		);
+		transform: translateX(-130%);
+	}
+
+	.pc-action.is-done .pc-sheen {
+		display: none;
+	}
+
+	/* An arrow says the press goes somewhere, and it leans that way when the
+	   pointer arrives. It is gone once there is nowhere left to go. */
+	.pc-arrow {
+		width: 0.875rem;
+		height: 0.875rem;
+		flex-shrink: 0;
+		fill: none;
+		margin-right: -0.25rem;
+		opacity: 0.72;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.75;
+	}
+
+	.pc-action:hover .pc-arrow {
+		opacity: 1;
+		transform: translateX(2px);
+	}
+
+	.pc-action.is-done .pc-arrow {
+		display: none;
+	}
+
+	/*
+	 * Done. A soft ground and same-family ink rather than a filled green,
+	 * because the control is no longer something to press — and because white
+	 * on `--color-success` fails contrast in dark mode, where the token is a
+	 * light mint.
+	 */
+	.pc-action.is-done {
+		border-color: rgb(var(--color-success) / 45%);
+		background: rgb(var(--color-success-soft));
+		box-shadow: none;
+		color: rgb(var(--color-success-ink));
+		cursor: default;
+	}
+
+	/* The check is drawn rather than faded in: a wipe along its own length is
+	   what a tick looks like when a person makes one. It is absent, not
+	   transparent, until then — a phantom sixteen pixels would push the label
+	   off the centre of the button for the whole time it is unpressed. */
+	.pc-check {
+		display: none;
+		width: 1rem;
+		height: 1rem;
+		flex-shrink: 0;
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 2.25;
+	}
+
+	.pc-action.is-done .pc-check {
+		display: block;
+	}
+
+	.pc-action-sm .pc-check {
+		width: 0.875rem;
+		height: 0.875rem;
+	}
+
+	/* The row-level variant, for a list where every item carries the same pair
+	   of actions and none of them is the screen's one decision. */
+	.pc-action-sm {
+		min-height: 2.125rem;
+		padding-inline: 0.875rem;
+		box-shadow: none;
+		font-size: 0.75rem;
+	}
+
+	.pc-action-quiet {
+		display: inline-flex;
+		min-height: 2.125rem;
+		align-items: center;
+		justify-content: center;
+		padding-inline: 0.875rem;
 		border: 1px solid rgb(var(--color-border));
 		border-radius: var(--radius-pill);
 		background: rgb(var(--color-surface));
-		color: rgb(var(--color-muted));
+		color: rgb(var(--color-ink));
 		font-size: 0.75rem;
 		font-weight: 600;
 	}
 
-	.pc-tiers .is-selected {
-		border-color: rgb(var(--color-reward) / 45%);
-		background: rgb(var(--color-reward));
-		color: rgb(var(--color-primary-ink));
+	.pc-foot .pc-action-quiet {
+		min-height: 2.75rem;
+		padding-inline: 1.125rem;
+		font-size: 0.875rem;
 	}
 
-	/* ---- Proof ---- */
-
-	.pc-proof {
-		position: relative;
-		width: fit-content;
-	}
-
-	.pc-shot {
-		display: grid;
-		width: 9rem;
-		gap: 0.375rem;
-		padding: 0.75rem;
-		border: 1px solid rgb(var(--color-border));
-		border-radius: var(--radius-sm);
-		background: rgb(var(--color-elevated));
-	}
-
-	.pc-shot i {
-		height: 0.375rem;
-		border-radius: var(--radius-pill);
-		background: rgb(var(--color-ink) / 12%);
-	}
-
-	.pc-shot i:first-child {
-		width: 70%;
-		background: rgb(var(--color-ink) / 24%);
-	}
-
-	.pc-shot i:last-child {
-		width: 45%;
-	}
-
-	.pc-stamp {
-		position: absolute;
-		right: -1.5rem;
-		bottom: -0.5rem;
-		padding: 0.3125rem 0.5625rem;
-		border: 1px solid rgb(var(--accent) / 40%);
-		border-radius: var(--radius-pill);
-		background: rgb(var(--accent-soft));
-		color: rgb(var(--accent-ink));
-		font-weight: 650;
-		transform: rotate(-4deg);
+	.pc-note {
+		color: rgb(var(--color-muted));
+		font-size: 0.75rem;
 	}
 
 	/* ---- Sonar ---- */
@@ -313,8 +1318,8 @@ const { kind } = Astro.props;
 	.pc-sonar {
 		position: absolute;
 		z-index: -1;
-		top: 0.5rem;
-		left: 2rem;
+		top: 1.5rem;
+		left: 2.5rem;
 		width: 0;
 		height: 0;
 	}
@@ -331,22 +1336,195 @@ const { kind } = Astro.props;
 		transform: translate(-50%, -50%) scale(0.4);
 	}
 
-	/* ---- Action ---- */
+	/* ---- Responsive ---- */
 
-	.pc-action {
-		display: inline-flex;
-		min-height: 2.75rem;
-		align-items: center;
-		justify-content: center;
-		margin-top: 0.25rem;
-		border-radius: var(--radius-pill);
-		background: rgb(var(--accent));
-		color: rgb(var(--color-primary-ink));
-		font-size: 0.9375rem;
-		font-weight: 650;
+	/*
+	 * The card asks its own width, not the viewport's.
+	 *
+	 * Between 64rem and roughly 78rem the window is at its narrowest — the
+	 * section has just split into two columns and neither is wide yet — while
+	 * at 48rem it is the whole shell and at 90rem it is more than half of it.
+	 * A viewport query gets that backwards in the middle of the range, and the
+	 * middle of the range is where a portrait card would show up.
+	 */
+	/*
+	 * How many openings fit is a question about the window, not the screen.
+	 * The feed is the tallest of the three panels and the window is sized to
+	 * the tallest of them, so a row the window cannot afford is dropped rather
+	 * than allowed to stretch the other two paths with it.
+	 *
+	 * They stay in one column at every width. The shell caps the window at
+	 * about 40rem, and two openings side by side in half of that is a row whose
+	 * own two actions wrap under it — which costs more height than the second
+	 * column saves.
+	 */
+	@container (max-width: 33.999rem) {
+		.pc-open:nth-child(3) {
+			display: none;
+		}
 	}
 
+	/* The rail becomes a spine once the card is wide enough that four pixels
+	   down the left no longer eat the measure. */
+	@container (min-width: 26rem) {
+		.pc-surface::before {
+			right: auto;
+			bottom: 0;
+			width: 0.25rem;
+			height: auto;
+		}
+
+		.pc-body {
+			padding-left: clamp(1.5rem, 2.6vw, 1.75rem);
+		}
+	}
+
+	/*
+	 * Landscape. A window is wider than it is tall, so the body splits: the
+	 * request on the left, the one thing attached to it on the right, and the
+	 * action bar along the floor of both.
+	 */
+	@container (min-width: 30rem) {
+		.pc-body {
+			display: grid;
+			gap: 0.875rem clamp(1rem, 3.5cqi, 1.75rem);
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+			grid-template-rows: auto 1fr auto;
+		}
+
+		/* The state of the whole card, and the action on the whole card, are
+		   about both columns and run across both. */
+		.pc-head,
+		.pc-foot {
+			grid-column: 1 / -1;
+		}
+
+		/* The feed is one subject rather than a request with one thing attached
+		   to it, so it keeps the full width. */
+		.pc-body-feed {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.pc-body-feed .pc-list {
+			grid-column: 1 / -1;
+		}
+	}
+
+	/* ---- Motion ---- */
+
 	@media (prefers-reduced-motion: no-preference) {
+		/* The surface deepens with the window, so the two objects read as one
+		   thing being picked up rather than two stacked cards. */
+		.pc-surface {
+			transition: box-shadow var(--dur-mid) var(--ease-out);
+		}
+
+		.path-card:hover .pc-surface {
+			box-shadow: var(--shadow-raised);
+		}
+
+		.pc-action {
+			transition:
+				background-color var(--dur-mid) var(--ease-out),
+				border-color var(--dur-mid) var(--ease-out),
+				box-shadow var(--dur-mid) var(--ease-out),
+				color var(--dur-mid) var(--ease-out),
+				transform var(--dur-fast) var(--ease-out);
+		}
+
+		.pc-action:hover {
+			transform: translateY(-1px);
+		}
+
+		.pc-arrow {
+			transition:
+				opacity var(--dur-mid) var(--ease-out),
+				transform var(--dur-mid) var(--ease-spring);
+		}
+
+		.pc-check {
+			animation: none;
+		}
+
+		.pc-action.is-done .pc-check {
+			animation: pc-draw 400ms var(--ease-out) 80ms both;
+		}
+
+		@keyframes pc-draw {
+			from {
+				clip-path: inset(0 100% 0 0);
+			}
+			to {
+				clip-path: inset(0 0 0 0);
+			}
+		}
+
+		/*
+		 * The hint.
+		 *
+		 * A card that can be pressed has to say so, and a static card beside a
+		 * paragraph is not read as a control. Twice over, on one cadence: a
+		 * ring leaves the button, and light crosses it. Late enough not to
+		 * compete with the reveal, brief enough to be an invitation rather than
+		 * an alarm. A panel that is not on screen is `display: none`, so the
+		 * delay restarts when its tab is chosen, which is exactly when the
+		 * offer is worth making.
+		 */
+		.pc-action::after {
+			position: absolute;
+			inset: -1px;
+			border: 1px solid rgb(var(--color-primary) / 60%);
+			border-radius: var(--radius-pill);
+			animation: pc-hint 4600ms var(--ease-out) 3200ms infinite;
+			content: '';
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		.pc-sheen i {
+			animation: pc-sweep 4600ms var(--ease-out) 3200ms infinite;
+		}
+
+		.pc-action:hover::after,
+		.pc-action.is-done::after {
+			animation: none;
+		}
+
+		/* Three rings leaving three rows at the same instant is a flashing list.
+		   Down the list instead, a third of a second apart. */
+		.pc-open:nth-child(2) .pc-action::after,
+		.pc-open:nth-child(2) .pc-sheen i {
+			animation-delay: 3560ms;
+		}
+
+		.pc-open:nth-child(3) .pc-action::after,
+		.pc-open:nth-child(3) .pc-sheen i {
+			animation-delay: 3920ms;
+		}
+
+		@keyframes pc-hint {
+			0% {
+				opacity: 0.7;
+				transform: scale(1);
+			}
+			26%,
+			100% {
+				opacity: 0;
+				transform: scale(1.11);
+			}
+		}
+
+		/* One crossing, then off the edge until the next cadence. */
+		@keyframes pc-sweep {
+			0% {
+				transform: translateX(-130%);
+			}
+			16%,
+			100% {
+				transform: translateX(130%);
+			}
+		}
+
 		.pc-sonar i {
 			animation: pc-sonar 2400ms var(--ease-out) infinite backwards;
 		}

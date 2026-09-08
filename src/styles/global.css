@@ -306,6 +306,17 @@ strong {
 	border-color: rgb(var(--color-primary) / 45%);
 	background: rgb(var(--color-primary-soft));
 	color: rgb(var(--color-primary-strong));
+	transform: translateY(-1px);
+}
+
+/*
+ * The press. Every button gives the pointer one frame of travel back down,
+ * which is the only feedback a click has between the hover and whatever the
+ * button then does. Transform only, and it beats the hover rules above on
+ * order rather than on specificity.
+ */
+.button:active {
+	transform: translateY(0) scale(0.985);
 }
 
 .text-link {
