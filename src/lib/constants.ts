@@ -41,13 +41,13 @@ export enum SignUpIntent {
  *  never drift. */
 export enum SectionId {
 	Top = 'top',
-	Offerings = 'offerings',
+	/** The company marquee, which belongs to the hero block rather than being
+	 *  a section of its own. */
+	Value = 'value',
+	/** The whole product story, told once. This was five sections. */
 	HowItWorks = 'how-it-works',
-	PeerSignal = 'peer-signal',
-	Trust = 'trust',
-	Appreciation = 'appreciation',
-	Faq = 'faq',
 	Stories = 'stories',
+	Faq = 'faq',
 	Contact = 'contact',
 }
 
@@ -72,12 +72,18 @@ export enum Accent {
 	Trust = 'trust',
 	Reward = 'reward',
 	Success = 'success',
+	/** Teal: something in flight, in someone else's hands. */
+	Progress = 'progress',
+	/** Amber: waiting on the reader — a window they have to act inside. */
+	Warning = 'warning',
 	Danger = 'danger',
 }
 
 /** Lifecycle stages shown in the "how it works" rail. Mirrors the product's
  *  `ReferralRequestState` progression at a marketing level of detail. */
 export enum LifecycleStage {
+	/** The opening exists and has found the member, before anyone has asked. */
+	Surfaced = 'surfaced',
 	Requested = 'requested',
 	Claimed = 'claimed',
 	Referred = 'referred',

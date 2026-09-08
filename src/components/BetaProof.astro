@@ -26,7 +26,9 @@ const { batches } = Astro.props;
 			<aside class="beta-proof-stat reveal" aria-label="Private beta referral result">
 				<div class="beta-proof-rings" aria-hidden="true"></div>
 				<p class="beta-proof-label">Private beta snapshot</p>
-				<p class="beta-proof-count">{PRIVATE_BETA_REFERRAL_COUNT}+</p>
+				<p class="beta-proof-count">
+			<span data-count-to={PRIVATE_BETA_REFERRAL_COUNT}>{PRIVATE_BETA_REFERRAL_COUNT}</span>+
+		</p>
 				<p class="beta-proof-caption">people successfully referred during the beta</p>
 			</aside>
 
@@ -36,6 +38,15 @@ const { batches } = Astro.props;
 		</div>
 	</div>
 </section>
+
+<script>
+	import { countUp } from '../lib/motion';
+
+	/* The one number on the page worth counting to. Under reduced motion, or
+	   with no observer, it is simply printed. */
+	const count = document.querySelector<HTMLElement>('[data-count-to]');
+	if (count) countUp(count);
+</script>
 
 <style>
 	.beta-proof {
@@ -95,6 +106,7 @@ const { batches } = Astro.props;
 	.beta-proof-count {
 		margin: 0.625rem 0 0;
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums tabular-nums;
 		font-size: clamp(5rem, 10vw, 7rem);
 		font-weight: 400;
 		letter-spacing: -0.06em;

@@ -1,8 +1,8 @@
 ---
+import DoorWall from './DoorWall.astro';
 import HeroScrollCue from './HeroScrollCue.astro';
 import { POLICY, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
 import { TRUST_STRIP, signUpWith } from '../lib/content';
-import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 ---
 
 {/*
@@ -18,21 +18,9 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	<div class="hero-wash" aria-hidden="true"></div>
 	<div class="grid-texture hero-grid" aria-hidden="true"></div>
 
-	{/*
-	 * The artwork is a single alpha mask painted with theme tokens, never a
-	 * flat picture: `.ink-base` takes the ink colour, `.ink-accent` re-paints
-	 * only the strokes near the open door in the brand blue. One asset, both
-	 * themes, no second dark-mode export.
-	 */}
-	<div class="hero-art" aria-hidden="true">
-		<div class="hero-art-inner">
-			<div class="ink-stage">
-				<span class="hero-glow"></span>
-				<span class="ink ink-base"></span>
-				<span class="ink ink-accent"></span>
-			</div>
-		</div>
-	</div>
+	{/* The wall itself lives in DoorWall.astro, because the closing section
+	    ends the page on the same image. */}
+	<DoorWall variant="hero" class="hero-art" />
 
 	<div class="shell hero-inner">
 		<div class="hero-copy">
@@ -68,7 +56,7 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		{/* The drawing earns attention; this rotating pair earns belief. Two cards
 		    stay visible while the third quietly pops in to replace one of them. */}
 		<div class="hero-proof-stack" aria-label="Recent referral examples">
-			<article class="hero-proof-card" data-proof-slot="0" data-proof-index="0">
+			<article class="hero-proof-card" data-proof-slot="0" data-cycle-index="0">
 				<div class="hero-proof-head">
 					<span class="hero-proof-status">Referral submitted</span>
 					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
@@ -78,7 +66,7 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 				<span class="hero-proof-bar" aria-hidden="true"><i style="--proof-progress: 78%"></i></span>
 			</article>
 
-			<article class="hero-proof-card" data-proof-slot="1" data-proof-index="1">
+			<article class="hero-proof-card" data-proof-slot="1" data-cycle-index="1">
 				<div class="hero-proof-head">
 					<span class="hero-proof-status">Referral received</span>
 					<span class="mono hero-proof-time">{POLICY.confirmationWindowHours}h to confirm</span>
@@ -108,17 +96,6 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	</div>
 </section>
 
-{/*
- * The mask itself is set as a real `:root`-level custom property, written
- * once via `set:html`, rather than through Astro's `define:vars`.
- * `define:vars` looked like the natural fit but actually inlines the value as
- * a `style` attribute on every element the component renders — for a ~270KB
- * base64 string that meant 40+ copies of it in the page (measured: 42 copies,
- * an 11MB document). A single `:root` declaration is one copy, inherited by
- * the two rules that use it below like any other custom property.
- */}
-<style is:global set:html={`:root { --ink-doors-mask: ${INK_DOORS_MASK}; }`} />
-
 <style>
 	/*
 	 * The hero owns the whole first screen. The sticky header is pulled back
@@ -145,6 +122,12 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	 * Two soft washes, not three drifting blobs. The drawing is the subject
 	 * now, and an animated aurora behind line art just makes the lines look
 	 * like they are floating on someone else's background.
+	 *
+	 * Both washes are the brand blue. The lower one used to be `reward`, which
+	 * was a second blue when it was written and became violet when the palette
+	 * was re-synced with the product, putting a colour the hero has no use for
+	 * across the bottom of the first screen. `reward` means money here, and
+	 * money is not what this section is about.
 	 */
 	.hero-wash {
 		position: absolute;
@@ -152,144 +135,20 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		inset: 0;
 		background:
 			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 10%), transparent 68%),
-			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 7%), transparent 70%);
+			radial-gradient(52rem 38rem at 6% 90%, rgb(var(--color-primary) / 5%), transparent 70%);
 		pointer-events: none;
 	}
 
 	:global([data-theme='dark']) .hero-wash {
 		background:
 			radial-gradient(60rem 40rem at 78% 18%, rgb(var(--color-primary) / 26%), transparent 68%),
-			radial-gradient(48rem 36rem at 8% 88%, rgb(var(--color-reward) / 12%), transparent 70%);
+			radial-gradient(52rem 38rem at 6% 90%, rgb(var(--color-primary) / 10%), transparent 70%);
 	}
 
 	.hero-grid {
 		z-index: 0;
 		background-size: 3.25rem 3.25rem;
 		mask-image: radial-gradient(ellipse 78% 70% at 42% 42%, #000, transparent 76%);
-	}
-
-	/* ---- The drawing ---- */
-
-	/*
-	 * Three nested masks, each doing exactly one job, because a single element
-	 * can only carry one mask reliably across engines:
-	 *   .hero-art        — fades the drawing out before it reaches the copy
-	 *   .hero-art-inner  — fades it out at the top and bottom edges
-	 *   .ink             — the drawing itself
-	 */
-	.hero-art {
-		position: absolute;
-		z-index: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		pointer-events: none;
-		mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
-		-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
-	}
-
-	.hero-art-inner {
-		position: absolute;
-		inset: 0;
-		/*
-		 * A soft defocus on the drawing only. The headline sits on the flat
-		 * canvas, never on top of the art, so this never softens type — it only
-		 * pushes the wall of doors slightly out of focus, the way a shallow
-		 * depth of field keeps a background present without letting it compete
-		 * for the eye. The proof card and every other UI element sit outside
-		 * this element and stay perfectly sharp.
-		 */
-		filter: blur(1.25px) saturate(0.94);
-		mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
-		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
-	}
-
-	@media (min-width: 90rem) {
-		.hero-art-inner {
-			filter: blur(1.5px) saturate(0.94);
-		}
-	}
-
-	/*
-	 * The stage is the drawing's own coordinate space, sized by width and held
-	 * at its native ratio. Everything below can then be positioned in fractions
-	 * of the picture — "38% across, 50% down" is the open door at every
-	 * viewport size — instead of in fractions of the section, which drift as
-	 * the window changes shape.
-	 */
-	.ink-stage {
-		position: absolute;
-		top: 50%;
-		right: 0;
-		width: 62%;
-		aspect-ratio: 1280 / 1636;
-		transform: translateY(-50%);
-	}
-
-	.ink {
-		position: absolute;
-		inset: 0;
-		/* --ink-doors-mask is set once, above, from ink-doors-asset.ts — see
-		   that file for why this is an inline data URI rather than a /public
-		   file reference. */
-		mask-image: var(--ink-doors-mask);
-		mask-repeat: no-repeat;
-		mask-size: 100% 100%;
-		-webkit-mask-image: var(--ink-doors-mask);
-		-webkit-mask-repeat: no-repeat;
-		-webkit-mask-size: 100% 100%;
-	}
-
-	.ink-base {
-		background: rgb(var(--color-ink));
-		opacity: 0.5;
-	}
-
-	:global([data-theme='dark']) .ink-base {
-		opacity: 0.42;
-	}
-
-	/*
-	 * Only the strokes inside this radius turn blue. The circle is centred on
-	 * the open door, so the door, the hand and the light rays pick up the brand
-	 * colour and the other two hundred doors stay in ink.
-	 */
-	.ink-accent {
-		background: radial-gradient(
-			17% 13% at 38% 50%,
-			rgb(var(--color-primary)) 0%,
-			rgb(var(--color-primary) / 92%) 52%,
-			transparent 100%
-		);
-	}
-
-	:global([data-theme='dark']) .ink-accent {
-		background: radial-gradient(
-			17% 13% at 38% 50%,
-			rgb(var(--color-primary-strong)) 0%,
-			rgb(var(--color-primary-strong) / 90%) 52%,
-			transparent 100%
-		);
-	}
-
-	/* Light actually spilling out of the doorway, behind the linework. */
-	.hero-glow {
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(
-			26% 20% at 38% 50%,
-			rgb(var(--color-primary) / 16%),
-			transparent 62%
-		);
-	}
-
-	:global([data-theme='dark']) .hero-glow {
-		background: radial-gradient(
-			30% 24% at 38% 50%,
-			rgb(var(--color-primary) / 34%),
-			transparent 64%
-		);
 	}
 
 	/* ---- Copy ---- */
@@ -361,28 +220,20 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 		transform: translateY(-0.375rem) scale(0.99);
 		filter: blur(4px);
 		padding: 1rem 1.0625rem 1.0625rem;
-		border: 1px solid rgb(var(--color-border) / 55%);
+		border: 1px solid var(--glass-border);
 		border-radius: var(--radius-2xl);
-		background: rgb(var(--color-surface) / 46%);
+		background: var(--glass-bg);
 		box-shadow:
-			0 1rem 2.5rem rgb(23 33 43 / 6%),
-			inset 0 1px 0 rgb(255 255 255 / 40%);
-		backdrop-filter: blur(22px) saturate(1.4);
-		-webkit-backdrop-filter: blur(22px) saturate(1.4);
+			var(--glass-shadow),
+			inset 0 1px 0 var(--glass-highlight);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 		pointer-events: auto;
 		transition:
 			opacity var(--proof-dur) var(--ease-out),
 			transform var(--proof-dur) var(--ease-out),
 			filter var(--proof-dur) var(--ease-out);
 		visibility: hidden;
-	}
-
-	:global([data-theme='dark']) .hero-proof-card {
-		border-color: rgb(var(--color-border) / 60%);
-		background: rgb(var(--color-surface) / 38%);
-		box-shadow:
-			0 1rem 2.5rem rgb(0 0 0 / 28%),
-			inset 0 1px 0 rgb(255 255 255 / 6%);
 	}
 
 	.hero-proof-head {
@@ -492,42 +343,14 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	/* ---- Entrance ---- */
 
 	@media (prefers-reduced-motion: no-preference) {
-		/* The drawing wipes on left to right, so the wall of closed doors is
-		   established before the open one arrives. */
-		.hero-art {
-			animation: ink-wipe 1500ms var(--ease-out) 120ms both;
-		}
-
-		.ink-accent,
-		.hero-glow {
-			animation: light-on 900ms ease-out 1150ms both;
-		}
-
+		/* The cards arrive after the wall has been drawn — see the script
+		   below, which waits on DoorWall's own `ink-wipe`. */
 		.hero-proof-stack.is-ready .hero-proof-card {
 			opacity: 1;
 			transform: none;
 			filter: blur(0);
 			visibility: visible;
 		}
-
-		@keyframes ink-wipe {
-			from {
-				clip-path: inset(0 100% 0 0);
-			}
-			to {
-				clip-path: inset(0 0 0 0);
-			}
-		}
-
-		@keyframes light-on {
-			from {
-				opacity: 0;
-			}
-			to {
-				opacity: 1;
-			}
-		}
-
 	}
 
 	/* ---- Responsive ---- */
@@ -538,19 +361,6 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 	 * beside it, and the proof card sits under the buttons as a normal block.
 	 */
 	@media (max-width: 63.999rem) {
-		.hero-art {
-			left: 12%;
-			mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
-			-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
-			opacity: 0.7;
-		}
-
-		.ink-stage {
-			top: 44%;
-			right: -22%;
-			width: 108%;
-		}
-
 		.hero-copy {
 			max-width: 30rem;
 		}
@@ -639,105 +449,66 @@ import { INK_DOORS_MASK } from '../lib/ink-doors-asset';
 </style>
 
 <script>
+	import { startCardCycle } from '../lib/card-cycle';
+
 	interface ProofCard {
-		role: string;
-		meta: string;
-		progress: string;
+		readonly role: string;
+		readonly meta: string;
+		readonly progress: string;
 	}
 
 	const proofCards: readonly ProofCard[] = [
-		{
-			role: 'Product Manager',
-			meta: 'Verified employee · screenshot attached',
-			progress: '78%',
-		},
-		{
-			role: 'Software Engineering Intern',
-			meta: 'Employee referral · role match confirmed',
-			progress: '56%',
-		},
-		{
-			role: 'UI/UX Designer',
-			meta: 'Verified employee · portfolio reviewed',
-			progress: '88%',
-		},
+		{ role: 'Product Manager', meta: 'Verified employee · screenshot attached', progress: '78%' },
+		{ role: 'Software Engineering Intern', meta: 'Employee referral · role match confirmed', progress: '56%' },
+		{ role: 'UI/UX Designer', meta: 'Verified employee · portfolio reviewed', progress: '88%' },
 	];
 
-	const proofStack = document.querySelector<HTMLElement>('.hero-proof-stack');
-	const proofArt = document.querySelector<HTMLElement>('.hero-art');
-	const proofSlots = Array.from(document.querySelectorAll<HTMLElement>('[data-proof-slot]'));
+	const stack = document.querySelector<HTMLElement>('.hero-proof-stack');
+	const art = document.querySelector<HTMLElement>('.hero-art');
+	const slots = Array.from(document.querySelectorAll<HTMLElement>('[data-proof-slot]'));
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	/* Mirrors `--proof-dur` in the stylesheet: the card fades out over exactly
-	   this long, so the swap happens on the frame it finishes and never mid-fade. */
-	const PROOF_TRANSITION_MS = 1100;
-	/* One full turn of the rotation, fade-out and fade-in included. Deliberately
-	   unhurried — the card is meant to be read, not caught. */
-	const PROOF_CYCLE_MS = 7200;
-	/* Air between the drawing settling and the cards arriving. */
-	const PROOF_REVEAL_DELAY_MS = 1400;
-
-	if (proofStack && proofSlots.length === 2) {
-		let nextSlotIndex = 0;
-		let rotationStarted = false;
-
-		const scheduleNext = (): void => {
-			window.setTimeout(() => {
-				const visibleIndexes = new Set(
-					proofSlots.map((slot) => Number(slot.dataset.proofIndex)),
-				);
-				const nextIndex = proofCards.findIndex((_, index) => !visibleIndexes.has(index));
-				const slot = proofSlots[nextSlotIndex];
-				const nextCard = proofCards[nextIndex];
-
-				if (!slot || !nextCard) return;
-
-				nextSlotIndex = (nextSlotIndex + 1) % 2;
-				slot.classList.remove('is-entering');
-				slot.classList.add('is-exiting');
-
-				window.setTimeout(() => {
-					slot.classList.remove('is-exiting');
-					slot.dataset.proofIndex = String(nextIndex);
-					const role = slot.querySelector<HTMLElement>('.hero-proof-role');
-					const meta = slot.querySelector<HTMLElement>('.hero-proof-meta');
-					const progress = slot.querySelector<HTMLElement>('.hero-proof-bar i');
-					if (role) role.textContent = nextCard.role;
-					if (meta) meta.textContent = nextCard.meta;
-					progress?.style.setProperty('--proof-progress', nextCard.progress);
-
-					slot.classList.add('is-entering');
-					window.requestAnimationFrame(() => {
-						window.requestAnimationFrame(() => slot.classList.remove('is-entering'));
-					});
-				}, PROOF_TRANSITION_MS);
-
-				scheduleNext();
-			}, PROOF_CYCLE_MS);
-		};
-
-		const revealCards = (): void => {
-			window.setTimeout(() => {
-				if (rotationStarted) return;
-				rotationStarted = true;
-				proofStack.classList.add('is-ready');
-				if (!reducedMotion) scheduleNext();
-			}, PROOF_REVEAL_DELAY_MS);
-		};
-
-		if (reducedMotion || !proofArt) {
-			revealCards();
-		} else {
-			const fallback = window.setTimeout(revealCards, 1800);
-			proofArt.addEventListener(
-				'animationend',
-				(event) => {
-					if (event.animationName !== 'ink-wipe') return;
-					window.clearTimeout(fallback);
-					revealCards();
-				},
-				{ once: true },
-			);
+	/* The cards arrive once the drawing has settled: after the ink-wipe ends,
+	   or after a fallback timer if the animation never reports back. */
+	const artSettled = new Promise<void>((resolve) => {
+		if (reducedMotion || !art) {
+			resolve();
+			return;
 		}
+		const fallback = window.setTimeout(resolve, 1800);
+		art.addEventListener(
+			'animationend',
+			(event) => {
+				if (event.animationName !== 'ink-wipe') return;
+				window.clearTimeout(fallback);
+				resolve();
+			},
+			{ once: true },
+		);
+	});
+
+	if (stack && slots.length === 2) {
+		startCardCycle<ProofCard>({
+			stack,
+			slots,
+			pool: proofCards,
+			/* Mirrors `--proof-dur` in the stylesheet: the card fades out over
+			   exactly this long, so the swap lands on the frame it finishes. */
+			transitionMs: 1100,
+			/* One full turn, fade-out and fade-in included. Deliberately
+			   unhurried — the card is meant to be read, not caught. */
+			cycleMs: 7200,
+			/* Air between the drawing settling and the cards arriving. */
+			revealDelayMs: 1400,
+			ready: artSettled,
+			render: (slot, card) => {
+				const role = slot.querySelector<HTMLElement>('.hero-proof-role');
+				const meta = slot.querySelector<HTMLElement>('.hero-proof-meta');
+				const progress = slot.querySelector<HTMLElement>('.hero-proof-bar i');
+				if (role) role.textContent = card.role;
+				if (meta) meta.textContent = card.meta;
+				progress?.style.setProperty('--proof-progress', card.progress);
+			},
+		});
 	}
 </script>

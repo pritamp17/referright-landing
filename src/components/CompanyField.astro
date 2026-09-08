@@ -113,7 +113,12 @@ const onDark = (hex: string): string => nudge(hex, 255, (lum) => lum >= 0.09);
 const marquee: readonly Company[] = [...companies, ...companies];
 ---
 
-<div class="company-field" aria-label="Examples of companies people request referrals into">
+<div
+	class="company-field"
+	data-motion="companies"
+	data-motion-state="paused"
+	aria-label="Examples of companies people request referrals into"
+>
 	<div class="company-track">
 		{
 			marquee.map((company, index) => (
@@ -132,6 +137,13 @@ const marquee: readonly Company[] = [...companies, ...companies];
 	</div>
 </div>
 
+<script>
+	import { motionGate } from '../lib/motion';
+
+	const field = document.querySelector<HTMLElement>('[data-motion="companies"]');
+	if (field) motionGate(field);
+</script>
+
 <style>
 	.company-field {
 		overflow: hidden;
@@ -145,6 +157,18 @@ const marquee: readonly Company[] = [...companies, ...companies];
 		gap: 0.625rem;
 		padding-block: 0.25rem;
 		animation: company-drift 60s linear infinite;
+		animation-play-state: paused;
+	}
+
+	/* Runs only while on screen, and never under the pointer — a drifting
+	   click target is a hostile one. */
+	.company-field[data-motion-state='playing'] .company-track {
+		animation-play-state: running;
+	}
+
+	.company-field:hover .company-track,
+	.company-field:focus-within .company-track {
+		animation-play-state: paused;
 	}
 
 	.company-chip {

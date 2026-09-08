@@ -1,47 +1,129 @@
 ---
 import Brand from './Brand.astro';
+import ThemeToggle from './ThemeToggle.astro';
 import { OUTCOME_DISCLAIMER, SectionId, SignUpIntent, TrackEvent } from '../lib/constants';
-import { CONTACT_EMAIL, signUpWith } from '../lib/content';
+import { CONTACT_EMAIL, PRIVACY_URL, TERMS_URL, signUpWith } from '../lib/content';
 
 const year = new Date().getFullYear();
+
+/*
+ * The last thing on the page, and the least decorated.
+ *
+ * This block used to repeat the hero's wall of doors behind its headline,
+ * mirrored and lit, as a bookend. It was the prettiest idea on the page and it
+ * cost the one thing this block cannot afford: at the sizes and alphas that
+ * made the drawing read, the words in front of it did not. Line art behind a
+ * headline is texture competing with letterforms, and the headline has to win.
+ *
+ * So there is nothing behind the words now. Depth comes from a wash at the
+ * edges of the block, well clear of the type.
+ *
+ * The primary call to action does not change appearance here, which is why the
+ * section is not a deep blue panel: it was one once, and a blue panel forces a
+ * blue-on-blue button to restyle itself, so the page's single most important
+ * control looked like two different controls depending where you met it.
+ */
+const headline: readonly string[] = ['Somebody', 'inside', 'is', 'willing', 'to', 'help.'];
+
+const productLinks = [
+	{ label: 'Reviews', href: `#${SectionId.Stories}` },
+	{ label: 'How it works', href: `#${SectionId.HowItWorks}` },
+	{ label: 'Questions', href: `#${SectionId.Faq}` },
+] as const;
+
+const policyLinks = [
+	PRIVACY_URL ? { label: 'Privacy', href: PRIVACY_URL } : null,
+	TERMS_URL ? { label: 'Terms', href: TERMS_URL } : null,
+].filter((link): link is { label: string; href: string } => link !== null);
 ---
 
-<section class="closing" id={SectionId.Contact} aria-labelledby="closing-title">
-	<div class="grid-texture" aria-hidden="true"></div>
+<section class="closing" id={SectionId.Contact} aria-labelledby="closing-title" data-closing>
+	<div class="closing-stage">
+		<div class="closing-wash" aria-hidden="true"></div>
 
-	<div class="shell closing-inner reveal">
-		<h2 class="display-2" id="closing-title">Somebody inside is willing to help.</h2>
-		<p class="closing-lede">Tell us the role. We will find them.</p>
+		<div class="shell closing-inner reveal">
+			<h2 class="display-2 closing-title" id="closing-title">
+				{headline.map((word, index) => <span style={`--w: ${index};`}>{word}</span>)}
+			</h2>
 
-		<a
-			class="button button-primary button-lg"
-			href={signUpWith(SignUpIntent.Seeker)}
-			data-track={TrackEvent.ClosingPrimary}
-		>
-			<span>Ask for a referral</span>
-			<svg viewBox="0 0 16 16" aria-hidden="true">
-				<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
-			</svg>
-		</a>
+			<p class="closing-lede">Tell us the role. We will find them.</p>
 
-		<p class="fine-print closing-disclaimer">{OUTCOME_DISCLAIMER}</p>
+			<a
+				class="button button-primary button-lg"
+				href={signUpWith(SignUpIntent.Seeker)}
+				data-track={TrackEvent.ClosingPrimary}
+			>
+				<span>Ask for a referral</span>
+				<svg viewBox="0 0 16 16" aria-hidden="true">
+					<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"></path>
+				</svg>
+			</a>
+
+			<p class="fine-print closing-disclaimer">{OUTCOME_DISCLAIMER}</p>
+		</div>
 	</div>
 
 	<footer class="site-footer">
-		<div class="shell footer-inner">
-			<Brand size="sm" />
-
-			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
-
-			<div class="footer-support">
-				<span class="footer-support-label">Support</span>
-				<a class="footer-mail" href={`mailto:${CONTACT_EMAIL}`} data-track={TrackEvent.ContactEmail}>
-					{CONTACT_EMAIL}
-				</a>
+		<div class="shell footer-grid">
+			<div class="footer-brand">
+				<Brand size="sm" />
+				<p>Professional introductions between people who already work where you want to.</p>
 			</div>
+
+			<nav class="footer-nav" aria-label="Sections">
+				<p class="footer-heading mono">Product</p>
+				<ul>
+					{productLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+				</ul>
+			</nav>
+
+			<div class="footer-nav">
+				<p class="footer-heading mono">Support</p>
+				<ul>
+					<li>
+						<a
+							class="footer-email"
+							href={`mailto:${CONTACT_EMAIL}`}
+							data-track={TrackEvent.ContactEmail}
+						>
+							{CONTACT_EMAIL}
+						</a>
+					</li>
+					{policyLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+				</ul>
+			</div>
+		</div>
+
+		<div class="shell footer-base">
+			<p class="footer-note">© {year} RightRefer. Professional introductions, handled carefully.</p>
+			<ThemeToggle />
 		</div>
 	</footer>
 </section>
+
+<script>
+	/* The doorway light comes up as the section is reached, rather than on
+	   load — the page ends on it, so it should arrive with the reader. */
+	const closing = document.querySelector<HTMLElement>('[data-closing]');
+
+	if (closing) {
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+			closing.classList.add('is-lit');
+		} else {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						if (!entry.isIntersecting) continue;
+						closing.classList.add('is-lit');
+						observer.disconnect();
+					}
+				},
+				{ threshold: 0.2 },
+			);
+			observer.observe(closing);
+		}
+	}
+</script>
 
 <style>
 	.closing {
@@ -51,18 +133,62 @@ const year = new Date().getFullYear();
 		isolation: isolate;
 	}
 
+	.closing-stage {
+		position: relative;
+		overflow: hidden;
+		isolation: isolate;
+	}
+
+	/* Light at the edges of the block, never under the type. Brand blue only:
+	   the second gradient used to be `reward`, which means money, and this
+	   block is not about money. */
+	.closing-wash {
+		position: absolute;
+		z-index: 0;
+		inset: 0;
+		background:
+			radial-gradient(42rem 22rem at 12% 110%, rgb(var(--color-primary) / 12%), transparent 70%),
+			radial-gradient(38rem 20rem at 88% -10%, rgb(var(--color-primary) / 7%), transparent 70%);
+		pointer-events: none;
+	}
+
+	:global([data-theme='dark']) .closing-wash {
+		background:
+			radial-gradient(42rem 22rem at 12% 110%, rgb(var(--color-primary) / 26%), transparent 70%),
+			radial-gradient(38rem 20rem at 88% -10%, rgb(var(--color-primary) / 12%), transparent 70%);
+	}
+
 	.closing-inner {
 		position: relative;
 		z-index: 1;
 		display: grid;
 		justify-items: center;
-		padding-block: clamp(4.5rem, 9vw, 8rem);
+		padding-block: clamp(4.5rem, 8vw, 7rem);
 		text-align: center;
+	}
+
+	.closing-title {
+		max-width: 18ch;
+		color: rgb(var(--color-ink));
+		font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+		line-height: 1.06;
+		letter-spacing: -0.038em;
+	}
+
+	.closing-title span {
+		display: inline-block;
+		/* The words are inline-block so each can be transformed on its own,
+		   which means the whitespace between them no longer renders. */
+		margin-right: 0.26em;
+	}
+
+	.closing-title span:last-child {
+		margin-right: 0;
 	}
 
 	.closing-lede {
 		max-width: 30rem;
-		margin: 1rem 0 2rem;
+		margin: 1.125rem 0 2rem;
 		color: rgb(var(--color-muted));
 		font-size: 1.125rem;
 		line-height: 1.6;
@@ -81,12 +207,77 @@ const year = new Date().getFullYear();
 		background: rgb(var(--color-surface) / 60%);
 	}
 
-	.footer-inner {
+	.footer-grid {
 		display: grid;
-		gap: 1rem;
-		justify-items: center;
-		padding-block: 1.75rem;
-		text-align: center;
+		gap: 2.25rem;
+		padding-block: clamp(2.5rem, 5vw, 3.5rem) 2rem;
+	}
+
+	.footer-brand p {
+		max-width: 22rem;
+		margin: 0.875rem 0 0;
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+
+	.footer-heading {
+		margin: 0;
+		color: rgb(var(--color-muted) / 75%);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.footer-nav ul {
+		display: grid;
+		gap: 0.125rem;
+		margin: 0.5rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* Padding rather than height alone: the shortest label here is 36px wide.
+	   The negative margin keeps the text aligned with the column heading, so
+	   the target grows without the column looking indented. */
+	.footer-nav a {
+		display: inline-flex;
+		min-width: 2.75rem;
+		min-height: 2.75rem;
+		align-items: center;
+		margin-inline: -0.5rem;
+		padding-inline: 0.5rem;
+		border-radius: var(--radius-sm);
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		transition: color var(--dur-fast) ease;
+	}
+
+	.footer-nav a:hover {
+		color: rgb(var(--color-ink));
+	}
+
+	/* The address itself, not the word "Support". Somebody looking for a way to
+	   reach a person wants to see that a person is reachable. */
+	.footer-email {
+		color: rgb(var(--color-primary));
+		font-weight: 600;
+		word-break: break-word;
+	}
+
+	:global([data-theme='dark']) .footer-email {
+		color: rgb(var(--color-primary-strong));
+	}
+
+	/* ---- Base row ---- */
+
+	.footer-base {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem 1.25rem;
+		padding-block: 1.125rem;
+		border-top: 1px solid rgb(var(--color-border) / 70%);
 	}
 
 	.footer-note {
@@ -95,47 +286,30 @@ const year = new Date().getFullYear();
 		font-size: 0.8125rem;
 	}
 
-	.footer-support {
-		display: grid;
-		justify-items: center;
-		gap: 0.125rem;
-	}
-
-	.footer-support-label {
-		color: rgb(var(--color-muted));
-		font-size: 0.6875rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.footer-mail {
-		display: inline-flex;
-		min-height: 2.75rem;
-		align-items: center;
-		color: rgb(var(--color-primary));
-		font-size: 0.875rem;
-		font-weight: 600;
-	}
-
-	:global([data-theme='dark']) .footer-mail {
-		color: rgb(var(--color-primary-strong));
-	}
+	/* ---- Responsive ---- */
 
 	@media (min-width: 48rem) {
-		.footer-inner {
-			grid-template-columns: auto 1fr auto;
-			align-items: center;
-			justify-items: start;
-			text-align: left;
+		.footer-grid {
+			gap: 3rem;
+			grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+		}
+	}
+
+	/* ---- Motion ---- */
+
+	@media (prefers-reduced-motion: no-preference) {
+		.js .closing-title span {
+			opacity: 0;
+			transform: translateY(0.75rem);
+			transition:
+				opacity 720ms var(--ease-out),
+				transform 720ms var(--ease-out);
+			transition-delay: calc(var(--w, 0) * 70ms);
 		}
 
-		.footer-note {
-			justify-self: center;
-		}
-
-		.footer-support {
-			justify-items: end;
+		.js .closing-inner.is-visible .closing-title span {
+			opacity: 1;
+			transform: none;
 		}
 	}
 </style>

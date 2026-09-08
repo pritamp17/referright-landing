@@ -1,4 +1,4 @@
-import { Accent, LifecycleStage, OfferingKind, OUTCOME_DISCLAIMER, POLICY, SignUpIntent } from './constants';
+import { Accent, OfferingKind, OUTCOME_DISCLAIMER, POLICY, SignUpIntent } from './constants';
 
 /* ------------------------------------------------------------------ */
 /* Links                                                               */
@@ -14,6 +14,17 @@ export const signUpWith = (_intent: SignUpIntent): string => SIGNUP_BASE;
 export const SIGNUP_URL: string = SIGNUP_BASE;
 export const CONTACT_EMAIL: string =
 	import.meta.env.PUBLIC_CONTACT_EMAIL || 'rightrefer.team@gmail.com';
+
+/**
+ * Policy pages, rendered in the footer only once they exist.
+ *
+ * The README lists hosted privacy and terms pages as a launch blocker. The
+ * footer has the slots; a link appears the moment its URL is configured, and
+ * until then nothing is shown — a dead link to a policy is worse than no link,
+ * because it looks like the policy exists.
+ */
+export const PRIVACY_URL: string | undefined = import.meta.env.PUBLIC_PRIVACY_URL || undefined;
+export const TERMS_URL: string | undefined = import.meta.env.PUBLIC_TERMS_URL || undefined;
 
 /** Verified private-beta outcome shown in the landing-page proof module. */
 export const PRIVATE_BETA_REFERRAL_COUNT = 78;
@@ -69,89 +80,144 @@ export const OFFERINGS: readonly Offering[] = [
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* Lifecycle                                                           */
+/* The three paths                                                     */
 /* ------------------------------------------------------------------ */
 
-export interface LifecycleStep {
-	readonly stage: LifecycleStage;
+export interface PathStep {
 	readonly index: string;
 	readonly title: string;
+	/** One sentence. If it needs two, the title is not doing its job. */
 	readonly detail: string;
-	/** Short mono timing label, or null where no clock applies. */
-	readonly timing: string | null;
 }
 
-export const LIFECYCLE: readonly LifecycleStep[] = [
+export interface ProductPath {
+	readonly kind: OfferingKind;
+	/** Short label for the switch. Two or three words. */
+	readonly tab: string;
+	readonly title: string;
+	readonly steps: readonly PathStep[];
+	readonly ctaLabel: string;
+	readonly ctaHref: string;
+	readonly accent: Accent;
+}
+
+/*
+ * The product has three core things a member can do, and they are parallel,
+ * not sequential: ask for a referral, give one, or hear about roles early.
+ *
+ * An earlier version told a single linear story from the seeker's side, which
+ * read well and was wrong about the product twice over. It buried giving and
+ * peer openings into two links at the bottom, and it put the thank-you at the
+ * very end, after the referral had landed. The thank-you is chosen on the
+ * request form, before anything is sent (PRD §5.2 step 7, §0.11), and getting
+ * that backwards misrepresents the one part of the flow involving money.
+ *
+ * Three parallel paths want a switch, not a scroll.
+ */
+export const PRODUCT_PATHS: readonly ProductPath[] = [
 	{
-		stage: LifecycleStage.Requested,
-		index: '01',
-		title: 'You ask',
-		detail: 'Share the role and a little context about your background.',
-		timing: null,
+		kind: OfferingKind.AskForReferral,
+		tab: 'Ask for a referral',
+		title: 'Ask someone on the inside.',
+		accent: Accent.Primary,
+		ctaLabel: 'Ask for a referral',
+		ctaHref: signUpWith(SignUpIntent.Seeker),
+		steps: [
+			{
+				index: '01',
+				title: 'Name the role',
+				detail: 'The company and the job you want, with your resume attached.',
+			},
+			{
+				index: '02',
+				title: 'Choose who sees it',
+				detail: 'Employees there whose jobs are verified through LinkedIn, and nobody else.',
+			},
+			{
+				index: '03',
+				title: 'Add a thank-you, or do not',
+				detail: 'You set an optional amount here, before you send. Zero is always allowed.',
+			},
+			{
+				index: '04',
+				title: 'Get proof, or get refunded',
+				detail: `A timestamped screenshot, and ${POLICY.confirmationWindowHours} hours to dispute it.`,
+			},
+		],
 	},
 	{
-		stage: LifecycleStage.Claimed,
-		index: '02',
-		title: 'An employee claims it',
-		detail: 'Verified employees of that company see the request. One takes it on.',
-		timing: `${POLICY.claimWindowHours}h window`,
+		kind: OfferingKind.GiveReferral,
+		tab: 'Give a referral',
+		title: 'Refer someone you can vouch for.',
+		accent: Accent.Success,
+		ctaLabel: 'Start referring',
+		ctaHref: signUpWith(SignUpIntent.Giver),
+		steps: [
+			{
+				index: '01',
+				title: 'See who is asking',
+				detail: 'Requests from people at companies where your job is verified.',
+			},
+			{
+				index: '02',
+				title: 'Claim one',
+				detail: 'It becomes yours alone, and nobody else can act on it.',
+			},
+			{
+				index: '03',
+				title: 'Submit it with proof',
+				detail: 'Refer them inside your own system and attach the screenshot.',
+			},
+			{
+				index: '04',
+				title: 'Get thanked',
+				detail: 'Whatever they chose to add is yours once the referral is confirmed.',
+			},
+		],
 	},
 	{
-		stage: LifecycleStage.Referred,
-		index: '03',
-		title: 'The referral goes in',
-		detail: 'They submit it internally and attach a timestamped screenshot as proof.',
-		timing: 'with proof',
-	},
-	{
-		stage: LifecycleStage.Confirmed,
-		index: '04',
-		title: 'You confirm, or dispute',
-		detail: 'Check the proof. Confirm it, or raise a dispute and we review it.',
-		timing: `${POLICY.confirmationWindowHours}h to review`,
-	},
-	{
-		stage: LifecycleStage.Paid,
-		index: '05',
-		title: 'You say thank you',
-		detail: 'Send a small token of appreciation if you would like to. Entirely optional.',
-		timing: 'your call',
+		kind: OfferingKind.PeerSignal,
+		tab: 'Hear about openings',
+		title: 'Hear about roles first.',
+		accent: Accent.Progress,
+		ctaLabel: 'Get peer openings',
+		ctaHref: signUpWith(SignUpIntent.Peer),
+		steps: [
+			{
+				index: '01',
+				title: 'Follow the companies you want',
+				detail: 'Tell us where you would like to work, and how often to write.',
+			},
+			{
+				index: '02',
+				title: 'Roles reach you early',
+				detail: 'Senior roles often get filled before they are ever posted.',
+			},
+			{
+				index: '03',
+				title: 'Ask in one step',
+				detail: 'The request opens already filled in. You review it and send.',
+			},
+		],
 	},
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* Trust pillars                                                       */
+/* Proof line                                                          */
 /* ------------------------------------------------------------------ */
 
-export interface TrustPillar {
-	readonly title: string;
-	readonly detail: string;
-	readonly accent: Accent;
-}
-
-export const TRUST_PILLARS: readonly TrustPillar[] = [
-	{
-		title: 'LinkedIn-verified employment',
-		detail: `Referrers sign in with LinkedIn only. Employment is re-checked every ${POLICY.employmentRecheckDays} days, so a referrer who has left the company stops receiving requests.`,
-		accent: Accent.Primary,
-	},
-	{
-		title: 'Every referral carries proof',
-		detail:
-			'A referral is not marked done on someone’s word. It is submitted with a timestamped screenshot from the internal system, and you see it.',
-		accent: Accent.Success,
-	},
-	{
-		title: 'A window to disagree',
-		detail: `You have ${POLICY.confirmationWindowHours} hours after proof is submitted to confirm or dispute. Disputes are reviewed by a person, not closed automatically.`,
-		accent: Accent.Trust,
-	},
-	{
-		title: 'Nothing is owed upfront',
-		detail:
-			'Asking costs you nothing. If you choose to send a thank-you afterwards, it only ever reaches your referrer once the referral is confirmed.',
-		accent: Accent.Reward,
-	},
+/*
+ * What used to be four trust cards.
+ *
+ * Each fact is now stated inside the beat it belongs to, so this line is a
+ * recap rather than an argument: four short facts on one row, closing the
+ * story rather than opening a new section about it.
+ */
+export const PRODUCT_PROOF: readonly string[] = [
+	'LinkedIn-verified employment',
+	'Timestamped proof, shown to you',
+	`${POLICY.confirmationWindowHours}h to dispute, decided by a person`,
+	'Free to ask',
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -164,9 +230,13 @@ export interface TrustStripItem {
 }
 
 /*
- * Three signals, chosen to answer the questions a first-time visitor actually
- * has: is this person real, what if it goes wrong, and who sees my search.
- * Deliberately no commercial claim — the hero is not the place to raise money.
+ * Four signals, chosen to answer the questions a first-time visitor actually
+ * has: is this person real, what does it cost me, and how long will it take.
+ *
+ * Note that `100% Free` is a commercial claim, which DESIGN_SYSTEM.md §7 rule 2
+ * says the hero does not make. It is here deliberately and the rule has not
+ * been re-litigated; if the pricing model ever changes, this line is the first
+ * thing that has to change with it.
  */
 export const TRUST_STRIP: readonly TrustStripItem[] = [
 	{ value: 'LinkedIn', label: 'Verified employment' },
@@ -209,42 +279,42 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
 	{
 		question: 'Is it free to ask for a referral?',
 		answer:
-			'Yes. Asking costs you nothing, and nothing is owed upfront. If a referral lands and you feel it was worth it, you can send a small token of appreciation afterwards — but it is entirely optional, it is never required in order to ask, and it never changes whether you get referred.',
+			'Yes. Asking costs nothing and nothing is owed upfront. If a referral lands you can send a small thank-you afterwards, which is always optional and never changes whether you get referred.',
 	},
 	{
 		question: 'Who actually sees my request?',
 		answer:
-			'Only people whose employment at that company has been verified through LinkedIn. Your request is not published to a public board and it is not broadcast to recruiters. Your search stays yours.',
+			'Only people whose employment at that company is verified through LinkedIn. Your request is never published publicly and never sent to recruiters.',
 	},
 	{
 		question: 'What happens if nobody picks up my request?',
-		answer: `Every request carries one clock: ${POLICY.claimWindowHours} hours from the moment it goes live. If no verified employee claims it in that window, the request closes and tells you plainly that nobody picked it up — rather than sitting open indefinitely. You are free to send it again.`,
+		answer: `It closes after ${POLICY.claimWindowHours} hours and tells you plainly that nobody picked it up, rather than sitting open. You are free to send it again.`,
 	},
 	{
 		question: 'How do I know the referral was actually submitted?',
 		answer:
-			'Because you see the proof. A referral is not marked done on someone’s word — the referrer submits it inside their company’s own system and attaches a timestamped screenshot of having done so. That evidence is shown to you.',
+			'The referrer submits it inside their company\u2019s own system and attaches a timestamped screenshot. You see that proof.',
 	},
 	{
 		question: 'What if the proof looks wrong?',
-		answer: `You have ${POLICY.confirmationWindowHours} hours after the proof is submitted to confirm it or raise a dispute. Disputes are read and decided by a person, never closed automatically: the referral either stands, or it is overturned and you are refunded. Where the evidence genuinely is not conclusive either way, it is closed without a penalty to either side.`,
+		answer: `You have ${POLICY.confirmationWindowHours} hours to raise a dispute. A person reads it and decides. If it is overturned, you are refunded.`,
 	},
 	{
 		question: 'Does a referral guarantee an interview?',
-		answer: `No, and anyone promising otherwise is not being straight with you. ${OUTCOME_DISCLAIMER} It puts your application in front of a real person inside the company at a moment when the role is still open, which is the part that is genuinely hard to arrange on your own. The hiring decision remains entirely theirs.`,
+		answer: `No. ${OUTCOME_DISCLAIMER} It puts you in front of a real person while the role is still open. The hiring decision stays entirely theirs.`,
 	},
 	{
 		question: 'How do you know a referrer really works there?',
-		answer: `Referrers sign in with LinkedIn, and their employment is re-checked every ${POLICY.employmentRecheckDays} days. Someone who has left the company stops receiving requests. This is employment verified through LinkedIn — we do not claim their employer has endorsed or approved anything.`,
+		answer: `They sign in with LinkedIn and their employment is re-checked every ${POLICY.employmentRecheckDays} days. This is employment verified through LinkedIn, not approval from their employer.`,
 	},
 	{
 		question: 'If I am a referrer, do I have to refer everyone who asks?',
 		answer:
-			'Not at all. You see the role and the person’s background first, and you decide whether you can genuinely vouch for them. Nothing is auto-assigned to you, and passing on a request costs you nothing. A referral is worth something precisely because it was a choice.',
+			'No. You see the role and the person\u2019s background first, then decide. Nothing is auto-assigned and passing costs you nothing.',
 	},
 	{
 		question: 'What are peer openings?',
 		answer:
-			'Senior roles are often filled quietly and only get posted publicly once the internal search has failed. Peer openings tell you a relevant role exists while that window is still open. You are shown the opening itself — never the identity of whoever asked about it. You control how often they arrive, and you can turn them off at any time.',
+			'Senior roles are often filled before they are ever posted. Peer openings tell you a relevant role exists while that window is open. You are shown the role, never who asked.',
 	},
 ] as const;

@@ -28,7 +28,7 @@ const { batches } = Astro.props;
 				<div class="track" data-testimonial-track>
 					{[...batch, ...batch].map((testimonial, cardIndex) => (
 						<article
-							class:list={['quote-card', `accent-${testimonial.accent}`]}
+							class:list={['quote-card', 'glass', 'lift', `accent-${testimonial.accent}`]}
 							aria-hidden={cardIndex >= batch.length ? 'true' : undefined}
 						>
 							<div class="quote-person">
@@ -50,21 +50,12 @@ const { batches } = Astro.props;
 </div>
 
 <script>
+	import { motionGate } from '../lib/motion';
+
 	/* The marquee only animates while it is on screen, and never for a visitor
 	   who has asked for reduced motion. */
 	const stage = document.querySelector<HTMLElement>('[data-motion="testimonials"]');
-
-	if (stage && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					stage.dataset.motionState = entry.isIntersecting ? 'playing' : 'paused';
-				}
-			},
-			{ threshold: 0.15 },
-		);
-		observer.observe(stage);
-	}
+	if (stage) motionGate(stage);
 </script>
 
 <style>

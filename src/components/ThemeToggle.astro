@@ -38,6 +38,27 @@
 
 	applyTheme(readTheme());
 
+	/*
+	 * Until somebody makes an explicit choice, the page belongs to the
+	 * operating system: switching the OS between light and dark while the tab
+	 * is open moves the page with it. The moment the toggle is used, that
+	 * choice is stored and this stops applying.
+	 */
+	const stored = (): string | null => {
+		try {
+			return localStorage.getItem(THEME_STORAGE_KEY);
+		} catch {
+			return null;
+		}
+	};
+
+	const system = window.matchMedia('(prefers-color-scheme: dark)');
+
+	system.addEventListener('change', (event) => {
+		if (stored()) return;
+		applyTheme(event.matches ? ThemeMode.Dark : ThemeMode.Light);
+	});
+
 	toggle?.addEventListener('click', () => {
 		const next = readTheme() === ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark;
 		try {

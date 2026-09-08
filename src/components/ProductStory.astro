@@ -1,0 +1,353 @@
+---
+import PathCard from './PathCard.astro';
+import { OfferingKind, SectionId, TrackEvent } from '../lib/constants';
+import { PRODUCT_PATHS, PRODUCT_PROOF } from '../lib/content';
+
+/** Analytics event per path, resolved from the enum rather than inlined. */
+const TRACK_BY_KIND: Readonly<Record<OfferingKind, TrackEvent>> = {
+	[OfferingKind.AskForReferral]: TrackEvent.OfferingAsk,
+	[OfferingKind.GiveReferral]: TrackEvent.OfferingGive,
+	[OfferingKind.PeerSignal]: TrackEvent.OfferingPeer,
+};
+---
+
+{/*
+ * How it works, for all three of the things this product does.
+ *
+ * Asking for a referral, giving one, and hearing about roles early are
+ * parallel choices, not stages of one journey, and a reader arrives already
+ * knowing which one they are. A switch is the honest control for that: it puts
+ * the three side by side, admits nothing, and shows one at a time.
+ *
+ * A real tablist, so the arrow keys work and the panel is announced. Every
+ * panel is in the DOM at all times, so find-on-page reaches a hidden step and
+ * a printed page carries all three.
+ */}
+<section class="section paths" id={SectionId.HowItWorks} aria-labelledby="paths-title">
+	<div class="shell">
+		<div class="paths-head reveal">
+			<p class="eyebrow">How it works</p>
+			<h2 class="display-2" id="paths-title">Three ways to use one network.</h2>
+		</div>
+
+		<div class="paths-switch reveal" role="tablist" aria-label="What you want to do" data-paths>
+			{
+				PRODUCT_PATHS.map((path, index) => (
+					<button
+						class:list={['paths-tab', `accent-${path.accent}`, index === 0 && 'is-active']}
+						type="button"
+						role="tab"
+						id={`path-tab-${path.kind}`}
+						aria-controls={`path-panel-${path.kind}`}
+						aria-selected={index === 0 ? 'true' : 'false'}
+						tabindex={index === 0 ? 0 : -1}
+					>
+						{path.tab}
+					</button>
+				))
+			}
+		</div>
+
+		{
+			PRODUCT_PATHS.map((path, index) => (
+				<div
+					class:list={['paths-panel', `accent-${path.accent}`]}
+					id={`path-panel-${path.kind}`}
+					role="tabpanel"
+					aria-labelledby={`path-tab-${path.kind}`}
+					hidden={index !== 0}
+				>
+					<div class="paths-grid">
+						<div class="paths-copy">
+							{/* No heading here. The selected tab already names the path, and a
+							    second line of display type 200px under the section heading is
+							    the section saying its own name twice. */}
+							<h3 class="paths-title">{path.title}</h3>
+
+							<ol class="paths-steps">
+								{path.steps.map((step) => (
+									<li>
+										<span class="paths-index mono">{step.index}</span>
+										<strong>{step.title}</strong>
+										<span class="paths-detail">{step.detail}</span>
+									</li>
+								))}
+							</ol>
+
+							<a
+								class="button button-primary paths-cta"
+								href={path.ctaHref}
+								data-track={TRACK_BY_KIND[path.kind]}
+							>
+								<span>{path.ctaLabel}</span>
+								<svg viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
+								</svg>
+							</a>
+						</div>
+
+						<div class="paths-visual">
+							<PathCard kind={path.kind} />
+						</div>
+					</div>
+				</div>
+			))
+		}
+
+		<p class="proof-line reveal">
+			{PRODUCT_PROOF.map((fact) => <span>{fact}</span>)}
+		</p>
+	</div>
+</section>
+
+<script>
+	/*
+	 * Tab behaviour the markup cannot express: one selected tab, roving
+	 * tabindex so the group is a single stop, and arrow keys within it. With
+	 * this script absent every panel is still in the DOM and the first is
+	 * visible, so the section never becomes unreadable.
+	 */
+	const group = document.querySelector<HTMLElement>('[data-paths]');
+
+	if (group) {
+		const tabs = Array.from(group.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+
+		const select = (next: HTMLButtonElement, moveFocus: boolean): void => {
+			for (const tab of tabs) {
+				const active = tab === next;
+				tab.setAttribute('aria-selected', String(active));
+				tab.tabIndex = active ? 0 : -1;
+				tab.classList.toggle('is-active', active);
+
+				const panel = document.getElementById(tab.getAttribute('aria-controls') ?? '');
+				if (panel) panel.hidden = !active;
+			}
+			if (moveFocus) next.focus();
+		};
+
+		group.addEventListener('click', (event) => {
+			const tab = (event.target as HTMLElement).closest<HTMLButtonElement>('[role="tab"]');
+			if (tab) select(tab, false);
+		});
+
+		group.addEventListener('keydown', (event) => {
+			const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+			if (current < 0) return;
+
+			const step =
+				event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+			if (step === 0 && event.key !== 'Home' && event.key !== 'End') return;
+
+			event.preventDefault();
+			const next =
+				event.key === 'Home'
+					? 0
+					: event.key === 'End'
+						? tabs.length - 1
+						: (current + step + tabs.length) % tabs.length;
+			select(tabs[next], true);
+		});
+	}
+</script>
+
+<style>
+	.paths {
+		border-top: 1px solid rgb(var(--color-border));
+		background:
+			radial-gradient(70% 100% at 50% 0%, rgb(var(--color-primary) / 4%), transparent 72%),
+			rgb(var(--color-canvas));
+	}
+
+	.paths-head {
+		max-width: 40rem;
+	}
+
+	/* ---- The switch ---- */
+
+	.paths-switch {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		width: fit-content;
+		margin: clamp(2rem, 4vw, 2.75rem) 0 clamp(2rem, 4vw, 3rem);
+		padding: 0.3125rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-surface) / 70%);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+	}
+
+	.paths-tab {
+		min-height: 2.75rem;
+		padding-inline: 1.125rem;
+		border: 1px solid transparent;
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		font-weight: 650;
+		white-space: nowrap;
+		cursor: pointer;
+		transition:
+			background-color var(--dur-mid) var(--ease-out),
+			color var(--dur-mid) var(--ease-out);
+	}
+
+	.paths-tab:hover {
+		color: rgb(var(--color-ink));
+	}
+
+	/* The selected tab takes its own path's accent, so the switch tells you
+	   which colour the panel below is about to be. */
+	.paths-tab.is-active {
+		border-color: rgb(var(--accent) / 34%);
+		background: rgb(var(--accent-soft));
+		color: rgb(var(--accent-ink));
+	}
+
+	/* ---- Panel ---- */
+
+	.paths-grid {
+		display: grid;
+		gap: clamp(2rem, 5vw, 4rem);
+		align-items: center;
+	}
+
+	/* Kept in the markup for screen readers and for the document outline, which
+	   would otherwise jump from the section heading straight to a list. */
+	.paths-title {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* ---- Steps ---- */
+
+	.paths-steps {
+		display: grid;
+		gap: 1.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.paths-steps li {
+		display: grid;
+		gap: 0.1875rem;
+		padding-left: 2.75rem;
+	}
+
+	.paths-index {
+		position: absolute;
+		margin-left: -2.75rem;
+		color: rgb(var(--accent-ink));
+		font-weight: 650;
+	}
+
+	.paths-steps strong {
+		font-size: 1.0625rem;
+		font-weight: 650;
+		letter-spacing: -0.015em;
+	}
+
+	.paths-detail {
+		max-width: 34ch;
+		color: rgb(var(--color-muted));
+		font-size: 0.9375rem;
+		line-height: 1.55;
+	}
+
+	.paths-cta {
+		margin-top: clamp(1.75rem, 3vw, 2.25rem);
+	}
+
+	/* ---- Close ---- */
+
+	.proof-line {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.75rem;
+		margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+		padding-top: 1.5rem;
+		border-top: 1px solid rgb(var(--color-border));
+		color: rgb(var(--color-muted));
+		font-size: 0.875rem;
+	}
+
+	.proof-line span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.proof-line span::before {
+		width: 0.3125rem;
+		height: 0.3125rem;
+		border-radius: 50%;
+		background: rgb(var(--color-primary) / 55%);
+		content: '';
+	}
+
+	/* ---- Responsive ---- */
+
+	/*
+	 * Three pills do not fit one phone line, and wrapping them leaves a lone
+	 * tab on a second row inside a pill-shaped container, which reads as a
+	 * mistake. They scroll sideways instead, which is what a switch that is
+	 * wider than its screen is supposed to do.
+	 */
+	@media (max-width: 47.999rem) {
+		.paths-switch {
+			width: auto;
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			scrollbar-width: none;
+			scroll-snap-type: x proximity;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.paths-switch::-webkit-scrollbar {
+			display: none;
+		}
+
+		.paths-tab {
+			flex: 0 0 auto;
+			scroll-snap-align: center;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.paths-grid {
+			gap: clamp(3rem, 7vw, 6rem);
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+	}
+
+	/* Switching panels is a change of subject, so the new one arrives rather
+	   than simply appearing. */
+	@media (prefers-reduced-motion: no-preference) {
+		.paths-panel:not([hidden]) .paths-copy,
+		.paths-panel:not([hidden]) .paths-visual {
+			animation: panel-in 520ms var(--ease-out) both;
+		}
+
+		.paths-panel:not([hidden]) .paths-visual {
+			animation-delay: 80ms;
+		}
+
+		@keyframes panel-in {
+			from {
+				opacity: 0;
+				transform: translateY(0.625rem);
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
+		}
+	}
+</style>

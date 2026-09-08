@@ -5,7 +5,7 @@
  * that owns it. Only genuinely shared vocabulary belongs here.
  *
  * Every colour below is a token reference. There are no raw hex values in this
- * file by design — the palette is locked in tokens.css.
+ * file by design — the palette lives in tokens.css.
  */
 
 @font-face {
@@ -26,6 +26,13 @@ html {
 	scroll-behavior: smooth;
 	scroll-padding-top: 6rem;
 	-webkit-text-size-adjust: 100%;
+}
+
+:root {
+	/* The hero drawing — a wall of doors as a single-channel alpha mask. It is
+	   declared once here, as a file reference, so the hero and the closing
+	   bookend paint the same wall from one fetch. */
+	--ink-doors-mask: url('/ink-doors-mask.webp');
 }
 
 body {
@@ -150,6 +157,22 @@ svg {
 	letter-spacing: -0.03em;
 }
 
+/*
+ * Large numerals: chapter markers, counts. Louize at display size, tight.
+ *
+ * Louize defaults to old-style figures, where the zero is x-height and the one
+ * is an unserifed stroke — so "01" reads as "OI" at a glance, which is exactly
+ * wrong for a chapter marker. The face does carry lining figures; ask for them
+ * explicitly, and take tabular widths so a column of markers stays aligned.
+ */
+.numeral {
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-variant-numeric: lining-nums tabular-nums;
+	letter-spacing: -0.05em;
+	line-height: 0.9;
+}
+
 .eyebrow {
 	margin: 0 0 0.875rem;
 	color: rgb(var(--color-primary));
@@ -197,6 +220,7 @@ strong {
 /* ------------------------------------------------------------------ */
 
 .button {
+	position: relative;
 	display: inline-flex;
 	min-height: 3rem;
 	align-items: center;
@@ -215,6 +239,11 @@ strong {
 		border-color var(--dur-fast) ease,
 		box-shadow var(--dur-fast) ease,
 		transform var(--dur-fast) ease;
+}
+
+.button > * {
+	position: relative;
+	z-index: 1;
 }
 
 .button-lg {
@@ -239,9 +268,26 @@ strong {
 }
 
 .button-primary {
+	overflow: hidden;
 	background: rgb(var(--color-primary));
 	box-shadow: 0 0.75rem 1.75rem rgb(var(--color-primary) / 26%);
 	color: rgb(var(--color-primary-ink));
+}
+
+/* A single sheen crosses the button on hover — light moving over a surface,
+   the same idea as the doorway light in the hero. Transform only. */
+.button-primary::after {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		115deg,
+		transparent 30%,
+		rgb(255 255 255 / 22%) 50%,
+		transparent 70%
+	);
+	content: '';
+	transform: translateX(-130%);
+	pointer-events: none;
 }
 
 .button-primary:hover {
@@ -263,6 +309,7 @@ strong {
 }
 
 .text-link {
+	position: relative;
 	display: inline-flex;
 	width: fit-content;
 	min-height: 2.75rem;
@@ -275,6 +322,20 @@ strong {
 
 :root[data-theme='dark'] .text-link {
 	color: rgb(var(--color-primary-strong));
+}
+
+/* The underline draws in from the left under the label, stopping short of
+   the arrow. */
+.text-link::after {
+	position: absolute;
+	right: 1.5rem;
+	bottom: calc(50% - 0.8em);
+	left: 0;
+	height: 1px;
+	background: currentcolor;
+	content: '';
+	transform: scaleX(0);
+	transform-origin: left center;
 }
 
 .text-link svg {
@@ -293,37 +354,8 @@ strong {
 }
 
 /* ------------------------------------------------------------------ */
-/* Badges                                                              */
+/* Accents                                                             */
 /* ------------------------------------------------------------------ */
-
-.badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.375rem 0.75rem 0.375rem 0.625rem;
-	border: 1px solid rgb(var(--color-border));
-	border-radius: var(--radius-pill);
-	background: rgb(var(--color-surface));
-	color: rgb(var(--color-muted));
-	font-size: 0.75rem;
-	font-weight: 500;
-	line-height: 1.3;
-}
-
-.badge svg {
-	width: 0.875rem;
-	height: 0.875rem;
-	flex: 0 0 auto;
-}
-
-.badge-dot {
-	width: 0.4375rem;
-	height: 0.4375rem;
-	flex: 0 0 auto;
-	border-radius: 50%;
-	background: rgb(var(--color-success));
-	box-shadow: 0 0 0 0.25rem rgb(var(--color-success) / 14%);
-}
 
 /* Accent variants. Each maps to a semantic token triad — never a raw colour. */
 .accent-primary {
@@ -350,21 +382,36 @@ strong {
 	--accent-ink: var(--color-success-ink);
 }
 
-.accent-danger {
-	--accent: var(--color-danger);
-	--accent-soft: var(--color-danger-soft);
-	--accent-ink: var(--color-danger-ink);
+.accent-progress {
+	--accent: var(--color-progress);
+	--accent-soft: var(--color-progress-soft);
+	--accent-ink: var(--color-progress-ink);
+}
+
+.accent-warning {
+	--accent: var(--color-warning);
+	--accent-soft: var(--color-warning-soft);
+	--accent-ink: var(--color-warning-ink);
 }
 
 /* ------------------------------------------------------------------ */
 /* Surfaces                                                            */
 /* ------------------------------------------------------------------ */
 
-.card {
-	border: 1px solid rgb(var(--color-border));
+/*
+ * Glass. A low-alpha surface with a heavy backdrop blur, so whatever sits
+ * behind it — the drawing, a wash, a light — reads straight through. This is
+ * the hero proof card's recipe; every floating artifact on the page uses it.
+ */
+.glass {
+	border: 1px solid var(--glass-border);
 	border-radius: var(--radius-2xl);
-	background: rgb(var(--color-surface));
-	box-shadow: var(--shadow-raised);
+	background: var(--glass-bg);
+	box-shadow:
+		var(--glass-shadow),
+		inset 0 1px 0 var(--glass-highlight);
+	backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+	-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 }
 
 /* A faint grid used behind editorial sections. Pure CSS, no image request. */
@@ -381,79 +428,82 @@ strong {
 }
 
 /* ------------------------------------------------------------------ */
-/* Remotion players                                                    */
+/* Motion                                                              */
 /* ------------------------------------------------------------------ */
 
 /*
- * These class names are produced inside the React island, so they cannot be
- * reached from a component-scoped <style> block and live here instead.
- * Aspect ratios match each composition so the frame never letterboxes.
+ * Scroll reveal. `.reveal` fades a block up once, the first time it enters
+ * the viewport. `.reveal-group` does the same for each child in turn: the
+ * script gives every child its index as `--i`, and the delay falls out of it.
+ * Children are also softly defocused on the way in, which reads as depth of
+ * field rather than a slide. Only opacity, transform and filter move.
+ *
+ * Everything is gated on `html.js` — set by the prepaint script — so a page
+ * where the script never runs still shows all of its content.
  */
+@media (prefers-reduced-motion: no-preference) {
+	.js .reveal {
+		opacity: 0;
+		transform: translateY(1.25rem);
+		transition:
+			opacity var(--dur-reveal) var(--ease-out),
+			transform var(--dur-reveal) var(--ease-out);
+	}
 
-.media-frame {
-	overflow: hidden;
-	border: 1px solid rgb(var(--color-border));
-	border-radius: var(--radius-xxl);
-	background: rgb(var(--color-elevated));
-	/*
-	 * `--color-border` alone is a near-miss against the cream canvas in light
-	 * mode (216 225 234 on 251 248 242 is barely a 1.2:1 edge), so the frame
-	 * read as borderless. A second, tighter ring drawn from the ink token at
-	 * low alpha gives the edge real definition without introducing a new
-	 * colour — it is invisible in dark mode, where the border token already
-	 * has enough contrast against the near-black canvas.
-	 */
-	box-shadow:
-		0 0 0 1px rgb(var(--color-ink) / 6%),
-		var(--shadow-panel);
-}
+	.js .reveal-group > * {
+		opacity: 0;
+		transform: translateY(1.25rem);
+		filter: blur(6px);
+		transition:
+			opacity var(--dur-reveal) var(--ease-out),
+			transform var(--dur-reveal) var(--ease-out),
+			filter var(--dur-reveal) var(--ease-out);
+		transition-delay: calc(var(--i, 0) * var(--stagger));
+	}
 
-[data-theme='dark'] .media-frame {
-	box-shadow: var(--shadow-panel);
-}
+	.js .reveal.is-visible,
+	.js .reveal-group.is-visible > * {
+		opacity: 1;
+		transform: none;
+		filter: none;
+	}
 
-.remotion-player {
-	width: 100%;
-	overflow: hidden;
-	background: rgb(var(--color-elevated));
-}
+	/* Hover lift for cards. Pair with `.glass` to keep the highlight. */
+	.lift {
+		transition:
+			transform var(--dur-mid) var(--ease-out),
+			box-shadow var(--dur-mid) var(--ease-out);
+	}
 
-.remotion-player-signal {
-	aspect-ratio: 1280 / 800;
-}
+	.lift:hover,
+	.lift:focus-within {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-panel);
+	}
 
-.remotion-player-journey {
-	aspect-ratio: 1280 / 680;
-}
+	.glass.lift:hover,
+	.glass.lift:focus-within {
+		box-shadow:
+			var(--shadow-panel),
+			inset 0 1px 0 var(--glass-highlight);
+	}
 
-.remotion-player-appreciation {
-	aspect-ratio: 900 / 640;
-}
+	.button-primary::after {
+		transition: transform 700ms var(--ease-out);
+	}
 
-.remotion-player-signal.is-compact,
-.remotion-player-journey.is-compact {
-	aspect-ratio: 390 / 520;
-}
+	.button-primary:hover::after {
+		transform: translateX(130%);
+	}
 
-.remotion-player-appreciation.is-compact {
-	aspect-ratio: 390 / 480;
-}
+	.text-link::after {
+		transition: transform 320ms var(--ease-out);
+	}
 
-/* ------------------------------------------------------------------ */
-/* Scroll reveal                                                       */
-/* ------------------------------------------------------------------ */
-
-.reveal {
-	opacity: 0;
-	transform: translateY(0.875rem);
-	transition:
-		opacity var(--dur-slow) var(--ease-out),
-		transform var(--dur-slow) var(--ease-out);
-}
-
-.reveal.is-visible {
-	opacity: 1;
-	transform: none;
+	.text-link:hover::after,
+	.text-link:focus-visible::after {
+		transform: scaleX(1);
+	}
 }
 
 /* ------------------------------------------------------------------ */
@@ -474,8 +524,10 @@ strong {
 		transition-duration: 0.01ms !important;
 	}
 
-	.reveal {
+	.reveal,
+	.reveal-group > * {
 		opacity: 1;
 		transform: none;
+		filter: none;
 	}
 }

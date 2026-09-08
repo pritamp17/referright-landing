@@ -1,0 +1,266 @@
+---
+interface Props {
+	/** `hero` is the wall as the page opens on it. `bookend` mirrors it, dims
+	 *  the linework and brightens the doorway — the same wall, seen on the way
+	 *  out, with the light already on. */
+	readonly variant?: 'hero' | 'bookend';
+	readonly class?: string;
+}
+
+const { variant = 'hero', class: className = '' } = Astro.props;
+---
+
+{/*
+ * The wall of doors, as a single alpha mask painted with theme tokens rather
+ * than a flat picture: `.ink-base` takes the ink colour, `.ink-accent` repaints
+ * only the strokes near the open door in the brand blue, and `.hero-glow` is
+ * the light spilling out of the doorway behind the linework. One asset, both
+ * themes, no second dark-mode export.
+ *
+ * The hero and the closing section share this so the page ends on the image it
+ * opened with — the same argument, from the other side of the door.
+ */}
+<div class:list={['door-wall', `is-${variant}`, className]} aria-hidden="true">
+	<div class="door-wall-inner">
+		<div class="ink-stage">
+			<span class="hero-glow"></span>
+			<span class="ink ink-base"></span>
+			<span class="ink ink-accent"></span>
+		</div>
+	</div>
+</div>
+
+<style>
+	.door-wall {
+		position: absolute;
+		z-index: 0;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	/*
+	 * Three nested masks, each doing exactly one job, because a single element
+	 * can only carry one mask reliably across engines:
+	 *   .door-wall        — fades the drawing out before it reaches the copy
+	 *   .door-wall-inner  — fades it out at the top and bottom edges
+	 *   .ink              — the drawing itself
+	 */
+	.is-hero {
+		mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
+		-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%);
+	}
+
+	/* On the way out the wall is centred and symmetrical, so it reads as a
+	   closing image rather than a repeat of the opening composition. */
+	.is-bookend {
+		mask-image: radial-gradient(72% 80% at 50% 50%, #000 12%, transparent 76%);
+		-webkit-mask-image: radial-gradient(72% 80% at 50% 50%, #000 12%, transparent 76%);
+	}
+
+	.door-wall-inner {
+		position: absolute;
+		inset: 0;
+		/*
+		 * A soft defocus on the drawing only. Copy sits on the flat canvas,
+		 * never on top of the art, so this never softens type — it only pushes
+		 * the wall slightly out of focus, the way a shallow depth of field
+		 * keeps a background present without letting it compete for the eye.
+		 */
+		filter: blur(1.25px) saturate(0.94);
+	}
+
+	.is-hero .door-wall-inner {
+		mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
+		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 13%, #000 62%, transparent 93%);
+	}
+
+	@media (min-width: 90rem) {
+		.door-wall-inner {
+			filter: blur(1.5px) saturate(0.94);
+		}
+	}
+
+	/*
+	 * The stage is the drawing's own coordinate space, sized by width and held
+	 * at its native ratio. Everything below can then be positioned in fractions
+	 * of the picture — "38% across, 50% down" is the open door at every
+	 * viewport size — instead of in fractions of the section, which drift as
+	 * the window changes shape.
+	 */
+	.ink-stage {
+		position: absolute;
+		top: 50%;
+		right: 0;
+		width: 62%;
+		aspect-ratio: 1280 / 1636;
+		transform: translateY(-50%);
+	}
+
+	.is-bookend .ink-stage {
+		right: 50%;
+		width: min(58rem, 96%);
+		/* Mirrored, so the doorway opens toward the reader's other side and the
+		   two images are recognisably the same wall rather than a repeat. */
+		transform: translate(50%, -50%) scaleX(-1);
+	}
+
+	.ink {
+		position: absolute;
+		inset: 0;
+		/* --ink-doors-mask points at /public/ink-doors-mask.webp and is declared
+		   once in global.css. */
+		mask-image: var(--ink-doors-mask);
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+		-webkit-mask-image: var(--ink-doors-mask);
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+	}
+
+	.ink-base {
+		background: rgb(var(--color-ink));
+		opacity: 0.5;
+	}
+
+	:global([data-theme='dark']) .ink-base {
+		opacity: 0.42;
+	}
+
+	.is-bookend .ink-base {
+		opacity: 0.2;
+	}
+
+	:global([data-theme='dark']) .is-bookend .ink-base {
+		opacity: 0.24;
+	}
+
+	/*
+	 * Only the strokes inside this radius turn blue. The circle is centred on
+	 * the open door, so the door, the hand and the light rays pick up the brand
+	 * colour and the other two hundred doors stay in ink.
+	 */
+	.ink-accent {
+		background: radial-gradient(
+			17% 13% at 38% 50%,
+			rgb(var(--color-primary)) 0%,
+			rgb(var(--color-primary) / 92%) 52%,
+			transparent 100%
+		);
+	}
+
+	:global([data-theme='dark']) .ink-accent {
+		background: radial-gradient(
+			17% 13% at 38% 50%,
+			rgb(var(--color-primary-strong)) 0%,
+			rgb(var(--color-primary-strong) / 90%) 52%,
+			transparent 100%
+		);
+	}
+
+	/* Light actually spilling out of the doorway, behind the linework. */
+	.hero-glow {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			26% 20% at 38% 50%,
+			rgb(var(--color-primary) / 16%),
+			transparent 62%
+		);
+	}
+
+	:global([data-theme='dark']) .hero-glow {
+		background: radial-gradient(
+			30% 24% at 38% 50%,
+			rgb(var(--color-primary) / 34%),
+			transparent 64%
+		);
+	}
+
+	/* The bookend's door is already open, so its light is the brightest thing
+	   in the section — the page ends on it. */
+	.is-bookend .hero-glow {
+		background: radial-gradient(
+			32% 26% at 38% 50%,
+			rgb(var(--color-primary) / 26%),
+			transparent 66%
+		);
+	}
+
+	:global([data-theme='dark']) .is-bookend .hero-glow {
+		background: radial-gradient(
+			36% 30% at 38% 50%,
+			rgb(var(--color-primary) / 44%),
+			transparent 68%
+		);
+	}
+
+	/* ---- Entrance ---- */
+
+	@media (prefers-reduced-motion: no-preference) {
+		/* The wall wipes on left to right, so the closed doors are established
+		   before the open one arrives. */
+		.is-hero {
+			animation: ink-wipe 1500ms var(--ease-out) 120ms both;
+		}
+
+		.is-hero .ink-accent,
+		.is-hero .hero-glow {
+			animation: light-on 900ms ease-out 1150ms both;
+		}
+
+		/* The bookend brightens as the section is reached rather than on load;
+		   `.is-lit` is set by the closing section's own observer. */
+		.is-bookend .hero-glow,
+		.is-bookend .ink-accent {
+			opacity: 0;
+			transition: opacity 1400ms var(--ease-out);
+		}
+
+		:global(.is-lit) .is-bookend .hero-glow,
+		:global(.is-lit) .is-bookend .ink-accent {
+			opacity: 1;
+		}
+
+		@keyframes ink-wipe {
+			from {
+				clip-path: inset(0 100% 0 0);
+			}
+			to {
+				clip-path: inset(0 0 0 0);
+			}
+		}
+
+		@keyframes light-on {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+	}
+
+	/* ---- Responsive ----
+	   On phones and small tablets the drawing cannot compete with the copy at
+	   this width, so it becomes atmosphere behind it rather than a subject
+	   beside it. */
+
+	@media (max-width: 63.999rem) {
+		.is-hero {
+			left: 12%;
+			mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
+			-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 46%);
+			opacity: 0.7;
+		}
+
+		.is-hero .ink-stage {
+			top: 44%;
+			right: -22%;
+			width: 108%;
+		}
+
+		.is-bookend .ink-stage {
+			width: 150%;
+		}
+	}
+</style>

@@ -49,6 +49,10 @@
 		align-items: center;
 		gap: 0.4375rem;
 		align-self: center;
+		/* A link has to clear the 44px touch floor even when its glyph is a
+		   26px chevron. */
+		min-height: 2.75rem;
+		justify-content: center;
 		padding: 0.25rem 0.5rem 0;
 		color: rgb(var(--color-primary) / 62%);
 		transition:
