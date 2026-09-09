@@ -158,7 +158,9 @@ shared vocabulary.
 - **`.reveal` / `.reveal-group`** — fade-up on first read; a group staggers its
   children by `--i × --stagger`. Both gated on `.js`.
 - **`.button-*` / `.text-link`** — the primary button carries one sheen that
-  crosses it on hover; the text link draws its underline in from the left.
+  crosses it on hover; the text link draws its underline in from the left; every
+  button takes a one-frame press, because between the hover and the navigation
+  a click has no other feedback.
 - **`.accent-*`** — five accent triads, each mapping to a semantic token family
   and never to a raw colour.
 
@@ -299,10 +301,117 @@ three. With the script absent the first panel is visible and the section is
 still readable.
 
 Each panel is a numbered list on one side and `PathCard.astro` on the other:
-the request form with its optional thank-you, the incoming request a referrer
-can claim, the opening that arrives before the role is public. Below 64rem the
-card moves above the call to action, so the order is pick a path, see the
+the request you can send, the request you can claim and what claiming it earns,
+and the feed of openings that arrive before the roles are public. Below 64rem
+the card moves above the call to action, so the order is pick a path, see the
 thing, read how it goes.
+
+**The card is the application, in a window.** `.glass` is the window: a
+maximised desktop frame whose only visible chrome is a toolbar — three lights in
+the `danger` / `warning` / `success` tokens rather than the desktop's own reds
+and greens, a compact segmented control naming the section being viewed and its
+neighbour (`Requests` / `Drafts`, `Inbox` / `Claimed`, `Openings` / `Feed`), and
+one icon button. Everything below that hairline is the product's own vocabulary,
+rebuilt from the tokens both codebases share — the accent rail of `Surface`, the
+uppercase pill of `StatusBadge`, the sentence-case `Chip`, the person line and
+lifecycle sentence of `RequestCard`, the marker row of `StageBar`, the preset
+tiles of `AppreciationSection`, the live pill of `DeadlineCountdown`, the hero
+figure of `MoneyValue` and the pill of `Button`. Inter throughout, because
+Louize is banned inside the product. A visitor who signs up should recognise
+this screen.
+
+**The thank-you is a row of tiles, and it goes away once the request is sent.**
+Emoji over amount over label, the chosen one filled, exactly as the product
+builds it. It was a segmented track, which is the wrong control for three money
+labels: they cannot shrink, so the track either wrapped into something that no
+longer read as one switch or overflowed its own pill in the narrow column it
+lives in. The fill is the reward family rather than the product's primary,
+because on this page violet is money and a second blue beside the blue action
+would be two things asking for the same attention. After `Send request` the
+picker is done, and the column carries what a sent request actually has: its
+lifecycle, at `1/4 Requested`.
+
+**A window is wider than it is tall.** From 30rem of card the body is two
+columns — the request on the left, the one thing attached to it on the right,
+status across the top and the action bar along the floor — which keeps every
+desktop width between about 1.2 and 1.8 times wider than tall. Portrait beside a
+column of text reads as a phone, which is the one shape this product is not.
+
+**The card measures itself, not the viewport.** Its breakpoints are container
+queries. Between 64rem and about 78rem the window is at its narrowest — the
+section has just split into two columns and neither is wide yet — while at 48rem
+it is the whole shell. A viewport query gets that backwards in exactly the range
+where a portrait card would appear. The feed drops its third opening below 34rem
+of card for the same reason: the window is sized to the tallest panel, so a row
+it cannot afford would stretch the other two paths with it.
+
+**Two of the three cards work.** `Send request` and `Claim request` are real
+buttons, and pressing one confirms itself with a drawn check before — 640ms
+later, deliberately — the card moves to the state the application would move it
+to: request raised, or complete, with the stage bar full, the deadline pill
+gone, the rail repainted in the success family and the product's own closing
+sentence. Both states ship in the markup with one of them `hidden`, so nothing
+is assembled from strings at runtime and a card without the script is simply the
+state it starts in. Every row in the feed can be asked about, and confirms only
+itself: asking about one opening does not change what the other two are.
+
+**A card that can be pressed has to say so, in four layers.** At rest, on one
+4.6s cadence starting 3.2s in: a ring leaves the action, and light crosses it —
+the same sheen `.button-primary` uses on hover, here on a timer, since nobody
+hovers something they have not realised is a control. On hover: the button
+lifts a pixel, deepens to `--color-primary-hover`, its arrow leans two pixels
+right, and the ring stops, its job done. On press: it scales to 0.98. The hints
+are staggered a third of a second down the feed so three rows do not flash
+together, and every one of them is inside `prefers-reduced-motion:
+no-preference`. A hidden panel is `display: none`, so the delay restarts when its
+tab is chosen, which is exactly when the offer is worth making. The sheen is
+clipped by its own frame rather than by the button, because the ring has to
+escape those same bounds and one element cannot both clip its children and let a
+pseudo-element out.
+
+**The controls are not tabbable, and the card stays `aria-hidden`.** Everything
+they demonstrate is already stated in the numbered list beside them, so a reader
+who cannot see the card is told it once rather than twice, and the switch above
+stays a single tab stop. `tabindex="-1"` is what keeps a focusable control out of
+an `aria-hidden` subtree.
+
+**The window is one size for all three paths.** Three panels of three different
+lengths used to resize the card as you switched tabs, which shoves the page
+under the pointer mid-click. The script measures all three — each hidden panel
+is revealed for exactly one synchronous read and hidden again, so nothing is
+ever painted in that state — and publishes the tallest as `--path-card-min`; the
+card fills it and pins its footer to the floor. Measured rather than written
+down, because the tallest panel is not the same one at every width. Re-run after
+`document.fonts.ready`, since the first read is of fallback metrics, and on
+resize. Without the script every card sizes to its own content, which is where
+this started.
+
+**The claim window counts down, and survives a refresh.** The GIVE card quotes
+`POLICY.claimWindowHours`, so it has to behave like it: the deadline — never the
+remainder — is written to `localStorage`, and a countdown reading `47h 58m to
+act` is what a returning visitor sees rather than a fresh forty-eight hours. It
+ticks every thirty seconds because it renders whole minutes, re-renders when the
+tab is shown again, and takes the application's three-step urgency ladder: quiet
+above twelve hours, amber inside twelve, red inside two. Hours are not rolled up
+into days the way the product's own formatter does past twenty-four, because the
+window is quoted in hours everywhere else on this page.
+
+**The card's action is primary blue on all three paths, never the path accent.**
+That is the product's rule: a filled blue is reserved for the one thing you can
+do, and the accent is left to say what state you are in. It is also the only
+pairing that holds its contrast in both themes, which an accent fill under
+`--color-primary-ink` does not. The PEER card is the exception that proves it:
+its openings are a list where every item carries the same two actions, so the
+blue is the row-level small variant and `View details` beside it is bordered.
+
+**The selected pill is one object that slides.** From 48rem up it is painted on
+the switch and clipped to the selected tab with `clip-path`, so what moves is a
+single shape rather than one background fading out under another — and clip-path
+is on the short list of properties this page animates, which a transitioned
+width is not. The script measures against the group's padding box and adds
+`is-ready`; below 48rem the switch is a horizontal scroller wider than that box,
+so the fill stays on the tab itself, which is also what a page without the
+script gets.
 
 **A sticky element is never a grid item.** Measured in Chromium: a sticky grid
 item that may stretch over its (very tall) grid area is pushed down by its own
