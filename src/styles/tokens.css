@@ -14,8 +14,8 @@
  * Colour values are space-separated RGB channels, NOT hex, so that any token can
  * be used at partial alpha via `rgb(var(--color-x) / 40%)`.
  *
- * Do not introduce new colour values here; compose the existing tokens instead.
- * The only landing-only colours are the two brand-panel values at the bottom.
+ * Keep the product UI palette mirrored. Landing-only brand-panel values and
+ * the user-requested logo's teal/sky artwork accents are declared below.
  */
 
 :root {
@@ -73,7 +73,11 @@
 		0 0.125rem 0.375rem rgb(23 33 43 / 0.05);
 	--shadow-popover: 0 1rem 3rem rgb(23 33 43 / 0.14);
 
-	/* ---- Landing-only extensions (composed from the tokens above) ---- */
+	/* ---- Landing-only extensions ---- */
+
+	/* Logo artwork only; stable across themes, never control/status colors. */
+	--color-brand-teal: 20 159 165;
+	--color-brand-sky: 100 172 232;
 
 	/* A deep, saturated brand surface for inverted panels. Resolves to the same
 	   register in both themes so inverted panels never wash out in dark mode. */

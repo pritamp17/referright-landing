@@ -2,7 +2,8 @@
 
 > Current as of the premium redesign of everything below the hero.
 > The palette is mirrored from the product application; do not invent colour
-> values here, compose the existing tokens instead.
+> values for UI here, compose the existing tokens instead. The logo's teal and
+> sky accents are a user-requested artwork exception.
 
 ---
 
@@ -59,6 +60,7 @@ one accent. They no longer do — see §16.
 | Token | Purpose |
 |---|---|
 | `--color-brand-panel` / `-ink` | Deep blue surface for inverted panels. Stays blue in **both** themes so an inverted panel never washes out. |
+| `--color-brand-teal` / `--color-brand-sky` | Logo artwork only: `20 159 165` and `100 172 232`, stable in both themes. |
 | `--glass-bg` / `-border` / `-highlight` / `-shadow` / `-blur` | The glass recipe, composed entirely from existing tokens. See §6. |
 | `--shadow-panel` / `--shadow-media` | Two heavier steps than the product needs, for hero-scale surfaces. |
 | `--radius-sm` · `--radius-lg` · `--radius-xxl` · `--radius-pill` | `xl`/`2xl` are the product's; the larger steps exist for hero-scale media. |
@@ -73,8 +75,9 @@ page that reads as clinical against the warm `#FBF8F2` canvas, so **light-mode
 white. Card chrome still separates cleanly from the canvas, but the whole page
 sits on one warm register instead of white cards floating on cream.
 
-Dark mode is unaffected. This is the only value that does not match the product
-1:1. If the product ever moves off pure white too, drop the override.
+Dark mode is unaffected. This is the only divergence among the mirrored product
+tokens; landing-only artwork extensions are listed above. If the product ever
+moves off pure white too, drop the override.
 
 ---
 
@@ -115,9 +118,22 @@ it so a visitor's preference survives the hand-off into the app.
 | Body / UI | **Inter** | All copy, labels, buttons, navigation. |
 | Display | **Louize** | Headlines (`.display-1/2/3`), section titles, pull-quotes, and the large numerals in `.numeral`. |
 | Mono | system mono stack | Deadlines, reference codes, eyebrows, small index markers. |
+| Brand wordmark | **Louize, outlined** | RightRefer logo, reusable in the main app without a font request. |
 
-**Louize is banned inside the product application.** Here it is display type
-only — never body, never UI.
+Louize is display type and the outlined brand wordmark, never body or UI.
+The user-requested logo artwork may also be used in the product application.
+
+### Brand identity
+
+The three-piece Forward symbol forms an upward-right gesture in blue, teal,
+and sky. `Brand.astro` renders the shared geometry in `src/lib/brand.ts` with
+an outlined Louize wordmark. The complete logo is at least 144px wide inside
+a 44px-high link. The name uses theme ink; a saturated brand surface can
+reverse the complete lockup to white. Favicons use a padded blue tile.
+
+Copy-ready SVG/PNG/WebP exports and the ZIP are in `public/brand`.
+See [`docs/brand/README.md`](./docs/brand/README.md) for regeneration and usage.
+The hero headline is **The right referral. Your way in.**
 
 **Louize sets figures old-style by default**, where the zero is x-height and the
 one is an unserifed stroke, so `01` reads as `OI`. `.numeral` therefore asks for

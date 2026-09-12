@@ -63,6 +63,10 @@ Five blocks, and adding a sixth is a design decision, not a routine one. See
 
 ## What this page ships
 
+- **RightRefer identity.** The three-piece Forward symbol and outlined Louize
+  wordmark share geometry in `src/lib/brand.ts`. Copy-ready SVG/PNG/WebP assets
+  and the ZIP are in `public/brand`; see [`brand notes`](./docs/brand/README.md).
+
 - **No framework runtime.** The page is Astro plus roughly 7 KB of hand-written
   JavaScript across seven small island scripts. There is no React, no animation
   library and no video.
@@ -71,7 +75,8 @@ Five blocks, and adding a sixth is a design decision, not a routine one. See
   file serves both themes. It is preloaded, and it is reused by the closing
   section as the page's bookend.
 - **Two typefaces.** Louize is self-hosted from `public/Louize.woff2` and used
-  for display type only; Inter is loaded from Google Fonts for everything else.
+  for display type and the outlined logo; Inter is loaded from Google Fonts
+  for UI and body text.
 - **Company logos** are rendered from the CC0-licensed Simple Icons package at
   build time. They remain the property of their respective owners and do not
   imply affiliation. Microsoft's four squares are drawn inline, because their

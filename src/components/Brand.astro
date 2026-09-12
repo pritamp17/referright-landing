@@ -1,12 +1,11 @@
 ---
 import { SectionId } from '../lib/constants';
+import { BRAND_MARK_PARTS, BRAND_WORDMARK_PATH, BRAND_LOCKUP_WIDTH } from '../lib/brand';
 
 interface Props {
 	href?: string;
 	class?: string;
 	label?: string;
-	/** Render for placement on a saturated brand surface, where the default
-	 *  deep-blue wordmark would be invisible. */
 	onBrandSurface?: boolean;
 	size?: 'sm' | 'md';
 }
@@ -25,70 +24,41 @@ const {
 	href={href}
 	aria-label={label}
 >
-	<span class="brand-mark" aria-hidden="true">
-		<img src="/rightrefer-logo.webp" alt="" width="256" height="248" loading="lazy" decoding="async" />
-	</span>
-	<span class="brand-wordmark">Right<span class="brand-accent">Refer</span></span>
+	{/* Outlined lettering keeps spacing identical before fonts load and at every size. */}
+	<svg viewBox={`0 0 ${BRAND_LOCKUP_WIDTH} 64`} width={BRAND_LOCKUP_WIDTH} height="64" aria-hidden="true" focusable="false">
+		<g transform="scale(.666667)">
+			{BRAND_MARK_PARTS.map(({ path, tone }) => <path class={`brand-piece brand-piece-${tone}`} d={path} />)}
+		</g>
+		<path d={BRAND_WORDMARK_PATH} />
+	</svg>
 </a>
 
 <style>
 	.brand {
 		display: inline-flex;
-		/* The brand is a link, so it must satisfy the 44px touch minimum even
-		   though its glyphs are shorter than that. */
+		flex: 0 0 auto;
 		min-height: 2.75rem;
 		align-items: center;
-		gap: 0.5rem;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		letter-spacing: -0.03em;
-		line-height: 1;
 		color: rgb(var(--color-ink));
 	}
 
-	.brand-sm {
-		font-size: 1rem;
-	}
-
-	.brand-md {
-		font-size: 1.125rem;
-	}
-
-	.brand-mark {
-		display: grid;
-		overflow: hidden;
-		border-radius: var(--radius-sm);
-		place-items: center;
-	}
-
-	.brand-sm .brand-mark {
-		width: 1.5rem;
-		height: 1.5rem;
-	}
-
-	.brand-md .brand-mark {
-		width: 1.75rem;
-		height: 1.75rem;
-	}
-
-	.brand-mark img {
+	.brand svg {
+		display: block;
 		width: 100%;
-		height: 100%;
-		object-fit: contain;
+		height: auto;
+		fill: currentColor;
 	}
 
-	.brand-accent {
-		color: rgb(var(--color-primary));
-	}
+	.brand-sm { width: 9rem; }
+	.brand-md { width: 11rem; }
 
-	:global([data-theme='dark']) .brand-accent {
-		color: rgb(var(--color-primary-strong));
-	}
+	.brand-piece-primary { fill: rgb(var(--color-primary)); }
+	.brand-piece-teal { fill: rgb(var(--color-brand-teal)); }
+	.brand-piece-sky { fill: rgb(var(--color-brand-sky)); }
 
-	/* On a saturated blue panel both halves must read as white. */
-	.brand-on-surface,
-	.brand-on-surface .brand-accent,
-	:global([data-theme='dark']) .brand-on-surface .brand-accent {
+	.brand-on-surface {
 		color: rgb(var(--color-brand-panel-ink));
 	}
+
+	.brand-on-surface .brand-piece { fill: currentColor; }
 </style>
