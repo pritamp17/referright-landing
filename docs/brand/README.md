@@ -44,17 +44,19 @@ The two accents are a logo-only exception for this user-requested redesign. They
 
 ## Deliverables
 
-- `public/brand/rightrefer-{ink,white,blue}.svg`: colored symbol with the named wordmark color.
-- `public/brand/rightrefer-mono-{ink,white,blue}.svg`: complete one-color lockups.
-- `public/brand/rightrefer-mark-{color,ink,white,blue}.svg`: standalone symbols.
-- `public/brand/rightrefer-app-icon.svg`: blue app tile with white symbol.
+- `public/brand_assets/logos/rightrefer-{ink,white,blue}.svg`: colored symbol with the named wordmark color.
+- `public/brand_assets/logos/rightrefer-mono-{ink,white,blue}.svg`: complete one-color lockups.
+- `public/brand_assets/symbols/rightrefer-mark-{color,ink,white,blue}.svg`: standalone symbols.
+- `public/brand_assets/icons/rightrefer-app-icon.svg`: blue app tile with white symbol.
 - Each brand SVG has matching PNG and lossless WebP exports. Full lockups are 2048px wide; symbols and app icons are 1024 × 1024px. Backgrounds are transparent outside the artwork.
 - `public/rightrefer-logo.svg`, `.png`, `.webp`: compatibility exports of the colored symbol.
 - `public/favicon.svg`, `favicon.png`, `apple-touch-icon.png`: small icon assets.
 - `public/og-image.svg`, `.png`: 1200 × 630 social preview.
 - `docs/brand/rightrefer-identity.svg`, `.png`: presentation board of actual assets.
-- `public/brand/README.md`: quick asset selection and main-app usage instructions.
-- `public/brand/rightrefer-logo-3-louize.zip`: all current public artwork and usage instructions, with icon and social files in separate folders. A matching copy remains at `docs/brand/rightrefer-brand-kit.zip`.
+- `public/brand_assets/README.md`: quick asset selection and main-app usage instructions.
+- `public/brand_assets/icons/`: app icon, favicon, and Apple touch icon.
+- `public/brand_assets/social/`: social preview in SVG, PNG, and WebP.
+- `public/brand_assets/downloads/rightrefer-logo-3-louize.zip`: all current public artwork and usage instructions, preserving the folder structure. A matching copy remains at `docs/brand/rightrefer-brand-kit.zip`.
 
 The historical `public/referright-logo.png` is not used by the page.
 

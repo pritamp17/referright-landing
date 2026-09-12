@@ -131,7 +131,8 @@ an outlined Louize wordmark. The complete logo is at least 144px wide inside
 a 44px-high link. The name uses theme ink; a saturated brand surface can
 reverse the complete lockup to white. Favicons use a padded blue tile.
 
-Copy-ready SVG/PNG/WebP exports and the ZIP are in `public/brand`.
+Copy-ready SVG/PNG/WebP exports and the ZIP are in `public/brand_assets`,
+organized into `logos`, `symbols`, `icons`, `social`, and `downloads`.
 See [`docs/brand/README.md`](./docs/brand/README.md) for regeneration and usage.
 The hero headline is **The right referral. Your way in.**
 

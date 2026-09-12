@@ -65,7 +65,8 @@ Five blocks, and adding a sixth is a design decision, not a routine one. See
 
 - **RightRefer identity.** The three-piece Forward symbol and outlined Louize
   wordmark share geometry in `src/lib/brand.ts`. Copy-ready SVG/PNG/WebP assets
-  and the ZIP are in `public/brand`; see [`brand notes`](./docs/brand/README.md).
+  and the ZIP are organized in [`public/brand_assets`](./public/brand_assets/README.md);
+  see [`brand notes`](./docs/brand/README.md) for the design history.
 
 - **No framework runtime.** The page is Astro plus roughly 7 KB of hand-written
   JavaScript across seven small island scripts. There is no React, no animation
